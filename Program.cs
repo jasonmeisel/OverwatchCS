@@ -53,9 +53,9 @@ public static class Actions
         };
     }
 
-    public static string GetLastElementOfStack(char stackVar, char stackIndexVar)
+    public static string GetLastElementOfStack(char stackVar, char stackIndexVar, int offset)
     {
-        return ArraySubscript(GetGlobal(stackVar), GetGlobal(stackIndexVar));
+        return ArraySubscript(GetGlobal(stackVar), Add(GetGlobal(stackIndexVar), (-offset).ToString()));
     }
 
     public static string[] ResizeStack(char stackVar, char stackIndexVar, string size)
@@ -80,19 +80,14 @@ public static class Actions
         return PushToStack(Variables.VariableStack, Variables.VariableStackIndex, value);
     }
 
-    public static string GetLastElementOfVariableStack()
-    {
-        return GetLastElementOfStack(Variables.VariableStack, Variables.VariableStackIndex);
-    }
-
     public static string[] PushToParameterStack(string value)
     {
         return PushToStack(Variables.ParameterStack, Variables.ParameterStackIndex, value);
     }
 
-    public static string GetLastElementOfParameterStack()
+    public static string GetLastElementOfParameterStack(int offset)
     {
-        return GetLastElementOfStack(Variables.ParameterStack, Variables.ParameterStackIndex);
+        return GetLastElementOfStack(Variables.ParameterStack, Variables.ParameterStackIndex, offset);
     }
 
     public static string Add(string valueA, string valueB)
@@ -103,13 +98,13 @@ public static class Actions
     public static string[] ToWorkshopActions(Instruction instruction)
     {
         if (instruction.OpCode == OpCodes.Ldarg_0)
-            return PushToVariableStack(ArraySubscript(GetLastElementOfParameterStack(), 0));
+            return PushToVariableStack(GetLastElementOfParameterStack(0));
         if (instruction.OpCode == OpCodes.Ldarg_1)
-            return PushToVariableStack(ArraySubscript(GetLastElementOfParameterStack(), 1));
+            return PushToVariableStack(GetLastElementOfParameterStack(1));
         if (instruction.OpCode == OpCodes.Ldarg_2)
-            return PushToVariableStack(ArraySubscript(GetLastElementOfParameterStack(), 2));
+            return PushToVariableStack(GetLastElementOfParameterStack(2));
         if (instruction.OpCode == OpCodes.Ldarg_3)
-            return PushToVariableStack(ArraySubscript(GetLastElementOfParameterStack(), 3));
+            return PushToVariableStack(GetLastElementOfParameterStack(3));
 
         if (instruction.OpCode == OpCodes.Add)
             return new[]
@@ -119,7 +114,7 @@ public static class Actions
                 ArrayAppend(Variables.Temporary, ArraySubscript(GetGlobal(Variables.VariableStack), GetGlobal(Variables.VariableStackIndex)))
             }.Concat(
                 // pop them off the stack
-                PopStack(Variables.VariableStack, Variables.VariableStackIndex, -2)
+                PopStack(Variables.VariableStack, Variables.VariableStackIndex, 2)
             ).Concat(
                 // push the addition of them onto the stack
                 PushToVariableStack(Add(ArraySubscript(GetGlobal(Variables.Temporary), 0), ArraySubscript(GetGlobal(Variables.Temporary), 1)))
