@@ -197,13 +197,13 @@ class Program
     static IEnumerable<LazyString> ToWorkshopActions(MethodDefinition method, Instruction instruction)
     {
         if (instruction.OpCode == OpCodes.Ldarg_0)
-            return PushToVariableStack(GetLastElementOfParameterStack(0));
+            return PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 1));
         if (instruction.OpCode == OpCodes.Ldarg_1)
-            return PushToVariableStack(GetLastElementOfParameterStack(1));
+            return PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 2));
         if (instruction.OpCode == OpCodes.Ldarg_2)
-            return PushToVariableStack(GetLastElementOfParameterStack(2));
+            return PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 3));
         if (instruction.OpCode == OpCodes.Ldarg_3)
-            return PushToVariableStack(GetLastElementOfParameterStack(3));
+            return PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 4));
 
         if (instruction.OpCode == OpCodes.Add)
             return DoBinaryOp(Add);
@@ -294,6 +294,9 @@ class Program
             foreach (var action in push)
                 yield return action;
         }
+
+        foreach (var action in PopVariableStack(1))
+            yield return action;
     }
 
     private static LazyString[] DoBinaryOp(Func<LazyString, LazyString, LazyString> binaryOp)
