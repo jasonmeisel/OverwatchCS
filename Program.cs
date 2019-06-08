@@ -189,7 +189,7 @@ class Program
         var numTargets = targets.Length;
         var targetJumps = targets.Select((target, index) => SkipIf(
             Equal(GetGlobal(Variables.JumpOffset), () => target.Offset.ToString()),
-            () => (numTargets - index - 1 + CalcNumActionsToSkip(method, method.Body.Instructions[0], target)).ToString()));
+            () => (numTargets - index + CalcNumActionsToSkip(method, method.Body.Instructions[0], target)).ToString()));
 
         return firstActions.Concat(targetJumps).ToArray();
     }
@@ -214,11 +214,21 @@ class Program
         if (instruction.OpCode == OpCodes.Ret)
             return new LazyString[] { () => "Abort;" };
 
-        // TODO: support jumping to previous instruction
-        if (instruction.OpCode == OpCodes.Brtrue_S)
-            return new[] { SkipIf(NotEqual(GetLastElementOfVariableStack(0), () => "0"), () => CalcNumActionsToSkip(method, instruction, (Instruction)instruction.Operand).ToString()) };
-        if (instruction.OpCode == OpCodes.Br_S)
-            return new[] { Skip(() => CalcNumActionsToSkip(method, instruction, (Instruction)instruction.Operand).ToString()) };
+        if (instruction.Operand is Instruction targetInstruction)
+        {
+            if (instruction.OpCode == OpCodes.Brtrue_S)
+                return new LazyString[] {
+                    SkipIf(Equal(GetLastElementOfVariableStack(0), () => "0"), () => "2"),
+                    SetGlobal(Variables.JumpOffset, () => targetInstruction.Offset.ToString()),
+                    () => "Loop;",
+                };
+                
+            if (instruction.OpCode == OpCodes.Br_S)
+                return new LazyString[] {
+                    SetGlobal(Variables.JumpOffset, () => targetInstruction.Offset.ToString()),
+                    () => "Loop;",
+                };
+        }
 
         if (instruction.OpCode == OpCodes.Ldc_I4_1)
             return PushToVariableStack(() => "1");
@@ -244,17 +254,17 @@ class Program
 
         if (instruction.OpCode == OpCodes.Call)
         {
-            var target = (MethodDefinition)instruction.Operand;
+            var targetMethod = (MethodDefinition)instruction.Operand;
             return new[] {
                 // pop the parameters off the variable stack and onto the parameter stack
                 ArrayAppend(Variables.ParameterStack, ArraySlice(
                     GetGlobal(Variables.VariableStack),
-                    Subtract(GetGlobal(Variables.VariableStackIndex), () => (target.Parameters.Count - 1).ToString()),
-                    () => target.Parameters.Count.ToString())),
+                    Subtract(GetGlobal(Variables.VariableStackIndex), () => (targetMethod.Parameters.Count - 1).ToString()),
+                    () => targetMethod.Parameters.Count.ToString())),
                 SetGlobal(Variables.ParameterStackIndex,
-                    Add(GetGlobal(Variables.ParameterStackIndex), () => target.Parameters.Count.ToString())),
+                    Add(GetGlobal(Variables.ParameterStackIndex), () => targetMethod.Parameters.Count.ToString())),
             }.Concat(
-                PopStack(Variables.VariableStack, Variables.VariableStackIndex, target.Parameters.Count)
+                PopStack(Variables.VariableStack, Variables.VariableStackIndex, targetMethod.Parameters.Count)
             ).ToArray();
 
             // TODO: set up functions to be called and call it
@@ -369,7 +379,10 @@ class Program
 
         Console.WriteLine("// Body");
         foreach (var instr in method.Body.Instructions)
+        {
+            Console.WriteLine($"// {instr}");
             foreach (var line in ToWorkshopActions(method, instr))
                 Console.WriteLine(line());
+        }
     }
 }
