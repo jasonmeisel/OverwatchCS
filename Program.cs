@@ -10,11 +10,15 @@ using Mono.Cecil.Cil;
 using LazyString = System.Func<string>;
 using static Actions;
 using System.Collections.Generic;
+using System.IO;
 
 public static class Variables
 {
     public static char Temporary => 'T';
     public static char JumpOffset => 'J';
+
+    public static char CallStack => 'F';
+    public static char CallStackIndex => 'G';
 
     public static char VariableStack => 'V';
     public static char VariableStackIndex => 'W';
@@ -210,19 +214,25 @@ class Program
         if (instruction.OpCode == OpCodes.Sub)
             return DoBinaryOp(Subtract);
 
-        // TODO: pop parameters off stack and loop (put abort-if-false at top of function)
+        // TODO: pop parameters off stack
         if (instruction.OpCode == OpCodes.Ret)
-            return new LazyString[] { () => "Abort;" };
+            return new[] {
+                SetGlobal(Variables.CallStack, () => "2"),
+                () => "Abort;"
+            };
 
         if (instruction.Operand is Instruction targetInstruction)
         {
             if (instruction.OpCode == OpCodes.Brtrue_S)
-                return new LazyString[] {
-                    SkipIf(Equal(GetLastElementOfVariableStack(0), () => "0"), () => "2"),
-                    SetGlobal(Variables.JumpOffset, () => targetInstruction.Offset.ToString()),
-                    () => "Loop;",
-                };
-                
+                return new[] { SetGlobal(Variables.Temporary, GetLastElementOfVariableStack(0)) }.
+                    Concat(PopVariableStack(1)).
+                    Concat(new[]
+                    {
+                        SkipIf(Equal(GetGlobal(Variables.Temporary), () => "0"), () => "2"),
+                        SetGlobal(Variables.JumpOffset, () => targetInstruction.Offset.ToString()),
+                        () => "Loop;",
+                    });
+
             if (instruction.OpCode == OpCodes.Br_S)
                 return new LazyString[] {
                     SetGlobal(Variables.JumpOffset, () => targetInstruction.Offset.ToString()),
@@ -275,8 +285,6 @@ class Program
 
     private static IEnumerable<LazyString> Starg(MethodDefinition method, Instruction instruction)
     {
-        var param = (ParameterDefinition)instruction.Operand;
-        var index = method.Parameters.IndexOf(param);
         yield return SetGlobal(Variables.Temporary, ArraySlice(
             GetGlobal(Variables.ParameterStack),
             Subtract(GetGlobal(Variables.ParameterStackIndex), () => (method.Parameters.Count - 1).ToString()),
@@ -284,11 +292,11 @@ class Program
 
         foreach (var action in PopParameterStack(method.Parameters.Count))
             yield return action;
-        
+
         foreach (var i in Enumerable.Range(0, method.Parameters.Count))
         {
             var push = PushToParameterStack(
-                i == index ?
+                instruction.Operand == method.Parameters[i] ?
                 GetLastElementOfVariableStack(0) :
                 ArraySubscript(GetGlobal(Variables.Temporary), i));
             foreach (var action in push)
@@ -333,7 +341,7 @@ class Program
     {
         var a = 0.0f;
         var b = 1.0f;
-        while (n-- != 0) {
+        while (--n != 0) {
             var c = a + b;
             a = b;
             b = c;
@@ -343,7 +351,7 @@ class Program
 
     // public static float fib(int n, float a = 0, float b = 1)
     // {
-	// 	if (n == 0)
+    // 	if (n == 0)
     //         return b;
     //     return fib(n - 1, b, a + b);
     // }
@@ -371,21 +379,51 @@ class Program
         // var method = module.GetType("Workshop").Methods.First(m => m.Name == "Test");
         var method = module.GetType("Workshop").Methods.First(m => m.Name == "fib");
 
-        foreach (var instr in method.Body.Instructions)
-            Console.WriteLine(instr);
-        Console.WriteLine();
+        ConvertMethodToRule(method);
+    }
 
-        Console.WriteLine("// Header");
+    static string RuleFormat => @"
+rule(""{0}"")
+{{
+    event
+    {{
+        {1};
+    }}
+
+    conditions
+    {{
+        {2};
+    }}
+
+    actions
+    {{
+{3}
+    }}
+}}";
+
+    static void ConvertMethodToRule(MethodDefinition method)
+    {
+        var writer = new StringWriter();
+        var writeLine = (Action<object>)(str => writer.WriteLine($"        {str}"));
+
+        writeLine("// Header");
         foreach (var line in MethodHeaderActions(method))
-            Console.WriteLine(line());
-        Console.WriteLine();
+            writeLine(line());
+        writeLine("");
 
-        Console.WriteLine("// Body");
+        writeLine("// Body");
         foreach (var instr in method.Body.Instructions)
         {
-            Console.WriteLine($"// {instr}");
+            writeLine($"// {instr}");
             foreach (var line in ToWorkshopActions(method, instr))
-                Console.WriteLine(line());
+                writeLine(line());
         }
+
+        Console.WriteLine(string.Format(
+            RuleFormat,
+            method.Name,
+            "Ongoing - Global",
+            "Global Variable(F) == 1",
+            writer.ToString()));
     }
 }
