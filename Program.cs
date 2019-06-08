@@ -9,10 +9,12 @@ using Mono.Cecil.Cil;
 
 using LazyString = System.Func<string>;
 using static Actions;
+using System.Collections.Generic;
 
 public static class Variables
 {
     public static char Temporary => 'T';
+    public static char JumpOffset => 'J';
 
     public static char VariableStack => 'V';
     public static char VariableStackIndex => 'W';
@@ -88,9 +90,14 @@ public static class Actions
     public static LazyString[] ResizeStack(char stackVar, char stackIndexVar, LazyString size)
     {
         return new[] {
-            SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", size)),
+            ResizeArray(stackVar, size),
             SetGlobal(stackIndexVar, Add(size, () => "-1")),
         };
+    }
+
+    public static LazyString ResizeArray(char stackVar, LazyString size)
+    {
+        return SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", size));
     }
 
     public static LazyString[] PopStack(char stackVar, char stackIndexVar, int count)
@@ -127,6 +134,11 @@ public static class Actions
         return GetLastElementOfStack(Variables.ParameterStack, Variables.ParameterStackIndex, offset);
     }
 
+    public static LazyString[] PopParameterStack(int count)
+    {
+        return PopStack(Variables.ParameterStack, Variables.ParameterStackIndex, count);
+    }
+
     public static LazyString Add(LazyString valueA, LazyString valueB)
     {
         return () => $"Add({valueA()}, {valueB()})";
@@ -140,6 +152,11 @@ public static class Actions
     public static LazyString NotEqual(LazyString a, LazyString b)
     {
         return () => $"Compare({a()}, !=, {b()})";
+    }
+
+    public static LazyString Equal(LazyString a, LazyString b)
+    {
+        return () => $"Compare({a()}, ==, {b()})";
     }
 
     public static LazyString Skip(LazyString actionCount)
@@ -156,7 +173,28 @@ public static class Actions
 
 class Program
 {
-    public static LazyString[] ToWorkshopActions(MethodDefinition method, Instruction instruction)
+    static LazyString[] MethodHeaderActions(MethodDefinition method)
+    {
+        var firstActions = new LazyString[]
+        {
+            () => "Abort If Condition Is False;",
+            () => "Wait(0, Ignore Condition);",
+        };
+
+        var targets = method.Body.Instructions.
+            Select(i => i.Operand as Instruction).
+            Where(t => t != null).
+            Distinct().
+            ToArray();
+        var numTargets = targets.Length;
+        var targetJumps = targets.Select((target, index) => SkipIf(
+            Equal(GetGlobal(Variables.JumpOffset), () => target.Offset.ToString()),
+            () => (numTargets - index - 1 + CalcNumActionsToSkip(method, method.Body.Instructions[0], target)).ToString()));
+
+        return firstActions.Concat(targetJumps).ToArray();
+    }
+
+    static IEnumerable<LazyString> ToWorkshopActions(MethodDefinition method, Instruction instruction)
     {
         if (instruction.OpCode == OpCodes.Ldarg_0)
             return PushToVariableStack(GetLastElementOfParameterStack(0));
@@ -178,20 +216,31 @@ class Program
 
         // TODO: support jumping to previous instruction
         if (instruction.OpCode == OpCodes.Brtrue_S)
-            return new[] { SkipIf(NotEqual(GetLastElementOfVariableStack(0), () => "0"), () => CalcNumActionsToSkip(method, instruction).ToString()) };
+            return new[] { SkipIf(NotEqual(GetLastElementOfVariableStack(0), () => "0"), () => CalcNumActionsToSkip(method, instruction, (Instruction)instruction.Operand).ToString()) };
         if (instruction.OpCode == OpCodes.Br_S)
-            return new[] { Skip(() => CalcNumActionsToSkip(method, instruction).ToString()) };
+            return new[] { Skip(() => CalcNumActionsToSkip(method, instruction, (Instruction)instruction.Operand).ToString()) };
 
         if (instruction.OpCode == OpCodes.Ldc_I4_1)
             return PushToVariableStack(() => "1");
         if (instruction.OpCode == OpCodes.Ldc_R4)
             return PushToVariableStack(() => ((float)instruction.Operand).ToString());
+        if (instruction.OpCode == OpCodes.Dup)
+            return PushToVariableStack(GetLastElementOfVariableStack(0));
 
         // TODO: create local variables stack (using num loc variables from method def)
         if (instruction.OpCode == OpCodes.Stloc_0)
             return new[] { SetGlobal('A', GetLastElementOfVariableStack(0)) }.Concat(PopVariableStack(1)).ToArray();
         if (instruction.OpCode == OpCodes.Stloc_1)
             return new[] { SetGlobal('B', GetLastElementOfVariableStack(0)) }.Concat(PopVariableStack(1)).ToArray();
+        if (instruction.OpCode == OpCodes.Ldloc_0)
+            return PushToVariableStack(GetGlobal('A'));
+        if (instruction.OpCode == OpCodes.Ldloc_1)
+            return PushToVariableStack(GetGlobal('B'));
+
+        if (instruction.OpCode == OpCodes.Starg_S)
+        {
+            return Starg(method, instruction);
+        }
 
         if (instruction.OpCode == OpCodes.Call)
         {
@@ -214,6 +263,29 @@ class Program
         throw new Exception($"Unsupported opcode {instruction.OpCode}");
     }
 
+    private static IEnumerable<LazyString> Starg(MethodDefinition method, Instruction instruction)
+    {
+        var param = (ParameterDefinition)instruction.Operand;
+        var index = method.Parameters.IndexOf(param);
+        yield return SetGlobal(Variables.Temporary, ArraySlice(
+            GetGlobal(Variables.ParameterStack),
+            Subtract(GetGlobal(Variables.ParameterStackIndex), () => (method.Parameters.Count - 1).ToString()),
+            () => method.Parameters.Count.ToString()));
+
+        foreach (var action in PopParameterStack(method.Parameters.Count))
+            yield return action;
+        
+        foreach (var i in Enumerable.Range(0, method.Parameters.Count))
+        {
+            var push = PushToParameterStack(
+                i == index ?
+                GetLastElementOfVariableStack(0) :
+                ArraySubscript(GetGlobal(Variables.Temporary), i));
+            foreach (var action in push)
+                yield return action;
+        }
+    }
+
     private static LazyString[] DoBinaryOp(Func<LazyString, LazyString, LazyString> binaryOp)
     {
         return new[]
@@ -230,9 +302,9 @@ class Program
         ).ToArray();
     }
 
-    private static int CalcNumActionsToSkip(MethodDefinition method, Instruction instruction)
+    private static int CalcNumActionsToSkip(MethodDefinition method, Instruction start, Instruction end)
     {
-        return method.Body.Instructions.SkipWhile(i => i != instruction).TakeWhile(i => i != instruction.Operand).Sum(i => ToWorkshopActions(method, i).Length) - 1;
+        return method.Body.Instructions.SkipWhile(i => i != start).TakeWhile(i => i != end).Sum(i => ToWorkshopActions(method, i).Count()) - 1;
     }
 
     static void Main(string[] args)
@@ -285,8 +357,17 @@ class Program
         var module = ModuleDefinition.ReadModule("AsmBuild.dll");
         // var method = module.GetType("Workshop").Methods.First(m => m.Name == "Test");
         var method = module.GetType("Workshop").Methods.First(m => m.Name == "fib");
+
         foreach (var instr in method.Body.Instructions)
             Console.WriteLine(instr);
+        Console.WriteLine();
+
+        Console.WriteLine("// Header");
+        foreach (var line in MethodHeaderActions(method))
+            Console.WriteLine(line());
+        Console.WriteLine();
+
+        Console.WriteLine("// Body");
         foreach (var instr in method.Body.Instructions)
             foreach (var line in ToWorkshopActions(method, instr))
                 Console.WriteLine(line());
