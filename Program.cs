@@ -8,6 +8,7 @@ using System.Linq;
 using Mono.Cecil.Cil;
 
 using LazyString = System.Func<string>;
+using static Actions;
 
 public static class Variables
 {
@@ -101,6 +102,11 @@ public static class Actions
         return PushToStack(Variables.VariableStack, Variables.VariableStackIndex, value);
     }
 
+    public static LazyString GetLastElementOfVariableStack(int offset)
+    {
+        return GetLastElementOfStack(Variables.VariableStack, Variables.VariableStackIndex, offset);
+    }
+
     public static LazyString[] PushToParameterStack(LazyString value)
     {
         return PushToStack(Variables.ParameterStack, Variables.ParameterStackIndex, value);
@@ -116,35 +122,14 @@ public static class Actions
         return () => $"Add({valueA()}, {valueB()})";
     }
 
-    public static LazyString[] ToWorkshopActions(Instruction instruction)
+    public static LazyString NotEqual(LazyString a, LazyString b)
     {
-        if (instruction.OpCode == OpCodes.Ldarg_0)
-            return PushToVariableStack(GetLastElementOfParameterStack(0));
-        if (instruction.OpCode == OpCodes.Ldarg_1)
-            return PushToVariableStack(GetLastElementOfParameterStack(1));
-        if (instruction.OpCode == OpCodes.Ldarg_2)
-            return PushToVariableStack(GetLastElementOfParameterStack(2));
-        if (instruction.OpCode == OpCodes.Ldarg_3)
-            return PushToVariableStack(GetLastElementOfParameterStack(3));
+        return () => $"Compare({a()}, !=, {b()})";
+    }
 
-        if (instruction.OpCode == OpCodes.Add)
-            return new[]
-            {
-                // store the last two variables in temp
-                SetGlobal(Variables.Temporary, ArraySubscript(GetGlobal(Variables.VariableStack), Add(GetGlobal(Variables.VariableStackIndex), () => "-1"))),
-                ArrayAppend(Variables.Temporary, ArraySubscript(GetGlobal(Variables.VariableStack), GetGlobal(Variables.VariableStackIndex)))
-            }.Concat(
-                // pop them off the stack
-                PopStack(Variables.VariableStack, Variables.VariableStackIndex, 2)
-            ).Concat(
-                // push the addition of them onto the stack
-                PushToVariableStack(Add(ArraySubscript(GetGlobal(Variables.Temporary), 0), ArraySubscript(GetGlobal(Variables.Temporary), 1)))
-            ).ToArray();
-
-        if (instruction.OpCode == OpCodes.Ret)
-            return new LazyString[0];
-
-        throw new Exception($"Unsupported opcode {instruction.OpCode}");
+    public static LazyString SkipIf(LazyString value, LazyString actionCount)
+    {
+        return () => $"Skip If({value()}, {actionCount()});";
     }
 }
 
@@ -153,6 +138,42 @@ namespace IL2Workshop
 
     class Program
     {
+
+        public static LazyString[] ToWorkshopActions(Instruction instruction)
+        {
+            if (instruction.OpCode == OpCodes.Ldarg_0)
+                return PushToVariableStack(GetLastElementOfParameterStack(0));
+            if (instruction.OpCode == OpCodes.Ldarg_1)
+                return PushToVariableStack(GetLastElementOfParameterStack(1));
+            if (instruction.OpCode == OpCodes.Ldarg_2)
+                return PushToVariableStack(GetLastElementOfParameterStack(2));
+            if (instruction.OpCode == OpCodes.Ldarg_3)
+                return PushToVariableStack(GetLastElementOfParameterStack(3));
+
+            if (instruction.OpCode == OpCodes.Add)
+                return new[]
+                {
+                // store the last two variables in temp
+                SetGlobal(Variables.Temporary, ArraySubscript(GetGlobal(Variables.VariableStack), Add(GetGlobal(Variables.VariableStackIndex), () => "-1"))),
+                ArrayAppend(Variables.Temporary, ArraySubscript(GetGlobal(Variables.VariableStack), GetGlobal(Variables.VariableStackIndex)))
+            }.Concat(
+                    // pop them off the stack
+                    PopStack(Variables.VariableStack, Variables.VariableStackIndex, 2)
+                ).Concat(
+                    // push the addition of them onto the stack
+                    PushToVariableStack(Add(ArraySubscript(GetGlobal(Variables.Temporary), 0), ArraySubscript(GetGlobal(Variables.Temporary), 1)))
+                ).ToArray();
+
+            // TODO: pop parameters off stack and abort?
+            if (instruction.OpCode == OpCodes.Ret)
+                return new LazyString[0];
+
+            if (instruction.OpCode == OpCodes.Brtrue_S)
+                return new[] { SkipIf(NotEqual(GetLastElementOfVariableStack(0), () => "0"), () => instruction.Operand.ToString()) };
+
+            throw new Exception($"Unsupported opcode {instruction.OpCode}");
+        }
+
         static void Main(string[] args)
         {
             var source =
@@ -189,12 +210,12 @@ namespace IL2Workshop
             var result = compilation.Emit("AsmBuild.dll");
 
             var module = ModuleDefinition.ReadModule("AsmBuild.dll");
-            var method = module.GetType("Workshop").Methods.First(m => m.Name == "Test");
-            // var method = module.GetType("Workshop").Methods.First(m => m.Name == "fib");
+            // var method = module.GetType("Workshop").Methods.First(m => m.Name == "Test");
+            var method = module.GetType("Workshop").Methods.First(m => m.Name == "fib");
             foreach (var instr in method.Body.Instructions)
                 Console.WriteLine(instr);
             foreach (var instr in method.Body.Instructions)
-                foreach (var line in Actions.ToWorkshopActions(instr))
+                foreach (var line in ToWorkshopActions(instr))
                     Console.WriteLine(line());
         }
     }
