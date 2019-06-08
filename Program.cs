@@ -62,6 +62,11 @@ public static class Actions
         return () => $"Value In Array({array()}, {index()})";
     }
 
+    public static LazyString ArraySlice(LazyString array, LazyString startIndex, LazyString count)
+    {
+        return () => $"Array Slice({array()}, {startIndex()}, {count()})";
+    }
+
     public static LazyString ArrayAppend(char arrayVar, LazyString value)
     {
         return SetGlobal(arrayVar, () => $"Append To Array({GetGlobal(arrayVar)()}, {value()})");
@@ -83,7 +88,7 @@ public static class Actions
     public static LazyString[] ResizeStack(char stackVar, char stackIndexVar, LazyString size)
     {
         return new[] {
-            SetGlobal(stackVar, () => $"Array Slice({GetGlobal(stackVar)()}, 0, {size()})"),
+            SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", size)),
             SetGlobal(stackIndexVar, Add(size, () => "-1")),
         };
     }
@@ -92,7 +97,7 @@ public static class Actions
     {
         var newSize = Add(GetGlobal(stackIndexVar), () => (1 - count).ToString());
         return new[] {
-            SetGlobal(stackVar, () => $"Array Slice({GetGlobal(stackVar)()}, 0, {newSize()})"),
+            SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", newSize)),
             SetGlobal(stackIndexVar, Add(newSize, () => "-1")),
         };
     }
@@ -100,6 +105,11 @@ public static class Actions
     public static LazyString[] PushToVariableStack(LazyString value)
     {
         return PushToStack(Variables.VariableStack, Variables.VariableStackIndex, value);
+    }
+
+    public static LazyString[] PopVariableStack(int count)
+    {
+        return PopStack(Variables.VariableStack, Variables.VariableStackIndex, count);
     }
 
     public static LazyString GetLastElementOfVariableStack(int offset)
@@ -132,6 +142,11 @@ public static class Actions
         return () => $"Compare({a()}, !=, {b()})";
     }
 
+    public static LazyString Skip(LazyString actionCount)
+    {
+        return () => $"Skip({actionCount()});";
+    }
+
     public static LazyString SkipIf(LazyString value, LazyString actionCount)
     {
         return () => $"Skip If({value()}, {actionCount()});";
@@ -141,7 +156,6 @@ public static class Actions
 
 class Program
 {
-
     public static LazyString[] ToWorkshopActions(MethodDefinition method, Instruction instruction)
     {
         if (instruction.OpCode == OpCodes.Ldarg_0)
@@ -155,19 +169,47 @@ class Program
 
         if (instruction.OpCode == OpCodes.Add)
             return DoBinaryOp(Add);
+        if (instruction.OpCode == OpCodes.Sub)
+            return DoBinaryOp(Subtract);
 
         // TODO: pop parameters off stack and loop (put abort-if-false at top of function)
         if (instruction.OpCode == OpCodes.Ret)
             return new LazyString[] { () => "Abort;" };
 
+        // TODO: support jumping to previous instruction
         if (instruction.OpCode == OpCodes.Brtrue_S)
             return new[] { SkipIf(NotEqual(GetLastElementOfVariableStack(0), () => "0"), () => CalcNumActionsToSkip(method, instruction).ToString()) };
+        if (instruction.OpCode == OpCodes.Br_S)
+            return new[] { Skip(() => CalcNumActionsToSkip(method, instruction).ToString()) };
 
         if (instruction.OpCode == OpCodes.Ldc_I4_1)
             return PushToVariableStack(() => "1");
+        if (instruction.OpCode == OpCodes.Ldc_R4)
+            return PushToVariableStack(() => ((float)instruction.Operand).ToString());
 
-        if (instruction.OpCode == OpCodes.Sub)
-            return DoBinaryOp(Subtract);
+        // TODO: create local variables stack (using num loc variables from method def)
+        if (instruction.OpCode == OpCodes.Stloc_0)
+            return new[] { SetGlobal('A', GetLastElementOfVariableStack(0)) }.Concat(PopVariableStack(1)).ToArray();
+        if (instruction.OpCode == OpCodes.Stloc_1)
+            return new[] { SetGlobal('B', GetLastElementOfVariableStack(0)) }.Concat(PopVariableStack(1)).ToArray();
+
+        if (instruction.OpCode == OpCodes.Call)
+        {
+            var target = (MethodDefinition)instruction.Operand;
+            return new[] {
+                // pop the parameters off the variable stack and onto the parameter stack
+                ArrayAppend(Variables.ParameterStack, ArraySlice(
+                    GetGlobal(Variables.VariableStack),
+                    Subtract(GetGlobal(Variables.VariableStackIndex), () => (target.Parameters.Count - 1).ToString()),
+                    () => target.Parameters.Count.ToString())),
+                SetGlobal(Variables.ParameterStackIndex,
+                    Add(GetGlobal(Variables.ParameterStackIndex), () => target.Parameters.Count.ToString())),
+            }.Concat(
+                PopStack(Variables.VariableStack, Variables.VariableStackIndex, target.Parameters.Count)
+            ).ToArray();
+
+            // TODO: set up functions to be called and call it
+        }
 
         throw new Exception($"Unsupported opcode {instruction.OpCode}");
     }
@@ -202,12 +244,24 @@ class Program
         return a + b;
     }
 
-    public static float fib(int n, float a = 0, float b = 1)
+    public static float fib(int n)
     {
-		if (n == 0)
-            return b;
-        return fib(n - 1, b, a + b);
+        var a = 0.0f;
+        var b = 1.0f;
+        while (n-- != 0) {
+            var c = a + b;
+            a = b;
+            b = c;
+        }
+        return b;
     }
+
+    // public static float fib(int n, float a = 0, float b = 1)
+    // {
+	// 	if (n == 0)
+    //         return b;
+    //     return fib(n - 1, b, a + b);
+    // }
     
     public static void Main()
     {
