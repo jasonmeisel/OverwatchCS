@@ -239,7 +239,11 @@ class Program
                 SetGlobal(Variables.JumpOffset, () => ((Instruction)instruction.Operand).Offset.ToString()),
                 () => "Loop;",
             };
+            
+        // shouldn't need to convert
+        dict[OpCodes.Conv_R4] = (method, instruction) => new LazyString[0];
 
+        dict[OpCodes.Ldc_I4_0] = (method, instruction) => PushToVariableStack(() => "0");
         dict[OpCodes.Ldc_I4_1] = (method, instruction) => PushToVariableStack(() => "1");
         dict[OpCodes.Ldc_R4] = (method, instruction) => PushToVariableStack(() => ((float)instruction.Operand).ToString());
         dict[OpCodes.Dup] = (method, instruction) => PushToVariableStack(GetLastElementOfVariableStack(0));
@@ -260,6 +264,9 @@ class Program
 
     private static IEnumerable<LazyString> Impl_Call(MethodDefinition method, Instruction instruction)
     {
+        if (instruction.Operand is MethodReference targetMethodRef)
+            return CallWorkshopAction(method, instruction, targetMethodRef);
+
         var targetMethod = (MethodDefinition)instruction.Operand;
         return new[] {
                 // pop the parameters off the variable stack and onto the parameter stack
@@ -274,6 +281,25 @@ class Program
         ).ToArray();
 
         // TODO: set up functions to be called and call it
+    }
+
+    static IEnumerable<LazyString> CallWorkshopAction(MethodDefinition method, Instruction instruction, MethodReference targetMethodRef)
+    {
+        // TODO: assert that the method reference is a workshop action
+        
+        switch (targetMethodRef.Name)
+        {
+            case "Wait":
+                yield return () => $"Wait({GetLastElementOfVariableStack(0)()}, Ignore Condition);";
+                break;
+            case "DebugLog":
+                // yield return () => $"Create HUD Text(All Players(All Teams), String(\"({{0}})\", {GetLastElementOfVariableStack(0)()}, Null, Null), Null, Null, Left, 0, White, White, White, Visible To and String);";
+                yield return () => $"Big Message(All Players(All Teams), String(\"({{0}})\", {GetLastElementOfVariableStack(0)()}, Null, Null));";
+                break;
+        }
+
+        foreach (var action in PopVariableStack(targetMethodRef.Parameters.Count))
+            yield return action;
     }
 
     static IEnumerable<LazyString> ToWorkshopActions(MethodDefinition method, Instruction instruction)
@@ -331,10 +357,15 @@ class Program
     static void Main(string[] args)
     {
         var source =
-    @"public static class Workshop {
-    public static float Test(float a, float b)
+    @"public static class MainClass {
+    public static void TestWait()
     {
-        return a + b;
+        var i = 0;
+        while (true)
+        {
+            Workshop.Actions.DebugLog(i++);
+            Workshop.Actions.Wait(5);
+        }
     }
 
     public static float fib(int n)
@@ -355,17 +386,15 @@ class Program
     //         return b;
     //     return fib(n - 1, b, a + b);
     // }
-    
-    public static void Main()
-    {
-        //Console.WriteLine(fib(10));
-    }
 }";
-
         var references = new[]
         {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            };
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(Path.Combine(
+                Path.GetDirectoryName(typeof(object).Assembly.Location),
+                "System.Runtime.dll")),
+            MetadataReference.CreateFromFile("C:\\projects\\IL2Workshop\\WorkshopStub\\bin\\Debug\\netcoreapp3.0\\WorkshopStub.dll"),
+        };
 
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release);
         var compilation = CSharpCompilation.Create(
@@ -374,10 +403,16 @@ class Program
             references,
             options);
         var result = compilation.Emit("AsmBuild.dll");
+        if (!result.Success)
+        {
+            foreach (var diag in result.Diagnostics)
+                Console.WriteLine(diag);
+            return;
+        }
 
         var module = ModuleDefinition.ReadModule("AsmBuild.dll");
-        // var method = module.GetType("Workshop").Methods.First(m => m.Name == "Test");
-        var method = module.GetType("Workshop").Methods.First(m => m.Name == "fib");
+        var method = module.GetType("MainClass").Methods.First(m => m.Name == "TestWait");
+        // var method = module.GetType("MainClass").Methods.First(m => m.Name == "fib");
 
         ConvertMethodToRule(method);
     }
