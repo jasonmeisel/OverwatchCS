@@ -6,11 +6,12 @@ using Mono.Cecil;
 using System.Threading;
 using System.Linq;
 using Mono.Cecil.Cil;
+using System.Collections.Generic;
+using System.IO;
 
 using LazyString = System.Func<string>;
 using static Actions;
-using System.Collections.Generic;
-using System.IO;
+using ToWorkshopActionFunc = System.Func<Mono.Cecil.MethodDefinition, Mono.Cecil.Cil.Instruction, System.Collections.Generic.IEnumerable<System.Func<string>>>;
 
 public static class Variables
 {
@@ -198,74 +199,69 @@ class Program
         return firstActions.Concat(targetJumps).ToArray();
     }
 
-    static IEnumerable<LazyString> ToWorkshopActions(MethodDefinition method, Instruction instruction)
-    {
-        if (instruction.OpCode == OpCodes.Ldarg_0)
-            return PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 1));
-        if (instruction.OpCode == OpCodes.Ldarg_1)
-            return PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 2));
-        if (instruction.OpCode == OpCodes.Ldarg_2)
-            return PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 3));
-        if (instruction.OpCode == OpCodes.Ldarg_3)
-            return PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 4));
+    static readonly Dictionary<OpCode, ToWorkshopActionFunc> s_toWorkshopActionsDict = CreateToWorkshopActionsDict();
 
-        if (instruction.OpCode == OpCodes.Add)
-            return DoBinaryOp(Add);
-        if (instruction.OpCode == OpCodes.Sub)
-            return DoBinaryOp(Subtract);
+    static Dictionary<OpCode, ToWorkshopActionFunc> CreateToWorkshopActionsDict()
+    {
+        var dict = new Dictionary<OpCode, ToWorkshopActionFunc>();
+
+        dict[OpCodes.Ldarg_0] = (method, instruction) =>
+            PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 1));
+        dict[OpCodes.Ldarg_1] = (method, instruction) =>
+            PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 2));
+        dict[OpCodes.Ldarg_2] = (method, instruction) =>
+            PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 3));
+        dict[OpCodes.Ldarg_3] = (method, instruction) =>
+            PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 4));
+
+        dict[OpCodes.Add] = (method, instruction) => DoBinaryOp(Add);
+        dict[OpCodes.Sub] = (method, instruction) => DoBinaryOp(Subtract);
 
         // TODO: pop parameters off stack
-        if (instruction.OpCode == OpCodes.Ret)
-            return new[] {
+        dict[OpCodes.Ret] = (method, instruction) => new[]
+            {
                 SetGlobal(Variables.CallStack, () => "2"),
                 () => "Abort;"
             };
 
-        if (instruction.Operand is Instruction targetInstruction)
-        {
-            if (instruction.OpCode == OpCodes.Brtrue_S)
-                return new[] { SetGlobal(Variables.Temporary, GetLastElementOfVariableStack(0)) }.
-                    Concat(PopVariableStack(1)).
-                    Concat(new[]
-                    {
-                        SkipIf(Equal(GetGlobal(Variables.Temporary), () => "0"), () => "2"),
-                        SetGlobal(Variables.JumpOffset, () => targetInstruction.Offset.ToString()),
-                        () => "Loop;",
-                    });
-
-            if (instruction.OpCode == OpCodes.Br_S)
-                return new LazyString[] {
-                    SetGlobal(Variables.JumpOffset, () => targetInstruction.Offset.ToString()),
+        dict[OpCodes.Brtrue_S] = (method, instruction) =>
+            new[] { SetGlobal(Variables.Temporary, GetLastElementOfVariableStack(0)) }.
+                Concat(PopVariableStack(1)).
+                Concat(new[]
+                {
+                    SkipIf(Equal(GetGlobal(Variables.Temporary), () => "0"), () => "2"),
+                    SetGlobal(Variables.JumpOffset, () => ((Instruction)instruction.Operand).Offset.ToString()),
                     () => "Loop;",
-                };
-        }
+                });
 
-        if (instruction.OpCode == OpCodes.Ldc_I4_1)
-            return PushToVariableStack(() => "1");
-        if (instruction.OpCode == OpCodes.Ldc_R4)
-            return PushToVariableStack(() => ((float)instruction.Operand).ToString());
-        if (instruction.OpCode == OpCodes.Dup)
-            return PushToVariableStack(GetLastElementOfVariableStack(0));
+        dict[OpCodes.Br_S] = (method, instruction) => new LazyString[]
+            {
+                SetGlobal(Variables.JumpOffset, () => ((Instruction)instruction.Operand).Offset.ToString()),
+                () => "Loop;",
+            };
+
+        dict[OpCodes.Ldc_I4_1] = (method, instruction) => PushToVariableStack(() => "1");
+        dict[OpCodes.Ldc_R4] = (method, instruction) => PushToVariableStack(() => ((float)instruction.Operand).ToString());
+        dict[OpCodes.Dup] = (method, instruction) => PushToVariableStack(GetLastElementOfVariableStack(0));
 
         // TODO: create local variables stack (using num loc variables from method def)
-        if (instruction.OpCode == OpCodes.Stloc_0)
-            return new[] { SetGlobal('A', GetLastElementOfVariableStack(0)) }.Concat(PopVariableStack(1)).ToArray();
-        if (instruction.OpCode == OpCodes.Stloc_1)
-            return new[] { SetGlobal('B', GetLastElementOfVariableStack(0)) }.Concat(PopVariableStack(1)).ToArray();
-        if (instruction.OpCode == OpCodes.Ldloc_0)
-            return PushToVariableStack(GetGlobal('A'));
-        if (instruction.OpCode == OpCodes.Ldloc_1)
-            return PushToVariableStack(GetGlobal('B'));
+        dict[OpCodes.Stloc_0] = (method, instruction) =>
+            new[] { SetGlobal('A', GetLastElementOfVariableStack(0)) }.Concat(PopVariableStack(1)).ToArray();
+        dict[OpCodes.Stloc_1] = (method, instruction) =>
+            new[] { SetGlobal('B', GetLastElementOfVariableStack(0)) }.Concat(PopVariableStack(1)).ToArray();
+        dict[OpCodes.Ldloc_0] = (method, instruction) => PushToVariableStack(GetGlobal('A'));
+        dict[OpCodes.Ldloc_1] = (method, instruction) => PushToVariableStack(GetGlobal('B'));
 
-        if (instruction.OpCode == OpCodes.Starg_S)
-        {
-            return Starg(method, instruction);
-        }
+        dict[OpCodes.Starg_S] = Impl_Starg_S;
+        dict[OpCodes.Call] = Impl_Call;
 
-        if (instruction.OpCode == OpCodes.Call)
-        {
-            var targetMethod = (MethodDefinition)instruction.Operand;
-            return new[] {
+        return dict;
+    }
+
+    private static IEnumerable<LazyString> Impl_Call(MethodDefinition method, Instruction instruction)
+    {
+        var targetMethod = (MethodDefinition)instruction.Operand;
+        return new[] {
                 // pop the parameters off the variable stack and onto the parameter stack
                 ArrayAppend(Variables.ParameterStack, ArraySlice(
                     GetGlobal(Variables.VariableStack),
@@ -274,16 +270,20 @@ class Program
                 SetGlobal(Variables.ParameterStackIndex,
                     Add(GetGlobal(Variables.ParameterStackIndex), () => targetMethod.Parameters.Count.ToString())),
             }.Concat(
-                PopStack(Variables.VariableStack, Variables.VariableStackIndex, targetMethod.Parameters.Count)
-            ).ToArray();
+            PopStack(Variables.VariableStack, Variables.VariableStackIndex, targetMethod.Parameters.Count)
+        ).ToArray();
 
-            // TODO: set up functions to be called and call it
-        }
+        // TODO: set up functions to be called and call it
+    }
 
+    static IEnumerable<LazyString> ToWorkshopActions(MethodDefinition method, Instruction instruction)
+    {
+        if (s_toWorkshopActionsDict.TryGetValue(instruction.OpCode, out var toActions))
+            return toActions(method, instruction);
         throw new Exception($"Unsupported opcode {instruction.OpCode}");
     }
 
-    private static IEnumerable<LazyString> Starg(MethodDefinition method, Instruction instruction)
+    private static IEnumerable<LazyString> Impl_Starg_S(MethodDefinition method, Instruction instruction)
     {
         yield return SetGlobal(Variables.Temporary, ArraySlice(
             GetGlobal(Variables.ParameterStack),
@@ -331,7 +331,7 @@ class Program
     static void Main(string[] args)
     {
         var source =
-@"public static class Workshop {
+    @"public static class Workshop {
     public static float Test(float a, float b)
     {
         return a + b;
@@ -351,7 +351,7 @@ class Program
 
     // public static float fib(int n, float a = 0, float b = 1)
     // {
-    // 	if (n == 0)
+    // 	if (n == 1)
     //         return b;
     //     return fib(n - 1, b, a + b);
     // }
