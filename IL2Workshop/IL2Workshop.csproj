@@ -7,16 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="WorkshopStub\**" />
-    <Compile Remove="WorkshopStub\**" />
-    <EmbeddedResource Remove="WorkshopStub\**" />
-    <None Remove="WorkshopStub\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.1.0" />
     <PackageReference Include="Mono.Cecil" Version="0.10.4" />
+    <PackageReference Include="TextCopy" Version="1.5.2" />
   </ItemGroup>
 
 </Project>

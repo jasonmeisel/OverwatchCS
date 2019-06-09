@@ -28,25 +28,6 @@ public static class Variables
     public static char ParameterStackIndex => 'Q';
 }
 
-// public struct WorkshopAction
-// {
-//     public string value;
-//     public Func<string> getter;
-
-//     public string Get() => value ?? getter();
-
-//     public static implicit operator WorkshopAction(string v)
-//     {
-//         return new WorkshopAction { value = v };
-//     }
-
-//     public static implicit operator WorkshopAction(Func<string> g)
-//     {
-//         return new WorkshopAction { getter = g };
-//     }
-// }
-
-
 public static class Actions
 {
     public static LazyString GetGlobal(char variable)
@@ -356,37 +337,7 @@ class Program
 
     static void Main(string[] args)
     {
-        var source =
-    @"public static class MainClass {
-    public static void TestWait()
-    {
-        var i = 0;
-        while (true)
-        {
-            Workshop.Actions.DebugLog(i++);
-            Workshop.Actions.Wait(1);
-        }
-    }
-
-    public static float fib(int n)
-    {
-        var a = 0.0f;
-        var b = 1.0f;
-        while (--n != 0) {
-            var c = a + b;
-            a = b;
-            b = c;
-        }
-        return b;
-    }
-
-    // public static float fib(int n, float a = 0, float b = 1)
-    // {
-    // 	if (n == 1)
-    //         return b;
-    //     return fib(n - 1, b, a + b);
-    // }
-}";
+        var source = File.ReadAllText("Test\\Test.cs");
         var references = new[]
         {
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
@@ -458,11 +409,13 @@ rule(""{0}"")
                 writeLine(line());
         }
 
-        Console.WriteLine(string.Format(
+        var ruleCode = string.Format(
             RuleFormat,
             method.Name,
             "Ongoing - Global",
             "Global Variable(F) == 1",
-            writer.ToString()));
+            writer.ToString());
+        Console.WriteLine(ruleCode);
+        TextCopy.Clipboard.SetText(ruleCode);
     }
 }
