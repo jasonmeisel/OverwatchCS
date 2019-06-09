@@ -293,8 +293,8 @@ class Program
                 yield return () => $"Wait({GetLastElementOfVariableStack(0)()}, Ignore Condition);";
                 break;
             case "DebugLog":
-                // yield return () => $"Create HUD Text(All Players(All Teams), String(\"({{0}})\", {GetLastElementOfVariableStack(0)()}, Null, Null), Null, Null, Left, 0, White, White, White, Visible To and String);";
                 yield return () => $"Big Message(All Players(All Teams), String(\"({{0}})\", {GetLastElementOfVariableStack(0)()}, Null, Null));";
+                yield return () => "Wait(0, Ignore Condition);";
                 break;
         }
 
@@ -364,7 +364,7 @@ class Program
         while (true)
         {
             Workshop.Actions.DebugLog(i++);
-            Workshop.Actions.Wait(5);
+            Workshop.Actions.Wait(1);
         }
     }
 
@@ -413,6 +413,10 @@ class Program
         var module = ModuleDefinition.ReadModule("AsmBuild.dll");
         var method = module.GetType("MainClass").Methods.First(m => m.Name == "TestWait");
         // var method = module.GetType("MainClass").Methods.First(m => m.Name == "fib");
+
+        foreach (var instr in method.Body.Instructions)
+            Console.WriteLine(instr);
+        Console.WriteLine();
 
         ConvertMethodToRule(method);
     }
