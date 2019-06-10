@@ -204,19 +204,6 @@ public static class Actions
 
 class Transpiler
 {
-    struct GeneratedMethod
-    {
-        public delegate string InvokeFunc(string[] parameters);
-
-        public InvokeFunc Invoke;
-        public ParameterInfo[] Parameters;
-
-        public override string ToString()
-        {
-            return Invoke(new string[Parameters.Length]);
-        }
-    }
-
     IEnumerable<LazyString> MethodHeaderActions(MethodInfo method)
     {
         var firstActions = new LazyString[]
@@ -570,11 +557,13 @@ class Transpiler
     IEnumerable<LazyString> Impl_Call(MethodInfo method, Instruction instruction)
     {
         if (instruction.Operand is MethodDefinition targetMethodDef)
+        {
+            if (targetMethodDef.DeclaringType.Name == "Generated")
+                return Impl_Call_WorkshopAction(method, instruction, targetMethodDef, m_generatedMethodToWorkshopCode[targetMethodDef.Name]);
             return Impl_Call_CustomMethod(method, instruction, targetMethodDef);
+        }
         if (instruction.Operand is MethodReference targetMethodRef)
             return Impl_Call_WorkshopAction(method, instruction, targetMethodRef);
-        if (instruction.Operand is GeneratedMethod generatedMethod)
-            return VariableStack.Push(() => generatedMethod.Invoke(new string[0]));
         throw new ArgumentException();
     }
 
@@ -607,7 +596,7 @@ class Transpiler
         yield return () => "Loop;";
     }
 
-    static IEnumerable<LazyString> Impl_Call_WorkshopAction(MethodInfo method, Instruction instruction, MethodReference targetMethodRef)
+    static IEnumerable<LazyString> Impl_Call_WorkshopAction(MethodInfo method, Instruction instruction, MethodReference targetMethodRef, LazyString codeOverride = null)
     {
         // TODO: assert that the method reference is a workshop action
 
@@ -624,16 +613,16 @@ class Transpiler
                 break;
             default:
                 var targetMethod = GetWorkshopMethod(targetMethodRef);
-                var code = GetCodeName(targetMethod);
+                var code = codeOverride?.Invoke() ?? GetCodeName(targetMethod);
                 if (code == null)
                     throw new ArgumentException();
 
-                var parameters = targetMethod.GetParameters();
-                var paramList = parameters.Select((p, i) => VariableStack.GetLastElement(parameters.Length - i - 1)()).ListToString();
+                var parameters = targetMethodRef.Parameters;
+                var paramList = parameters.Select((p, i) => VariableStack.GetLastElement(parameters.Count - i - 1)()).ListToString();
                 if (!string.IsNullOrEmpty(paramList))
                     code = $"{code}({paramList})";
 
-                if (targetMethod.ReturnType != typeof(void))
+                if (targetMethodRef.ReturnType.Name != "Void")
                 {
                     yield return SetGlobal(Variables.Temporary, () => code);
                     hasReturnInTemp = true;
@@ -732,6 +721,8 @@ class Transpiler
         return m_functionIds[method];
     }
 
+    Dictionary<string, LazyString> m_generatedMethodToWorkshopCode = new Dictionary<string, LazyString>();
+
     public async Task<string> TranspileToRules(string source)
     {
         var references = new[]
@@ -745,7 +736,14 @@ class Transpiler
 
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release);
         var syntaxTree = SyntaxFactory.ParseSyntaxTree(source);
-        var substituter = new MethodSubstituter();
+        var initialCompilation = CSharpCompilation.Create(
+            "InitialCompilation",
+            new[] { syntaxTree },
+            references,
+            options);
+        var semanticModel = initialCompilation.GetSemanticModel(syntaxTree);
+
+        var substituter = new MethodSubstituter(semanticModel, m_generatedMethodToWorkshopCode);
         var newRoot = substituter.Visit(syntaxTree.GetRoot());
         syntaxTree = SyntaxFactory.SyntaxTree(newRoot);
 
@@ -793,6 +791,14 @@ class Transpiler
     {
         int m_methodCount = 0;
         StringWriter m_methodsSource = new StringWriter();
+        SemanticModel m_semanticModel;
+        Dictionary<string, LazyString> m_generatedMethodToWorkshopCode;
+
+        public MethodSubstituter(SemanticModel semanticModel, Dictionary<string, LazyString> generatedMethodToWorkshopCode)
+        {
+            m_semanticModel = semanticModel;
+            m_generatedMethodToWorkshopCode = generatedMethodToWorkshopCode;
+        }
 
         public SyntaxTree GetGeneratedClass()
         {
@@ -827,16 +833,18 @@ class Transpiler
                     {
                         var argCodes = argMethods.Select(GetCodeName).ToArray();
 
-                        var returnType = targetMethod.ReturnType.ToString(); // == typeof(void) ? "void" : "dynamic";
+                        var methodSemantics = (Microsoft.CodeAnalysis.IMethodSymbol)m_semanticModel.GetSymbolInfo(invocation).Symbol;
+                        var returnType = methodSemantics.ReturnType;
                         var baseMethodName = string.Join("", targetMethod.Name.Where(ch => char.IsLetterOrDigit(ch)));
-                        var attrSource = $"[WorkshopCodeName(\"{targetCode}({argCodes.ListToString()})\")]";
                         var paramListSource = ""; // arguments.Select((a, i) => $"dynamic arg{i}").ListToString();
                         var generatedMethodName = $"Impl_{baseMethodName}_{m_methodCount++}";
-                        var methodDeclSource = $"internal static {returnType} {generatedMethodName} ({paramListSource}) => null;";
-                        var methodSource = string.Join('\n', attrSource, methodDeclSource);
+                        var methodSource = $"internal static {returnType} {generatedMethodName} ({paramListSource}) => throw null;";
                         m_methodsSource.WriteLine(methodSource);
                         m_methodsSource.WriteLine();
-                        Console.WriteLine(methodSource);
+
+                        var workshopCode = $"{targetCode}({argCodes.ListToString()})";
+                        m_generatedMethodToWorkshopCode[generatedMethodName] = () => workshopCode;
+                        
                         // Console.WriteLine(invocation.DescendantNodesAndTokens().Select(n => n.Kind()).ListToString());
                         return SyntaxFactory.InvocationExpression(
                             SyntaxFactory.MemberAccessExpression(
@@ -857,67 +865,6 @@ class Transpiler
         return GetWorkshopMethod(
             children[0].ToString(),
             children[2].ToString());
-    }
-
-    static void SimplifyInstructions(List<Instruction> instructions)
-    {
-    SimplifyInstructions_Start:
-        var workshopCalls = instructions.Where(i => i.OpCode == OpCodes.Call && GetWorkshopMethod(i.Operand as MethodReference) != null);
-        foreach (var call in workshopCalls)
-        {
-            var targetMethod = GetWorkshopMethod(call.Operand as MethodReference);
-            var code = GetCodeName(targetMethod);
-            var parameters = targetMethod?.GetParameters();
-            if (code != null && parameters.Length > 0 && call.Previous?.OpCode == OpCodes.Call)
-            {
-                var prevCode = null as string;
-                switch (call.Previous.Operand)
-                {
-                    case MethodReference prevMethodRef:
-                        if (GetWorkshopMethod(call.Previous.Operand as MethodReference) is var prevTargetMethod)
-                        {
-                            if (prevTargetMethod.GetParameters().Length == 0)
-                                prevCode = GetCodeName(prevTargetMethod);
-                        }
-                        break;
-                    case GeneratedMethod prevGenMethod:
-                        if (prevGenMethod.Parameters.Length == 0)
-                            prevCode = prevGenMethod.Invoke(new string[0]);
-                        else
-                            throw null;
-                        break;
-                    default:
-                        continue;
-                }
-
-                if (prevCode != null)
-                {
-                    instructions.Remove(call.Previous);
-
-                    switch (parameters.Length)
-                    {
-                        case 1:
-                            call.Operand = new GeneratedMethod
-                            {
-                                Invoke = p => $"{code}({prevCode})",
-                                Parameters = new ParameterInfo[0],
-                            };
-                            break;
-                        // case 2:
-                        //     call.Operand = new GeneratedMethod
-                        //     {
-                        //         Invoke = p => $"{code}({prevCode}, {p[0]})",
-                        //         Parameters = parameters.Skip(1).ToArray(),
-                        //     };
-                        //     break;
-                        default:
-                            throw new Exception();
-                    }
-
-                    goto SimplifyInstructions_Start;
-                }
-            }
-        }
     }
 
     void GenerateFunctionIds(Mono.Collections.Generic.Collection<MethodDefinition> methods)
