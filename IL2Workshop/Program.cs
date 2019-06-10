@@ -220,7 +220,7 @@ class Program
                 SetGlobal(Variables.JumpOffset, () => ((Instruction)instruction.Operand).Offset.ToString()),
                 () => "Loop;",
             };
-            
+
         // shouldn't need to convert
         dict[OpCodes.Conv_R4] = (method, instruction) => new LazyString[0];
 
@@ -267,7 +267,7 @@ class Program
     static IEnumerable<LazyString> CallWorkshopAction(MethodDefinition method, Instruction instruction, MethodReference targetMethodRef)
     {
         // TODO: assert that the method reference is a workshop action
-        
+
         switch (targetMethodRef.Name)
         {
             case "Wait":
@@ -362,36 +362,48 @@ class Program
         }
 
         var module = ModuleDefinition.ReadModule("AsmBuild.dll");
-        var method = module.GetType("MainClass").Methods.First(m => m.Name == "TestWait");
-        // var method = module.GetType("MainClass").Methods.First(m => m.Name == "fib");
 
-        foreach (var instr in method.Body.Instructions)
-            Console.WriteLine(instr);
-        Console.WriteLine();
+        var ruleWriter = new StringWriter();
+        foreach (var method in module.GetType("MainClass").Methods)
+        {
+            foreach (var instr in method.Body.Instructions)
+                Console.WriteLine(instr);
+            Console.WriteLine();
 
-        ConvertMethodToRule(method);
+            ConvertMethodToRule(ruleWriter, method);
+        }
+
+        var rules = ruleWriter.ToString();
+        Console.WriteLine(rules);
+        TextCopy.Clipboard.SetText(rules);
     }
 
     static string RuleFormat => @"
 rule(""{0}"")
 {{
+{1}
+{2}
+{3}
+}}";
+    static string EventFormat => @"
     event
     {{
-        {1};
-    }}
+        {0};
+    }}";
 
+    static string ConditionsFormat => @"
     conditions
     {{
-        {2};
-    }}
+        {0};
+    }}";
 
+    static string ActionsFormat => @"
     actions
     {{
-{3}
-    }}
-}}";
+{0}
+    }}";
 
-    static void ConvertMethodToRule(MethodDefinition method)
+    static void ConvertMethodToRule(StringWriter ruleWriter, MethodDefinition method)
     {
         var writer = new StringWriter();
         var writeLine = (Action<object>)(str => writer.WriteLine($"        {str}"));
@@ -409,13 +421,11 @@ rule(""{0}"")
                 writeLine(line());
         }
 
-        var ruleCode = string.Format(
+        ruleWriter.WriteLine(string.Format(
             RuleFormat,
             method.Name,
-            "Ongoing - Global",
-            "Global Variable(F) == 1",
-            writer.ToString());
-        Console.WriteLine(ruleCode);
-        TextCopy.Clipboard.SetText(ruleCode);
+            string.Format(EventFormat, "Ongoing - Global"),
+            method.Name == "TestWait" ? "" : string.Format(ConditionsFormat, "Global Variable(F) == 1"),
+            string.Format(ActionsFormat, writer.ToString())));
     }
 }
