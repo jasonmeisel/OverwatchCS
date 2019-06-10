@@ -2,7 +2,7 @@ using System;
 
 namespace Workshop
 {
-    public struct Player {}
+    public class Player {}
     public struct Array<TElement> {}
 
     public struct Team

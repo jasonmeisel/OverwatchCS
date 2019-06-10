@@ -7,7 +7,7 @@ namespace Workshop
         public static void Wait(float seconds) { }
         public static void ApplyImpulse() { }
 
-        public static void DebugLog(float number) { }
+        public static void DebugLog<T>(T value) { }
 
 
         /// ABORT
