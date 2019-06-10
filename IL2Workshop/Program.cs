@@ -429,12 +429,12 @@ class Transpiler
 
         dict[OpCodes.Ldloc_0] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, 0)));
         dict[OpCodes.Ldloc_1] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, 1)));
-        dict[OpCodes.Ldloc_2] = Impl_UnimplementedOp;
-        dict[OpCodes.Ldloc_3] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldloc_2] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, 2)));
+        dict[OpCodes.Ldloc_3] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, 3)));
         dict[OpCodes.Stloc_0] = (method, instruction) => Impl_Stloc(method, 0);
         dict[OpCodes.Stloc_1] = (method, instruction) => Impl_Stloc(method, 1);
         dict[OpCodes.Bgt_Un_S] = Impl_UnimplementedOp;
-        dict[OpCodes.Stloc_2] = Impl_UnimplementedOp;
+        dict[OpCodes.Stloc_2] = (method, instruction) => Impl_Stloc(method, 2);
         dict[OpCodes.Ldarg_S] = Impl_UnimplementedOp;
         dict[OpCodes.Ldarga_S] = Impl_UnimplementedOp;
         dict[OpCodes.Starg_S] = Impl_UnimplementedOp;
