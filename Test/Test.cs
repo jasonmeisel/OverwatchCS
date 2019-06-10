@@ -27,6 +27,14 @@ public static class MainClass
         }
     }
 
+    public static void TestLoopArray()
+    {
+        var players = Workshop.Values.AllPlayers(Workshop.Team.All());
+        var value = Workshop.Values.LastOf(players);
+        // for (int i = 0; i != 1337; ++i)
+        //     Workshop.Actions.Wait(0.01f);
+    }
+
     public static float RecursiveFibonacci(int n, float a = 0, float b = 1)
     {
     	if (n == 1)

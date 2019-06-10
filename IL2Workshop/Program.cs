@@ -12,6 +12,7 @@ using System.IO;
 using LazyString = System.Func<string>;
 using static Actions;
 using ToWorkshopActionFunc = System.Func<Mono.Cecil.MethodDefinition, Mono.Cecil.Cil.Instruction, System.Collections.Generic.IEnumerable<System.Func<string>>>;
+using System.Reflection;
 
 public static class Variables
 {
@@ -202,17 +203,18 @@ class Transpiler
             Distinct().
             ToArray();
         var numTargets = targets.Length;
-        var targetJumps = targets.Select((target, index) => {
+        var targetJumps = targets.Select((target, index) =>
+        {
             var skip = SkipIf(
                 Equal(GetGlobal(Variables.Temporary), GetJumpId(target)),
                 () => (numTargets - index + CalcNumActionsToSkip(method, target)).ToString());
             return (LazyString)(() => $"{skip()}         // {target.ToString()}");
         });
-        
+
         var headerActions = firstActions.Concat(JumpOffsetStack.Pop(1)).Concat(targetJumps).ToArray();
         if (!IsMethodMain(method))
             return headerActions;
-        
+
         var mainActions = new[]
         {
             SetGlobal(JumpOffsetStack.stackVar, CreateArray(1)),
@@ -348,12 +350,12 @@ class Transpiler
         dict[OpCodes.Ldc_I4_7] = Impl_UnimplementedOp;
         dict[OpCodes.Ldc_I4_8] = Impl_UnimplementedOp;
         dict[OpCodes.Ldc_I4_S] = (method, instruction) => VariableStack.Push(() => ((System.SByte)instruction.Operand).ToString());
-        dict[OpCodes.Ldc_I4] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I4] = (method, instruction) => VariableStack.Push(() => ((int)instruction.Operand).ToString());
         dict[OpCodes.Ldc_I8] = Impl_UnimplementedOp;
         dict[OpCodes.Ldc_R4] = (method, instruction) => VariableStack.Push(() => ((float)instruction.Operand).ToString());
         dict[OpCodes.Ldc_R8] = (method, instruction) => VariableStack.Push(() => ((double)instruction.Operand).ToString());
         dict[OpCodes.Dup] = (method, instruction) => VariableStack.Push(VariableStack.GetLastElement(0));
-        dict[OpCodes.Pop] = Impl_UnimplementedOp;
+        dict[OpCodes.Pop] = (method, instruction) => VariableStack.Pop(1);
         dict[OpCodes.Jmp] = Impl_UnimplementedOp;
         dict[OpCodes.Call] = Impl_Call;
         dict[OpCodes.Calli] = Impl_UnimplementedOp;
@@ -437,7 +439,6 @@ class Transpiler
         dict[OpCodes.Stloc_2] = (method, instruction) => Impl_Stloc(method, 2);
         dict[OpCodes.Ldarg_S] = Impl_UnimplementedOp;
         dict[OpCodes.Ldarga_S] = Impl_UnimplementedOp;
-        dict[OpCodes.Starg_S] = Impl_UnimplementedOp;
         dict[OpCodes.Starg_S] = Impl_Starg_S;
         dict[OpCodes.Ldloc_S] = Impl_UnimplementedOp;
         dict[OpCodes.Ldloca_S] = Impl_UnimplementedOp;
@@ -565,7 +566,7 @@ class Transpiler
             yield return action;
         foreach (var action in JumpOffsetStack.Push(() => "0"))
             yield return action;
-        
+
         // TODO: optimize this
         foreach (var i in Enumerable.Range(0, GetNumLocalVariables(targetMethod)))
             foreach (var action in LocalsStack.Push(() => "0"))
@@ -588,9 +589,21 @@ class Transpiler
                 yield return () => "Wait(0, Ignore Condition);";
                 break;
             default:
-                throw new ArgumentException();
+                // TODO: Actions, not just values
+                var targetMethod = typeof(Workshop.Values).Assembly.GetType(targetMethodRef.DeclaringType.FullName)?.GetMethod(targetMethodRef.Name);
+                var attributes = targetMethod?.GetCustomAttributes(typeof(WorkshopCodeName), true);
+                var codeName = (attributes?.FirstOrDefault() as WorkshopCodeName)?.Name;
+                if (codeName == null)
+                    throw new ArgumentException();
+                if (targetMethod.ReturnType != typeof(void))
+                    foreach (var action in VariableStack.Push(() => codeName))
+                        yield return action;
+                else
+                    yield return () => codeName + ";";
+                break;
         }
 
+        // TODO: don't do this in the default case
         foreach (var action in VariableStack.Pop(targetMethodRef.Parameters.Count))
             yield return action;
     }

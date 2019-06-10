@@ -13,4 +13,8 @@
     <PackageReference Include="TextCopy" Version="1.5.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\WorkshopStub\WorkshopStub.csproj" />
+  </ItemGroup>
+
 </Project>
