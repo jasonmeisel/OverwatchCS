@@ -297,7 +297,7 @@ class Transpiler
         dict[OpCodes.Dup] = (method, instruction) => VariableStack.Push(VariableStack.GetLastElement(0));
 
         dict[OpCodes.Stloc_0] = (method, instruction) => Impl_Stloc(method, 0);
-        dict[OpCodes.Stloc_1] = (method, instruction) => Impl_Stloc(method, 0);
+        dict[OpCodes.Stloc_1] = (method, instruction) => Impl_Stloc(method, 1);
         dict[OpCodes.Ldloc_0] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, 0)));
         dict[OpCodes.Ldloc_1] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, 1)));
 
@@ -315,7 +315,7 @@ class Transpiler
 
     private static int GetLocalVariableStackOffset(MethodDefinition method, int localVariableIndex)
     {
-        return GetNumLocalVariables(method) - 1 + localVariableIndex;
+        return GetNumLocalVariables(method) - localVariableIndex - 1;
     }
 
     static int GetNumLocalVariables(MethodDefinition method)

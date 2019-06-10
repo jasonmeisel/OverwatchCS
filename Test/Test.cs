@@ -20,19 +20,19 @@ public static class MainClass
         var i = 0;
         while (true)
         {
-            Workshop.Actions.DebugLog(FibonacciNumber(10));
-            // Workshop.Actions.DebugLog(FibonacciNumber(++i));
+            // Workshop.Actions.DebugLog(FibonacciNumber(10));
+            Workshop.Actions.DebugLog(RecursiveFibonacci(++i));
             // Workshop.Actions.DebugLog(++i);
             Workshop.Actions.Wait(1);
         }
     }
 
-    // public static float RecursiveFibonacci(int n, float a = 0, float b = 1)
-    // {
-    // 	if (n == 1)
-    //         return b;
-    //     return RecursiveFibonacci(n - 1, b, a + b);
-    // }
+    public static float RecursiveFibonacci(int n, float a = 0, float b = 1)
+    {
+    	if (n == 1)
+            return b;
+        return RecursiveFibonacci(n - 1, b, a + b);
+    }
 
     public static void Main()
     {
