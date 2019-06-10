@@ -203,14 +203,14 @@ class Transpiler
 {
     struct GeneratedMethod
     {
-        public delegate string InvokeFunc(object[] parameters);
+        public delegate string InvokeFunc(string[] parameters);
 
         public InvokeFunc Invoke;
         public ParameterInfo[] Parameters;
 
         public override string ToString()
         {
-            return Invoke(new object[Parameters.Length]);
+            return Invoke(new string[Parameters.Length]);
         }
     }
 
@@ -571,7 +571,7 @@ class Transpiler
         if (instruction.Operand is MethodReference targetMethodRef)
             return Impl_Call_WorkshopAction(method, instruction, targetMethodRef);
         if (instruction.Operand is GeneratedMethod generatedMethod)
-            return VariableStack.Push(() => generatedMethod.Invoke(new object[0]));
+            return VariableStack.Push(() => generatedMethod.Invoke(new string[0]));
         throw new ArgumentException();
     }
 
@@ -763,7 +763,7 @@ class Transpiler
                 Instructions = method.Body.Instructions.ToList(),
             };
 
-            // SimplifyInstructions(methodInfo.Instructions);
+            SimplifyInstructions(methodInfo.Instructions);
 
             foreach (var instr in methodInfo.Instructions)
                 Console.WriteLine(instr);
@@ -777,6 +777,8 @@ class Transpiler
 
     static void SimplifyInstructions(List<Instruction> instructions)
     {
+        // TODO: add analyzer to prevent storing un-storable variables on stack (Array, Player, etc)
+        
     SimplifyInstructions_Start:
         var workshopCalls = instructions.Where(i => i.OpCode == OpCodes.Call && GetWorkshopMethod(i.Operand as MethodReference) != null);
         foreach (var call in workshopCalls)
@@ -786,9 +788,26 @@ class Transpiler
             var parameters = targetMethod?.GetParameters();
             if (code != null && parameters.Length > 0 && call.Previous?.OpCode == OpCodes.Call)
             {
-                var prevTargetMethod = GetWorkshopMethod(call.Previous.Operand as MethodReference);
-                var prevCode = GetCodeName(prevTargetMethod) ??
-                    call.Previous.Operand as string;
+                var prevCode = null as string;
+                switch (call.Previous.Operand)
+                {
+                    case MethodReference prevMethodRef:
+                        if (GetWorkshopMethod(call.Previous.Operand as MethodReference) is var prevTargetMethod)
+                        {
+                            if (prevTargetMethod.GetParameters().Length == 0)
+                                prevCode = GetCodeName(prevTargetMethod);
+                        }
+                        break;
+                    case GeneratedMethod prevGenMethod:
+                        if (prevGenMethod.Parameters.Length == 0)
+                            prevCode = prevGenMethod.Invoke(new string[0]);
+                        else
+                            throw null;
+                        break;
+                    default:
+                        continue;
+                }
+
                 if (prevCode != null)
                 {
                     instructions.Remove(call.Previous);
@@ -802,13 +821,13 @@ class Transpiler
                                 Parameters = new ParameterInfo[0],
                             };
                             break;
-                        case 2:
-                            call.Operand = new GeneratedMethod
-                            {
-                                Invoke = p => $"{code}({prevCode}, {p[0]})",
-                                Parameters = parameters.Skip(1).ToArray(),
-                            };
-                            break;
+                        // case 2:
+                        //     call.Operand = new GeneratedMethod
+                        //     {
+                        //         Invoke = p => $"{code}({prevCode}, {p[0]})",
+                        //         Parameters = parameters.Skip(1).ToArray(),
+                        //     };
+                        //     break;
                         default:
                             throw new Exception();
                     }
