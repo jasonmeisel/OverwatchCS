@@ -2,25 +2,27 @@
 
 public static class MainClass
 {
-    // public static float FibonacciNumber(int n)
-    // {
-    //     var a = 0.0f;
-    //     var b = 1.0f;
-    //     while (--n != 0)
-    //     {
-    //         var c = a + b;
-    //         a = b;
-    //         b = c;
-    //     }
-    //     return b;
-    // }
+    public static float FibonacciNumber(int n)
+    {
+        var a = 0.0f;
+        var b = 1.0f;
+        while (--n != 0)
+        {
+            var c = a + b;
+            a = b;
+            b = c;
+        }
+        return b;
+    }
 
     public static void TestWait()
     {
         var i = 0;
         while (true)
         {
-            Workshop.Actions.DebugLog(i++);
+            Workshop.Actions.DebugLog(FibonacciNumber(10));
+            // Workshop.Actions.DebugLog(FibonacciNumber(++i));
+            // Workshop.Actions.DebugLog(++i);
             Workshop.Actions.Wait(1);
         }
     }

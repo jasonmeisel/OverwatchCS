@@ -15,17 +15,22 @@ using ToWorkshopActionFunc = System.Func<Mono.Cecil.MethodDefinition, Mono.Cecil
 
 public static class Variables
 {
-    public static char Temporary => 'T';
-    public static char JumpOffset => 'J';
-
     public static char CallStack => 'F';
     public static char CallStackIndex => 'G';
 
-    public static char VariableStack => 'V';
-    public static char VariableStackIndex => 'W';
+    public static char JumpOffsetStack => 'J';
+    public static char JumpOffsetStackIndex => 'K';
+
+    public static char LocalsStack => 'L';
+    public static char LocalsStackIndex => 'M';
 
     public static char ParameterStack => 'P';
     public static char ParameterStackIndex => 'Q';
+
+    public static char Temporary => 'T';
+
+    public static char VariableStack => 'V';
+    public static char VariableStackIndex => 'W';
 }
 
 public static class Actions
@@ -48,13 +53,31 @@ public static class Actions
             var newSize = Add(GetGlobal(stackIndexVar), () => (1 - count).ToString());
             return new[] {
                 SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", newSize)),
-                SetGlobal(stackIndexVar, Add(newSize, () => "-1")),
+                SetGlobal(stackIndexVar, Subtract(newSize, () => "1")),
             };
         }
 
         public LazyString GetLastElement(int offset)
         {
             return ArraySubscript(GetGlobal(stackVar), Add(GetGlobal(stackIndexVar), () => (-offset).ToString()));
+        }
+
+        public IEnumerable<LazyString> SetLastElement(int offset, LazyString value)
+        {
+            var before = ArraySlice(
+                GetGlobal(stackVar),
+                () => "0",
+                Subtract(GetGlobal(stackIndexVar), () => (offset).ToString()));
+            var after = ArraySlice(
+                GetGlobal(stackVar),
+                Subtract(GetGlobal(stackIndexVar), () => (offset - 1).ToString()),
+                () => (offset).ToString());
+
+            yield return SetGlobal(stackVar, ArrayConcat(ArrayConcat(before, value), after));
+
+            // yield return SetGlobal(Variables.Temporary, after);
+            // yield return SetGlobal(stackVar, ArrayConcat(before, value));
+            // yield return SetGlobal(stackVar, ArrayConcat(GetGlobal(stackVar), GetGlobal(Variables.Temporary)));
         }
 
         public LazyString[] Resize(LazyString size)
@@ -106,9 +129,18 @@ public static class Actions
         return SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", size));
     }
 
+    public static LazyString CreateArray(int count)
+    {
+        if (count == 0)
+            return () => "Empty Array";
+        return ArrayConcat(CreateArray(count - 1), () => "0");
+    }
+
     public static Stack VariableStack = new Stack { stackVar = Variables.VariableStack, stackIndexVar = Variables.VariableStackIndex };
     public static Stack ParameterStack = new Stack { stackVar = Variables.ParameterStack, stackIndexVar = Variables.ParameterStackIndex };
     public static Stack CallStack = new Stack { stackVar = Variables.CallStack, stackIndexVar = Variables.CallStackIndex };
+    public static Stack JumpOffsetStack = new Stack { stackVar = Variables.JumpOffsetStack, stackIndexVar = Variables.JumpOffsetStackIndex };
+    public static Stack LocalsStack = new Stack { stackVar = Variables.LocalsStack, stackIndexVar = Variables.LocalsStackIndex };
 
     public static LazyString Add(LazyString valueA, LazyString valueB)
     {
@@ -118,6 +150,11 @@ public static class Actions
     public static LazyString Subtract(LazyString valueA, LazyString valueB)
     {
         return () => $"Subtract({valueA()}, {valueB()})";
+    }
+
+    public static LazyString Max(LazyString valueA, LazyString valueB)
+    {
+        return () => $"Max({valueA()}, {valueB()})";
     }
 
     public static LazyString NotEqual(LazyString a, LazyString b)
@@ -144,29 +181,49 @@ public static class Actions
 
 class Transpiler
 {
-    LazyString[] MethodHeaderActions(MethodDefinition method)
+    IEnumerable<LazyString> MethodHeaderActions(MethodDefinition method)
     {
         var firstActions = new LazyString[]
         {
             () => "Abort If Condition Is False;",
             () => "Wait(0, Ignore Condition);",
+            SetGlobal(Variables.Temporary, JumpOffsetStack.GetLastElement(0)),
         };
 
         var targets = method.Body.Instructions.
-            Select(i => i.Operand as Instruction).
+            // jumps targets or call returns
+            Select(i => i.Operand as Instruction ?? (i.Operand is MethodDefinition ? i.Next : null)).
             Where(t => t != null).
             Distinct().
             ToArray();
         var numTargets = targets.Length;
-        var targetJumps = targets.Select((target, index) => SkipIf(
-            Equal(GetGlobal(Variables.JumpOffset), () => target.Offset.ToString()),
-            () => (numTargets - index + CalcNumActionsToSkip(method, method.Body.Instructions[0], target)).ToString()));
-
-        return firstActions.Concat(targetJumps).ToArray();
+        var targetJumps = targets.Select((target, index) => {
+            var skip = SkipIf(
+                Equal(GetGlobal(Variables.Temporary), GetJumpId(target)),
+                () => (numTargets - index + CalcNumActionsToSkip(method, target)).ToString());
+            return (LazyString)(() => $"{skip()}         // {target.ToString()}");
+        });
+        
+        var headerActions = firstActions.Concat(JumpOffsetStack.Pop(1)).Concat(targetJumps).ToArray();
+        if (!IsMethodMain(method))
+            return headerActions;
+        
+        var mainActions = new[]
+        {
+            SetGlobal(JumpOffsetStack.stackVar, CreateArray(1)),
+            SetGlobal(LocalsStack.stackVar, CreateArray(1)),
+            SetGlobal(ParameterStack.stackVar, CreateArray(1)),
+            SetGlobal(VariableStack.stackVar, CreateArray(1)),
+        };
+        var mainActionsCount = mainActions.Count();
+        var skipMainActions = SkipIf(NotEqual(GetGlobal(JumpOffsetStack.stackVar), () => "0"), () => mainActionsCount.ToString());
+        return new[] { skipMainActions }.Concat(mainActions).Concat(headerActions);
     }
 
     Dictionary<OpCode, ToWorkshopActionFunc> s_toWorkshopActionsDict;
     Dictionary<OpCode, ToWorkshopActionFunc> ToWorkshopActionsDict => s_toWorkshopActionsDict = s_toWorkshopActionsDict ?? CreateToWorkshopActionsDict();
+
+    static LazyString GetJumpId(Instruction instruction) => () => (instruction.Offset + 1).ToString();
 
     Dictionary<OpCode, ToWorkshopActionFunc> CreateToWorkshopActionsDict()
     {
@@ -185,10 +242,12 @@ class Transpiler
         dict[OpCodes.Sub] = (method, instruction) => DoBinaryOp(Subtract);
 
         // TODO: pop parameters off stack
-        dict[OpCodes.Ret] = (method, instruction) => CallStack.Pop(1).Concat(new LazyString[]
-            {
-                () => "Abort;"
-            });
+        dict[OpCodes.Ret] = (method, instruction) => CallStack.Pop(1).
+            Concat(LocalsStack.Pop(GetNumLocalVariables(method))).
+            Concat(new LazyString[]
+                {
+                    () => "Abort;"
+                });
 
         // jump if true
         dict[OpCodes.Brtrue_S] = (method, instruction) =>
@@ -196,8 +255,10 @@ class Transpiler
                 Concat(VariableStack.Pop(1)).
                 Concat(new[]
                 {
-                    SkipIf(Equal(GetGlobal(Variables.Temporary), () => "0"), () => "2"),
-                    SetGlobal(Variables.JumpOffset, () => ((Instruction)instruction.Operand).Offset.ToString()),
+                    SkipIf(Equal(GetGlobal(Variables.Temporary), () => "0"), () => "3"),
+                }).
+                Concat(JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand))).
+                Concat(new LazyString[] {
                     () => "Loop;",
                 });
 
@@ -212,38 +273,54 @@ class Transpiler
                 Concat(VariableStack.Pop(2)).
                 Concat(new[]
                 {
-                    SkipIf(Equal(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), ArraySubscript(GetGlobal(Variables.Temporary), () => "1")), () => "2"),
-                    SetGlobal(Variables.JumpOffset, () => ((Instruction)instruction.Operand).Offset.ToString()),
+                    SkipIf(Equal(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), ArraySubscript(GetGlobal(Variables.Temporary), () => "1")), () => "3"),
+                }).
+                Concat(JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand))).
+                Concat(new LazyString[] {
                     () => "Loop;",
                 });
 
         // jump
-        dict[OpCodes.Br_S] = (method, instruction) => new LazyString[]
-            {
-                SetGlobal(Variables.JumpOffset, () => ((Instruction)instruction.Operand).Offset.ToString()),
+        dict[OpCodes.Br_S] = (method, instruction) =>
+            JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand)).
+            Concat(new LazyString[] {
                 () => "Loop;",
-            };
+            });
 
         // shouldn't need to convert
         dict[OpCodes.Conv_R4] = (method, instruction) => new LazyString[0];
 
         dict[OpCodes.Ldc_I4_0] = (method, instruction) => VariableStack.Push(() => "0");
         dict[OpCodes.Ldc_I4_1] = (method, instruction) => VariableStack.Push(() => "1");
+        dict[OpCodes.Ldc_I4_S] = (method, instruction) => VariableStack.Push(() => ((System.SByte)instruction.Operand).ToString());
         dict[OpCodes.Ldc_R4] = (method, instruction) => VariableStack.Push(() => ((float)instruction.Operand).ToString());
         dict[OpCodes.Dup] = (method, instruction) => VariableStack.Push(VariableStack.GetLastElement(0));
 
-        // TODO: create local variables stack (using num loc variables from method def)
-        dict[OpCodes.Stloc_0] = (method, instruction) =>
-            new[] { SetGlobal('A', VariableStack.GetLastElement(0)) }.Concat(VariableStack.Pop(1)).ToArray();
-        dict[OpCodes.Stloc_1] = (method, instruction) =>
-            new[] { SetGlobal('B', VariableStack.GetLastElement(0)) }.Concat(VariableStack.Pop(1)).ToArray();
-        dict[OpCodes.Ldloc_0] = (method, instruction) => VariableStack.Push(GetGlobal('A'));
-        dict[OpCodes.Ldloc_1] = (method, instruction) => VariableStack.Push(GetGlobal('B'));
+        dict[OpCodes.Stloc_0] = (method, instruction) => Impl_Stloc(method, 0);
+        dict[OpCodes.Stloc_1] = (method, instruction) => Impl_Stloc(method, 0);
+        dict[OpCodes.Ldloc_0] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, 0)));
+        dict[OpCodes.Ldloc_1] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, 1)));
 
         dict[OpCodes.Starg_S] = Impl_Starg_S;
         dict[OpCodes.Call] = Impl_Call;
 
         return dict;
+    }
+
+    private static IEnumerable<LazyString> Impl_Stloc(MethodDefinition method, int localVariableIndex)
+    {
+        return LocalsStack.SetLastElement(GetLocalVariableStackOffset(method, localVariableIndex), VariableStack.GetLastElement(0)).
+            Concat(VariableStack.Pop(1));
+    }
+
+    private static int GetLocalVariableStackOffset(MethodDefinition method, int localVariableIndex)
+    {
+        return GetNumLocalVariables(method) - 1 + localVariableIndex;
+    }
+
+    static int GetNumLocalVariables(MethodDefinition method)
+    {
+        return method.Body.Variables.Count;
     }
 
     IEnumerable<LazyString> Impl_Call(MethodDefinition method, Instruction instruction)
@@ -271,9 +348,17 @@ class Transpiler
         foreach (var action in CallStack.Push(() => functionId.ToString()))
             yield return action;
 
-        yield return () => "Abort;";
+        foreach (var action in JumpOffsetStack.Push(GetJumpId(instruction.Next)))
+            yield return action;
+        foreach (var action in JumpOffsetStack.Push(() => "0"))
+            yield return action;
+        
+        // TODO: optimize this
+        foreach (var i in Enumerable.Range(0, GetNumLocalVariables(targetMethod)))
+            foreach (var action in LocalsStack.Push(() => "0"))
+                yield return action;
 
-        // TODO: return!
+        yield return () => "Abort;";
     }
 
     static IEnumerable<LazyString> Impl_Call_WorkshopAction(MethodDefinition method, Instruction instruction, MethodReference targetMethodRef)
@@ -344,14 +429,16 @@ class Transpiler
         ).ToArray();
     }
 
-    int CalcNumActionsToSkip(MethodDefinition method, Instruction start, Instruction end)
+    int CalcNumActionsToSkip(MethodDefinition method, Instruction target)
     {
-        return method.Body.Instructions.SkipWhile(i => i != start).TakeWhile(i => i != end).Sum(i => ToWorkshopActions(method, i).Count()) - 1;
+        return method.Body.Instructions.TakeWhile(i => i != target).Sum(i => ToWorkshopActions(method, i).Count()) - 1;
     }
 
     Dictionary<MethodDefinition, int> m_functionIds;
     int GetFunctionId(MethodDefinition method)
     {
+        if (IsMethodMain(method))
+            return 0;
         return m_functionIds[method];
     }
 
@@ -451,7 +538,7 @@ rule(""{0}"")
         writeLine("// Body");
         foreach (var instr in method.Body.Instructions)
         {
-            writeLine($"// {instr}");
+            writeLine($"    // {instr}");
             foreach (var line in ToWorkshopActions(method, instr))
                 writeLine(line());
         }
@@ -460,7 +547,12 @@ rule(""{0}"")
             RuleFormat,
             method.Name,
             string.Format(EventFormat, "Ongoing - Global"),
-            method.Name == "Main" ? "" : string.Format(ConditionsFormat, $"{CallStack.GetLastElement(0)()} == {GetFunctionId(method)}"),
+            string.Format(ConditionsFormat, $"{CallStack.GetLastElement(0)()} == {GetFunctionId(method)}"),
             string.Format(ActionsFormat, writer.ToString())));
+    }
+
+    private static bool IsMethodMain(MethodDefinition method)
+    {
+        return method.Name == "Main";
     }
 }
