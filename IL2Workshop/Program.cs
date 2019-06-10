@@ -723,7 +723,7 @@ class Transpiler
 
     Dictionary<string, LazyString> m_generatedMethodToWorkshopCode = new Dictionary<string, LazyString>();
 
-    public async Task<string> TranspileToRules(string source)
+    public string TranspileToRules(string source)
     {
         var references = new[]
         {
@@ -805,27 +805,25 @@ class Transpiler
             return SyntaxFactory.ParseSyntaxTree($"internal static class Generated {{ {m_methodsSource.ToString()} }}");
         }
 
+        // string ArgumentToString(ArgumentSyntax )
+
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocation)
         {
-            Debug.Assert(invocation.ChildNodesAndTokens().Count == 2);
-
-            var memberAccess = invocation.ChildNodesAndTokens()[0];
-            var argumentList = invocation.ChildNodesAndTokens()[1];
-            Debug.Assert(memberAccess.IsKind(SyntaxKind.SimpleMemberAccessExpression));
-            Debug.Assert(argumentList.IsKind(SyntaxKind.ArgumentList));
+            var memberAccess = (MemberAccessExpressionSyntax)invocation.Expression;
+            var argumentList = invocation.ArgumentList;
 
             var targetMethod = GetWorkshopMethodFromMemberAccess(memberAccess);
             var targetCode = GetCodeName(targetMethod);
             var parameters = targetMethod.GetParameters();
             if (targetCode != null && parameters.Any())
             {
-                var arguments = argumentList.ChildNodesAndTokens().Where(n => n.IsKind(SyntaxKind.Argument)).Select(n => n.ChildNodesAndTokens().Single());
+                var arguments = argumentList.Arguments.Select(a => a.Expression);
                 Debug.Assert(arguments.Count() == parameters.Length);
 
                 // TODO: add baking in literals
                 if (arguments.All(a => a.IsKind(SyntaxKind.InvocationExpression)))
                 {
-                    var argMethods = arguments.Select(a => GetWorkshopMethodFromMemberAccess(a.ChildNodesAndTokens()[0])).ToArray();
+                    var argMethods = arguments.Cast<InvocationExpressionSyntax>().Select(a => GetWorkshopMethodFromMemberAccess((MemberAccessExpressionSyntax)a.Expression)).ToArray();
 
                     // TODO: support parameter forwarding
                     // TODO: recursively generated methods
@@ -858,13 +856,9 @@ class Transpiler
         }
     }
 
-    static System.Reflection.MethodInfo GetWorkshopMethodFromMemberAccess(SyntaxNodeOrToken memberAccess)
+    static System.Reflection.MethodInfo GetWorkshopMethodFromMemberAccess(MemberAccessExpressionSyntax memberAccess)
     {
-        var children = memberAccess.ChildNodesAndTokens();
-        Debug.Assert(children.Count == 3);
-        return GetWorkshopMethod(
-            children[0].ToString(),
-            children[2].ToString());
+        return GetWorkshopMethod(memberAccess.Expression.ToString(), memberAccess.Name.ToString());
     }
 
     void GenerateFunctionIds(Mono.Collections.Generic.Collection<MethodDefinition> methods)
@@ -873,11 +867,11 @@ class Transpiler
         m_functionIds = methods.Zip(Enumerable.Range(1, methods.Count), (m, i) => (m, i)).ToDictionary(pair => pair.m, pair => pair.i);
     }
 
-    static async Task Main(string[] args)
+    static void Main(string[] args)
     {
         var transpiler = new Transpiler();
         var source = File.ReadAllText("Test\\Test.cs");
-        var rules = await transpiler.TranspileToRules(source);
+        var rules = transpiler.TranspileToRules(source);
         Console.WriteLine(rules);
         TextCopy.Clipboard.SetText(rules);
     }
