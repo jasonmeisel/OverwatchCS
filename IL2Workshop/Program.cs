@@ -14,6 +14,14 @@ using static Actions;
 using ToWorkshopActionFunc = System.Func<MethodInfo, Mono.Cecil.Cil.Instruction, System.Collections.Generic.IEnumerable<System.Func<string>>>;
 using System.Reflection;
 
+public static class Extensions
+{
+    public static string ListToString<T>(this IEnumerable<T> list, string separator = ", ")
+    {
+        return string.Join(separator, list);
+    }
+}
+
 class MethodInfo
 {
     public MethodDefinition Definition;
@@ -600,6 +608,8 @@ class Transpiler
     {
         // TODO: assert that the method reference is a workshop action
 
+        var hasReturnInTemp = false;
+
         switch (targetMethodRef.Name)
         {
             case "Wait":
@@ -610,22 +620,32 @@ class Transpiler
                 yield return () => "Wait(0, Ignore Condition);";
                 break;
             default:
-                // TODO: Actions, not just values
                 var targetMethod = GetWorkshopMethod(targetMethodRef);
-                var codeName = GetCodeName(targetMethod);
-                if (codeName == null)
+                var code = GetCodeName(targetMethod);
+                if (code == null)
                     throw new ArgumentException();
+
+                var parameters = targetMethod.GetParameters();
+                var paramList = parameters.Select((p, i) => VariableStack.GetLastElement(parameters.Length - i - 1)()).ListToString();
+                if (!string.IsNullOrEmpty(paramList))
+                    code = $"{code}({paramList})";
+
                 if (targetMethod.ReturnType != typeof(void))
-                    foreach (var action in VariableStack.Push(() => codeName))
-                        yield return action;
+                {
+                    yield return SetGlobal(Variables.Temporary, () => code);
+                    hasReturnInTemp = true;
+                }
                 else
-                    yield return () => codeName + ";";
+                    yield return () => code + ";";
                 break;
         }
 
-        // TODO: don't do this in the default case
         foreach (var action in VariableStack.Pop(targetMethodRef.Parameters.Count))
             yield return action;
+
+        if (hasReturnInTemp)
+            foreach (var action in VariableStack.Push(GetGlobal(Variables.Temporary)))
+                yield return action;
     }
 
     private static string GetCodeName(System.Reflection.MethodInfo targetMethod)
@@ -761,7 +781,6 @@ class Transpiler
         var workshopCalls = instructions.Where(i => i.OpCode == OpCodes.Call && GetWorkshopMethod(i.Operand as MethodReference) != null);
         foreach (var call in workshopCalls)
         {
-            // TODO: multiple parameters
             var targetMethod = GetWorkshopMethod(call.Operand as MethodReference);
             var code = GetCodeName(targetMethod);
             var parameters = targetMethod?.GetParameters();

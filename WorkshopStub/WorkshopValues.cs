@@ -193,21 +193,21 @@ namespace Workshop
         [WorkshopCodeName("CONTROL MODE SCORING TEAM")]
         public static object ControlModeScoringTeam() => throw new NotImplementedException();
 
-        /// COSIGN FROM DEGREES
+        /// Cosine FROM DEGREES
         /// The cosine of a specified angle in degrees. The cosine of the angle is equal to the length of the adjacent side divided by the length of the hypotenuse.
         /// Definitions:
         /// 
         /// Angle - You can specify any Angle Syntax to define this value.
-        [WorkshopCodeName("COSIGN FROM DEGREES")]
-        public static object CosignFromDegrees() => throw new NotImplementedException();
+        [WorkshopCodeName("Cosine FROM DEGREES")]
+        public static object CosineFromDegrees() => throw new NotImplementedException();
 
-        /// COSIGN FROM RADIANS
+        /// Cosine FROM RADIANS
         /// The cosine of a specified angle in radians. The cosine of the angle is equal to the length of the adjacent side divided by the length of the hypotenuse. A radian is a unit of angle, equal to an angle at the center of a circle whose arc is equal in length to the radius.
         /// Definitions:
         /// 
         /// Angle - You can specify any Angle Syntax to define this value.
-        [WorkshopCodeName("COSIGN FROM RADIANS")]
-        public static object CosignFromRadians() => throw new NotImplementedException();
+        [WorkshopCodeName("Cosine FROM RADIANS")]
+        public static float CosineFromRadians(float angle) => throw new NotImplementedException();
 
         /// COUNT OF
         /// The number of elements in the specified array.

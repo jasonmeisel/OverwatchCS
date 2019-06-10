@@ -29,14 +29,20 @@ public static class MainClass
 
     public static void Main()
     {
+        // for (int i = 0; true; ++i)
+        // {
+        //     if (i == Workshop.Values.NumberOfPlayers())
+        //         i = 0;
+
+        //     var players = Workshop.Values.AllPlayers(Workshop.Team.All());
+        //     var value = Workshop.Values.ValueInArray(Workshop.Values.AllPlayers(Workshop.Team.All()), i);
+        //     Workshop.Actions.DebugLog(value);
+        //     Workshop.Actions.Wait(1);
+        // }
+
         for (int i = 0; true; ++i)
         {
-            if (i == Workshop.Values.NumberOfPlayers())
-                i = 0;
-
-            var players = Workshop.Values.AllPlayers(Workshop.Team.All());
-            var value = Workshop.Values.ValueInArray(Workshop.Values.AllPlayers(Workshop.Team.All()), i);
-            Workshop.Actions.DebugLog(value);
+            Workshop.Actions.DebugLog(Workshop.Values.CosineFromRadians(i));
             Workshop.Actions.Wait(1);
         }
     }
