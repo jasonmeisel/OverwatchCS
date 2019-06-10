@@ -17,14 +17,14 @@ public static class MainClass
 
     public static void TestWait()
     {
-        // var i = 0;
-        // while (true)
-        // {
-            Workshop.Actions.DebugLog(RecursiveFibonacci(10));
-            // Workshop.Actions.DebugLog(RecursiveFibonacci(++i, 0, 1));
+        var i = 0;
+        while (true)
+        {
+            // Workshop.Actions.DebugLog(RecursiveFibonacci(10));
+            Workshop.Actions.DebugLog(RecursiveFibonacci(++i, 0, 1));
             // Workshop.Actions.DebugLog(++i);
-            // Workshop.Actions.Wait(10);
-        // }
+            Workshop.Actions.Wait(1);
+        }
     }
 
     public static float RecursiveFibonacci(int n, float a = 0, float b = 1)

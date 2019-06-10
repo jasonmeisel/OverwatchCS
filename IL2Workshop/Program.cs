@@ -119,6 +119,11 @@ public static class Actions
         return SetGlobal(arrayVar, ArrayConcat(GetGlobal(arrayVar), value));
     }
 
+    public static LazyString ArrayLast(LazyString array)
+    {
+        return () => $"Last Of({array()})";
+    }
+
     public static LazyString ArrayConcat(LazyString a, LazyString b)
     {
         return () => $"Append To Array({a()}, {b()})";
@@ -185,9 +190,8 @@ class Transpiler
     {
         var firstActions = new LazyString[]
         {
-            () => "Abort If Condition Is False;",
-            // () => "Wait(0, Ignore Condition);",
-            () => "Wait(0.5, Abort When False);",
+            () => $"Abort If (Not({FunctionCondition(method)()}));",
+            () => "Wait(0, Abort When False);",
             SetGlobal(Variables.Temporary, JumpOffsetStack.GetLastElement(0)),
         };
 
@@ -548,8 +552,14 @@ rule(""{0}"")
             RuleFormat,
             method.Name,
             string.Format(EventFormat, "Ongoing - Global"),
-            string.Format(ConditionsFormat, $"{CallStack.GetLastElement(0)()} == {GetFunctionId(method)}"),
+            // string.Format(ConditionsFormat, $"{CallStack.GetLastElement(0)()} == {GetFunctionId(method)}"),
+            string.Format(ConditionsFormat, $"{FunctionCondition(method)()} == True"),
             string.Format(ActionsFormat, writer.ToString())));
+    }
+
+    private LazyString FunctionCondition(MethodDefinition method)
+    {
+        return Equal(ArrayLast(GetGlobal(CallStack.stackVar)), () => GetFunctionId(method).ToString());
     }
 
     private static bool IsMethodMain(MethodDefinition method)
