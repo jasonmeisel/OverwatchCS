@@ -185,11 +185,10 @@ class Transpiler
         dict[OpCodes.Sub] = (method, instruction) => DoBinaryOp(Subtract);
 
         // TODO: pop parameters off stack
-        dict[OpCodes.Ret] = (method, instruction) => new[]
+        dict[OpCodes.Ret] = (method, instruction) => CallStack.Pop(1).Concat(new LazyString[]
             {
-                SetGlobal(Variables.CallStack, () => "2"),
                 () => "Abort;"
-            };
+            });
 
         // jump if true
         dict[OpCodes.Brtrue_S] = (method, instruction) =>
@@ -249,17 +248,15 @@ class Transpiler
 
     IEnumerable<LazyString> Impl_Call(MethodDefinition method, Instruction instruction)
     {
-        if (instruction.Operand is MethodDefinition)
-            return Impl_Call_CustomMethod(method, instruction);
+        if (instruction.Operand is MethodDefinition targetMethodDef)
+            return Impl_Call_CustomMethod(method, instruction, targetMethodDef);
         if (instruction.Operand is MethodReference targetMethodRef)
             return Impl_Call_WorkshopAction(method, instruction, targetMethodRef);
         throw new ArgumentException();
     }
 
-    IEnumerable<LazyString> Impl_Call_CustomMethod(MethodDefinition method, Instruction instruction)
+    IEnumerable<LazyString> Impl_Call_CustomMethod(MethodDefinition method, Instruction instruction, MethodDefinition targetMethod)
     {
-        var targetMethod = (MethodDefinition)instruction.Operand;
-
         // pop the parameters off the variable stack and onto the parameter stack
         yield return ArrayAppend(Variables.ParameterStack, ArraySlice(
             GetGlobal(Variables.VariableStack),
@@ -270,9 +267,13 @@ class Transpiler
         foreach (var action in VariableStack.Pop(targetMethod.Parameters.Count))
             yield return action;
 
-        // TODO: functions should be a stack
-        var functionId = GetFunctionId(method);
-        yield return SetGlobal(Variables.CallStack, () => functionId.ToString());
+        var functionId = GetFunctionId(targetMethod);
+        foreach (var action in CallStack.Push(() => functionId.ToString()))
+            yield return action;
+
+        yield return () => "Abort;";
+
+        // TODO: return!
     }
 
     static IEnumerable<LazyString> Impl_Call_WorkshopAction(MethodDefinition method, Instruction instruction, MethodReference targetMethodRef)
@@ -459,7 +460,7 @@ rule(""{0}"")
             RuleFormat,
             method.Name,
             string.Format(EventFormat, "Ongoing - Global"),
-            method.Name == "Main" ? "" : string.Format(ConditionsFormat, $"Global Variable(F) == {GetFunctionId(method)}"),
+            method.Name == "Main" ? "" : string.Format(ConditionsFormat, $"{CallStack.GetLastElement(0)()} == {GetFunctionId(method)}"),
             string.Format(ActionsFormat, writer.ToString())));
     }
 }
