@@ -162,7 +162,7 @@ public static class Actions
 }
 
 
-class Program
+class Transpiler
 {
     static LazyString[] MethodHeaderActions(MethodDefinition method)
     {
@@ -358,9 +358,8 @@ class Program
         return method.Body.Instructions.SkipWhile(i => i != start).TakeWhile(i => i != end).Sum(i => ToWorkshopActions(method, i).Count()) - 1;
     }
 
-    static void Main(string[] args)
+    public string TranspileToRules(string source)
     {
-        var source = File.ReadAllText("Test\\Test.cs");
         var references = new[]
         {
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
@@ -381,7 +380,7 @@ class Program
         {
             foreach (var diag in result.Diagnostics)
                 Console.WriteLine(diag);
-            return;
+            throw new System.Exception("Fail!");
         }
 
         var module = ModuleDefinition.ReadModule("AsmBuild.dll");
@@ -396,7 +395,14 @@ class Program
             ConvertMethodToRule(ruleWriter, method);
         }
 
-        var rules = ruleWriter.ToString();
+        return ruleWriter.ToString();
+    }
+
+    static void Main(string[] args)
+    {
+        var transpiler = new Transpiler();
+        var source = File.ReadAllText("Test\\Test.cs");
+        var rules = transpiler.TranspileToRules(source);
         Console.WriteLine(rules);
         TextCopy.Clipboard.SetText(rules);
     }
