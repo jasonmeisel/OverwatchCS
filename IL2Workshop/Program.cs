@@ -193,7 +193,7 @@ class Transpiler
         var targets = method.Body.Instructions.
             // jumps targets or call returns
             Select(i => i.Operand as Instruction ?? (i.Operand is MethodDefinition ? i.Next : null)).
-            Where(t => t != null).
+            Where(t => t != null && t.Offset != 0).
             Distinct().
             ToArray();
         var numTargets = targets.Length;
@@ -223,7 +223,7 @@ class Transpiler
     Dictionary<OpCode, ToWorkshopActionFunc> s_toWorkshopActionsDict;
     Dictionary<OpCode, ToWorkshopActionFunc> ToWorkshopActionsDict => s_toWorkshopActionsDict = s_toWorkshopActionsDict ?? CreateToWorkshopActionsDict();
 
-    static LazyString GetJumpId(Instruction instruction) => () => (instruction.Offset + 1).ToString();
+    static LazyString GetJumpId(Instruction instruction) => () => instruction.Offset.ToString();
 
     Dictionary<OpCode, ToWorkshopActionFunc> CreateToWorkshopActionsDict()
     {
