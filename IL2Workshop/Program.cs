@@ -15,6 +15,7 @@ using ToWorkshopActionFunc = System.Func<MethodInfo, Mono.Cecil.Cil.Instruction,
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 public static class Extensions
 {
@@ -744,11 +745,13 @@ class Transpiler
 
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release);
         var syntaxTree = SyntaxFactory.ParseSyntaxTree(source);
-        await GenerateSubstituteMethods(syntaxTree);
+        var substituter = new MethodSubstituter();
+        var newRoot = substituter.Visit(syntaxTree.GetRoot());
+        syntaxTree = SyntaxFactory.SyntaxTree(newRoot);
 
         var compilation = CSharpCompilation.Create(
             "AsmBuild",
-            new[] { syntaxTree },
+            new[] { syntaxTree, substituter.GetGeneratedClass() },
             references,
             options);
         var result = compilation.Emit("AsmBuild.dll");
@@ -786,60 +789,64 @@ class Transpiler
         return ruleWriter.ToString();
     }
 
-    int m_substituteMethodCount = 0;
-    async Task GenerateSubstituteMethods(SyntaxTree syntaxTree)
+    class MethodSubstituter : CSharpSyntaxRewriter
     {
-        var compilationUnit = await syntaxTree.GetRootAsync();
-        // TODO: assert compilationUnit.IsKind
-        foreach (var classDecl in compilationUnit.ChildNodes().Where(n => n.IsKind(SyntaxKind.ClassDeclaration)))
+        int m_methodCount = 0;
+        StringWriter m_methodsSource = new StringWriter();
+
+        public SyntaxTree GetGeneratedClass()
         {
-            foreach (var method in classDecl.ChildNodes().Where(n => n.IsKind(SyntaxKind.MethodDeclaration)))
+            return SyntaxFactory.ParseSyntaxTree($"internal static class Generated {{ {m_methodsSource.ToString()} }}");
+        }
+
+        public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocation)
+        {
+            Debug.Assert(invocation.ChildNodesAndTokens().Count == 2);
+
+            var memberAccess = invocation.ChildNodesAndTokens()[0];
+            var argumentList = invocation.ChildNodesAndTokens()[1];
+            Debug.Assert(memberAccess.IsKind(SyntaxKind.SimpleMemberAccessExpression));
+            Debug.Assert(argumentList.IsKind(SyntaxKind.ArgumentList));
+
+            var targetMethod = GetWorkshopMethodFromMemberAccess(memberAccess);
+            var targetCode = GetCodeName(targetMethod);
+            var parameters = targetMethod.GetParameters();
+            if (targetCode != null && parameters.Any())
             {
-                var bodyBlock = method.ChildNodes().FirstOrDefault(n => n.IsKind(SyntaxKind.Block));
-                foreach (var invocation in bodyBlock.DescendantNodes().Where(n => n.IsKind(SyntaxKind.InvocationExpression)))
+                var arguments = argumentList.ChildNodesAndTokens().Where(n => n.IsKind(SyntaxKind.Argument)).Select(n => n.ChildNodesAndTokens().Single());
+                Debug.Assert(arguments.Count() == parameters.Length);
+
+                // TODO: add baking in literals
+                if (arguments.All(a => a.IsKind(SyntaxKind.InvocationExpression)))
                 {
-                    Debug.Assert(invocation.ChildNodesAndTokens().Count == 2);
+                    var argMethods = arguments.Select(a => GetWorkshopMethodFromMemberAccess(a.ChildNodesAndTokens()[0])).ToArray();
 
-                    var memberAccess = invocation.ChildNodesAndTokens()[0];
-                    var argumentList = invocation.ChildNodesAndTokens()[1];
-                    Debug.Assert(memberAccess.IsKind(SyntaxKind.SimpleMemberAccessExpression));
-                    Debug.Assert(argumentList.IsKind(SyntaxKind.ArgumentList));
-
-                    // TODO: other generated methods
-                    var targetMethod = GetWorkshopMethodFromMemberAccess(memberAccess);
-                    var targetCode = GetCodeName(targetMethod);
-                    var parameters = targetMethod.GetParameters();
-                    if (targetCode != null && parameters.Any())
+                    // TODO: support parameter forwarding
+                    // TODO: recursively generated methods
+                    if (argMethods.All(m => m.GetParameters().Length == 0))
                     {
-                        var arguments = argumentList.ChildNodesAndTokens().Where(n => n.IsKind(SyntaxKind.Argument)).Select(n => n.ChildNodesAndTokens().Single());
-                        Debug.Assert(arguments.Count() == parameters.Length);
+                        var argCodes = argMethods.Select(GetCodeName).ToArray();
 
-                        // TODO: add baking in literals
-                        if (arguments.All(a => a.IsKind(SyntaxKind.InvocationExpression)))
-                        {
-                            var argMethods = arguments.Select(a => GetWorkshopMethodFromMemberAccess(a.ChildNodesAndTokens()[0])).ToArray();
-
-                            // TODO: support parameter forwarding
-                            if (argMethods.All(m => m.GetParameters().Length == 0))
-                            {
-                                var argCodes = argMethods.Select(GetCodeName).ToArray();
-
-                                var returnType = targetMethod.ReturnType == typeof(void) ? "void" : "dynamic";
-                                var baseMethodName = string.Join("", targetMethod.Name.Where(ch => char.IsLetterOrDigit(ch)));
-                                var attrSource = $"[WorkshopCodeName(\"{targetCode}({argCodes.ListToString()})\")]";
-                                var paramListSource = ""; // arguments.Select((a, i) => $"dynamic arg{i}").ListToString();
-                                var methodSource = $"static {returnType} Impl_{baseMethodName}_{m_substituteMethodCount++} ({paramListSource}) => null;";
-                                var generatedTree = SyntaxFactory.ParseSyntaxTree(string.Join('\n', attrSource, methodSource));
-                                var generatedMethod = (await generatedTree.GetRootAsync()).ChildNodes().Single();
-                                Debug.Assert(generatedMethod.IsKind(SyntaxKind.MethodDeclaration));
-
-                                Console.WriteLine(generatedMethod);
-                                Console.WriteLine();
-                            }
-                        }
+                        var returnType = targetMethod.ReturnType.ToString(); // == typeof(void) ? "void" : "dynamic";
+                        var baseMethodName = string.Join("", targetMethod.Name.Where(ch => char.IsLetterOrDigit(ch)));
+                        var attrSource = $"[WorkshopCodeName(\"{targetCode}({argCodes.ListToString()})\")]";
+                        var paramListSource = ""; // arguments.Select((a, i) => $"dynamic arg{i}").ListToString();
+                        var generatedMethodName = $"Impl_{baseMethodName}_{m_methodCount++}";
+                        var methodDeclSource = $"internal static {returnType} {generatedMethodName} ({paramListSource}) => null;";
+                        var methodSource = string.Join('\n', attrSource, methodDeclSource);
+                        m_methodsSource.WriteLine(methodSource);
+                        m_methodsSource.WriteLine();
+                        Console.WriteLine(methodSource);
+                        // Console.WriteLine(invocation.DescendantNodesAndTokens().Select(n => n.Kind()).ListToString());
+                        return SyntaxFactory.InvocationExpression(
+                            SyntaxFactory.MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                SyntaxFactory.IdentifierName("Generated"),
+                                SyntaxFactory.IdentifierName(generatedMethodName)));
                     }
                 }
             }
+            return base.VisitInvocationExpression(invocation);
         }
     }
 
