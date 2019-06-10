@@ -234,17 +234,129 @@ class Transpiler
     {
         var dict = new Dictionary<OpCode, ToWorkshopActionFunc>();
 
-        dict[OpCodes.Ldarg_0] = (method, instruction) =>
-            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 1));
-        dict[OpCodes.Ldarg_1] = (method, instruction) =>
-            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 2));
-        dict[OpCodes.Ldarg_2] = (method, instruction) =>
-            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 3));
-        dict[OpCodes.Ldarg_3] = (method, instruction) =>
-            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 4));
-
-        dict[OpCodes.Add] = (method, instruction) => DoBinaryOp(Add);
-        dict[OpCodes.Sub] = (method, instruction) => DoBinaryOp(Subtract);
+        dict[OpCodes.Nop] = Impl_Nop;
+        dict[OpCodes.Ldlen] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelema] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_I1] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_U1] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_I2] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_U2] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_I4] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_U4] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_I8] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_I] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_R4] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_R8] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_Ref] = Impl_UnimplementedOp;
+        dict[OpCodes.Stelem_I] = Impl_UnimplementedOp;
+        dict[OpCodes.Stelem_I1] = Impl_UnimplementedOp;
+        dict[OpCodes.Stelem_I2] = Impl_UnimplementedOp;
+        dict[OpCodes.Stelem_I4] = Impl_UnimplementedOp;
+        dict[OpCodes.Stelem_I8] = Impl_UnimplementedOp;
+        dict[OpCodes.Stelem_R4] = Impl_UnimplementedOp;
+        dict[OpCodes.Stelem_R8] = Impl_UnimplementedOp;
+        dict[OpCodes.Stelem_Ref] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldelem_Any] = Impl_UnimplementedOp;
+        dict[OpCodes.Stelem_Any] = Impl_UnimplementedOp;
+        dict[OpCodes.Newarr] = Impl_UnimplementedOp;
+        dict[OpCodes.Box] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_U_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_I_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Cpobj] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldobj] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldstr] = Impl_UnimplementedOp;
+        dict[OpCodes.Newobj] = Impl_UnimplementedOp;
+        dict[OpCodes.Castclass] = Impl_UnimplementedOp;
+        dict[OpCodes.Isinst] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_R_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Unbox] = Impl_UnimplementedOp;
+        dict[OpCodes.Throw] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldfld] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldflda] = Impl_UnimplementedOp;
+        dict[OpCodes.Unbox_Any] = Impl_UnimplementedOp;
+        dict[OpCodes.Stfld] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldsflda] = Impl_UnimplementedOp;
+        dict[OpCodes.Stsfld] = Impl_UnimplementedOp;
+        dict[OpCodes.Stobj] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_I1_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_I2_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_I4_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_I8_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_U1_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_U2_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_U4_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_U8_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldsfld] = Impl_UnimplementedOp;
+        dict[OpCodes.Callvirt] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_I1] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_I2] = Impl_UnimplementedOp;
+        dict[OpCodes.Cgt_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Clt] = Impl_UnimplementedOp;
+        dict[OpCodes.Clt_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldftn] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldvirtftn] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldarg] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldarga] = Impl_UnimplementedOp;
+        dict[OpCodes.Starg] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldloc] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldloca] = Impl_UnimplementedOp;
+        dict[OpCodes.Stloc] = Impl_UnimplementedOp;
+        dict[OpCodes.Localloc] = Impl_UnimplementedOp;
+        dict[OpCodes.Endfilter] = Impl_UnimplementedOp;
+        dict[OpCodes.Unaligned] = Impl_UnimplementedOp;
+        dict[OpCodes.Volatile] = Impl_UnimplementedOp;
+        dict[OpCodes.Tail] = Impl_UnimplementedOp;
+        dict[OpCodes.Initobj] = Impl_UnimplementedOp;
+        dict[OpCodes.Constrained] = Impl_UnimplementedOp;
+        dict[OpCodes.Cpblk] = Impl_UnimplementedOp;
+        dict[OpCodes.Initblk] = Impl_UnimplementedOp;
+        dict[OpCodes.No] = Impl_UnimplementedOp;
+        dict[OpCodes.Rethrow] = Impl_UnimplementedOp;
+        dict[OpCodes.Sizeof] = Impl_UnimplementedOp;
+        dict[OpCodes.Cgt] = Impl_UnimplementedOp;
+        dict[OpCodes.Ceq] = Impl_UnimplementedOp;
+        dict[OpCodes.Arglist] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_U] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_U2] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_I4] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_U4] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_I8] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_U8] = Impl_UnimplementedOp;
+        dict[OpCodes.Refanyval] = Impl_UnimplementedOp;
+        dict[OpCodes.Ckfinite] = Impl_UnimplementedOp;
+        dict[OpCodes.Mkrefany] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldtoken] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_U2] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_U1] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_U1] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_I] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_U] = Impl_UnimplementedOp;
+        dict[OpCodes.Add_Ovf] = Impl_UnimplementedOp;
+        dict[OpCodes.Add_Ovf_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Mul_Ovf] = Impl_UnimplementedOp;
+        dict[OpCodes.Mul_Ovf_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Sub_Ovf] = Impl_UnimplementedOp;
+        dict[OpCodes.Sub_Ovf_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Endfinally] = Impl_UnimplementedOp;
+        dict[OpCodes.Leave] = Impl_UnimplementedOp;
+        dict[OpCodes.Leave_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Stind_I] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_Ovf_I] = Impl_UnimplementedOp;
+        dict[OpCodes.Refanytype] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_U8] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_R8] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I4_7] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I4_8] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I4_S] = (method, instruction) => VariableStack.Push(() => ((System.SByte)instruction.Operand).ToString());
+        dict[OpCodes.Ldc_I4] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I8] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_R4] = (method, instruction) => VariableStack.Push(() => ((float)instruction.Operand).ToString());
+        dict[OpCodes.Ldc_R8] = (method, instruction) => VariableStack.Push(() => ((double)instruction.Operand).ToString());
+        dict[OpCodes.Dup] = (method, instruction) => VariableStack.Push(VariableStack.GetLastElement(0));
+        dict[OpCodes.Pop] = Impl_UnimplementedOp;
+        dict[OpCodes.Jmp] = Impl_UnimplementedOp;
+        dict[OpCodes.Call] = Impl_Call;
+        dict[OpCodes.Calli] = Impl_UnimplementedOp;
 
         dict[OpCodes.Ret] = (method, instruction) => CallStack.Pop(1).
             Concat(LocalsStack.Pop(GetNumLocalVariables(method))).
@@ -253,6 +365,14 @@ class Transpiler
                 {
                     () => "Loop;"
                 });
+
+        dict[OpCodes.Br_S] = (method, instruction) =>
+            JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand)).
+            Concat(new LazyString[] {
+                () => "Loop;",
+            });
+
+        dict[OpCodes.Brfalse_S] = Impl_UnimplementedOp;
 
         // jump if true
         dict[OpCodes.Brtrue_S] = (method, instruction) =>
@@ -266,6 +386,12 @@ class Transpiler
                 Concat(new LazyString[] {
                     () => "Loop;",
                 });
+        dict[OpCodes.Beq_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Bge_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Bgt_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Ble_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Blt_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Bne_Un_S] = Impl_UnimplementedOp;
 
         // jump if not equal
         dict[OpCodes.Bne_Un_S] = (method, instruction) =>
@@ -284,32 +410,114 @@ class Transpiler
                 Concat(new LazyString[] {
                     () => "Loop;",
                 });
+        dict[OpCodes.Bge_Un_S] = Impl_UnimplementedOp;
 
-        // jump
-        dict[OpCodes.Br_S] = (method, instruction) =>
-            JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand)).
-            Concat(new LazyString[] {
-                () => "Loop;",
-            });
+        dict[OpCodes.Ldc_I4_6] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I4_5] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I4_4] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I4_3] = Impl_UnimplementedOp;
+        dict[OpCodes.Break] = Impl_UnimplementedOp;
 
-        // shouldn't need to convert
-        dict[OpCodes.Conv_R4] = (method, instruction) => new LazyString[0];
+        dict[OpCodes.Ldarg_0] = (method, instruction) =>
+            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 1));
+        dict[OpCodes.Ldarg_1] = (method, instruction) =>
+            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 2));
+        dict[OpCodes.Ldarg_2] = (method, instruction) =>
+            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 3));
+        dict[OpCodes.Ldarg_3] = (method, instruction) =>
+            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 4));
 
-        dict[OpCodes.Ldc_I4_0] = (method, instruction) => VariableStack.Push(() => "0");
-        dict[OpCodes.Ldc_I4_1] = (method, instruction) => VariableStack.Push(() => "1");
-        dict[OpCodes.Ldc_I4_S] = (method, instruction) => VariableStack.Push(() => ((System.SByte)instruction.Operand).ToString());
-        dict[OpCodes.Ldc_R4] = (method, instruction) => VariableStack.Push(() => ((float)instruction.Operand).ToString());
-        dict[OpCodes.Dup] = (method, instruction) => VariableStack.Push(VariableStack.GetLastElement(0));
-
-        dict[OpCodes.Stloc_0] = (method, instruction) => Impl_Stloc(method, 0);
-        dict[OpCodes.Stloc_1] = (method, instruction) => Impl_Stloc(method, 1);
         dict[OpCodes.Ldloc_0] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, 0)));
         dict[OpCodes.Ldloc_1] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, 1)));
-
+        dict[OpCodes.Ldloc_2] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldloc_3] = Impl_UnimplementedOp;
+        dict[OpCodes.Stloc_0] = (method, instruction) => Impl_Stloc(method, 0);
+        dict[OpCodes.Stloc_1] = (method, instruction) => Impl_Stloc(method, 1);
+        dict[OpCodes.Bgt_Un_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Stloc_2] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldarg_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldarga_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Starg_S] = Impl_UnimplementedOp;
         dict[OpCodes.Starg_S] = Impl_Starg_S;
-        dict[OpCodes.Call] = Impl_Call;
+        dict[OpCodes.Ldloc_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldloca_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Stloc_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldnull] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I4_M1] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I4_0] = (method, instruction) => VariableStack.Push(() => "0");
+        dict[OpCodes.Ldc_I4_1] = (method, instruction) => VariableStack.Push(() => "1");
+        dict[OpCodes.Ldc_I4_2] = (method, Instruction) => VariableStack.Push(() => "2");
+        dict[OpCodes.Stloc_3] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_U4] = Impl_UnimplementedOp;
+        dict[OpCodes.Ble_Un_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Br] = Impl_UnimplementedOp;
+        dict[OpCodes.Stind_I8] = Impl_UnimplementedOp;
+        dict[OpCodes.Stind_R4] = Impl_UnimplementedOp;
+        dict[OpCodes.Stind_R8] = Impl_UnimplementedOp;
+
+        dict[OpCodes.Add] = (method, instruction) => DoBinaryOp(Add);
+        dict[OpCodes.Sub] = (method, instruction) => DoBinaryOp(Subtract);
+        dict[OpCodes.Mul] = Impl_UnimplementedOp;
+        dict[OpCodes.Div] = Impl_UnimplementedOp;
+        dict[OpCodes.Div_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Rem] = Impl_UnimplementedOp;
+        dict[OpCodes.Rem_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.And] = Impl_UnimplementedOp;
+        dict[OpCodes.Or] = Impl_UnimplementedOp;
+        dict[OpCodes.Xor] = Impl_UnimplementedOp;
+        dict[OpCodes.Shl] = Impl_UnimplementedOp;
+        dict[OpCodes.Shr] = Impl_UnimplementedOp;
+        dict[OpCodes.Shr_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Neg] = Impl_UnimplementedOp;
+        dict[OpCodes.Not] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_I1] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_I2] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_I4] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_I8] = Impl_UnimplementedOp;
+        dict[OpCodes.Conv_R4] = Impl_Nop; // shouldn't need to convert int to real
+        dict[OpCodes.Stind_I4] = Impl_UnimplementedOp;
+        dict[OpCodes.Stind_I2] = Impl_UnimplementedOp;
+        dict[OpCodes.Stind_I1] = Impl_UnimplementedOp;
+        dict[OpCodes.Stind_Ref] = Impl_UnimplementedOp;
+        dict[OpCodes.Brfalse] = Impl_UnimplementedOp;
+        dict[OpCodes.Brtrue] = Impl_UnimplementedOp;
+        dict[OpCodes.Beq] = Impl_UnimplementedOp;
+        dict[OpCodes.Bge] = Impl_UnimplementedOp;
+        dict[OpCodes.Bgt] = Impl_UnimplementedOp;
+        dict[OpCodes.Ble] = Impl_UnimplementedOp;
+        dict[OpCodes.Blt] = Impl_UnimplementedOp;
+        dict[OpCodes.Bne_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Bge_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Bgt_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Ble_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Blt_Un_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Blt_Un] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_I1] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_U1] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_I2] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_U2] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_I4] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_U4] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_I8] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_I] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_R4] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_R8] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldind_Ref] = Impl_UnimplementedOp;
+        dict[OpCodes.Switch] = Impl_UnimplementedOp;
+        dict[OpCodes.Readonly] = Impl_UnimplementedOp;
 
         return dict;
+    }
+
+    static readonly LazyString[] EmptyLazyStringArray = new LazyString[0];
+    static LazyString[] Impl_Nop(MethodDefinition method, Instruction instruction)
+    {
+        return EmptyLazyStringArray;
+    }
+
+    static LazyString[] Impl_UnimplementedOp(MethodDefinition method, Instruction instruction)
+    {
+        throw new NotImplementedException(instruction.OpCode.ToString());
     }
 
     private static IEnumerable<LazyString> Impl_Stloc(MethodDefinition method, int localVariableIndex)
