@@ -13,6 +13,8 @@ using LazyString = System.Func<string>;
 using static Actions;
 using ToWorkshopActionFunc = System.Func<MethodInfo, Mono.Cecil.Cil.Instruction, System.Collections.Generic.IEnumerable<System.Func<string>>>;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
 public static class Extensions
 {
@@ -651,15 +653,19 @@ class Transpiler
     private static string GetCodeName(System.Reflection.MethodInfo targetMethod)
     {
         var attributes = targetMethod?.GetCustomAttributes(typeof(WorkshopCodeName), true);
-        var codeName = (attributes?.FirstOrDefault() as WorkshopCodeName)?.Name;
-        return codeName;
+        return (attributes?.FirstOrDefault() as WorkshopCodeName)?.Name;
     }
 
     static System.Reflection.MethodInfo GetWorkshopMethod(MethodReference targetMethodRef)
     {
         if (targetMethodRef == null)
             return null;
-        return typeof(Workshop.Values).Assembly.GetType(targetMethodRef.DeclaringType.FullName)?.GetMethod(targetMethodRef.Name);
+        return GetWorkshopMethod(targetMethodRef.DeclaringType.FullName, targetMethodRef.Name);
+    }
+
+    static System.Reflection.MethodInfo GetWorkshopMethod(string declaringType, string methodName)
+    {
+        return typeof(Workshop.Values).Assembly.GetType(declaringType)?.GetMethod(methodName);
     }
 
     IEnumerable<LazyString> ToWorkshopActions(MethodInfo method, Instruction instruction)
@@ -725,7 +731,7 @@ class Transpiler
         return m_functionIds[method];
     }
 
-    public string TranspileToRules(string source)
+    public async Task<string> TranspileToRules(string source)
     {
         var references = new[]
         {
@@ -737,9 +743,12 @@ class Transpiler
         };
 
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release);
+        var syntaxTree = SyntaxFactory.ParseSyntaxTree(source);
+        await GenerateSubstituteMethods(syntaxTree);
+
         var compilation = CSharpCompilation.Create(
             "AsmBuild",
-            new[] { SyntaxFactory.ParseSyntaxTree(source) },
+            new[] { syntaxTree },
             references,
             options);
         var result = compilation.Emit("AsmBuild.dll");
@@ -763,7 +772,9 @@ class Transpiler
                 Instructions = method.Body.Instructions.ToList(),
             };
 
-            SimplifyInstructions(methodInfo.Instructions);
+            // TODO: add analyzer to prevent storing un-storable variables on stack (Array, Player, etc)
+
+            // SimplifyInstructions(methodInfo.Instructions);
 
             foreach (var instr in methodInfo.Instructions)
                 Console.WriteLine(instr);
@@ -775,10 +786,64 @@ class Transpiler
         return ruleWriter.ToString();
     }
 
+    int m_substituteMethodCount = 0;
+    async Task GenerateSubstituteMethods(SyntaxTree syntaxTree)
+    {
+        var compilationUnit = await syntaxTree.GetRootAsync();
+        // TODO: assert compilationUnit.IsKind
+        foreach (var classDecl in compilationUnit.ChildNodes().Where(n => n.IsKind(SyntaxKind.ClassDeclaration)))
+        {
+            foreach (var method in classDecl.ChildNodes().Where(n => n.IsKind(SyntaxKind.MethodDeclaration)))
+            {
+                var bodyBlock = method.ChildNodes().FirstOrDefault(n => n.IsKind(SyntaxKind.Block));
+                foreach (var invocation in bodyBlock.DescendantNodes().Where(n => n.IsKind(SyntaxKind.InvocationExpression)))
+                {
+                    Debug.Assert(invocation.ChildNodesAndTokens().Count == 2);
+
+                    var memberAccess = invocation.ChildNodesAndTokens()[0];
+                    var argumentList = invocation.ChildNodesAndTokens()[1];
+                    Debug.Assert(memberAccess.IsKind(SyntaxKind.SimpleMemberAccessExpression));
+                    Debug.Assert(argumentList.IsKind(SyntaxKind.ArgumentList));
+
+                    // TODO: other generated methods
+                    var targetMethod = GetWorkshopMethod(
+                        memberAccess.ChildNodesAndTokens()[0].ToString(),
+                        memberAccess.ChildNodesAndTokens()[2].ToString());
+                    var targetCode = GetCodeName(targetMethod);
+                    if (targetCode != null)
+                    {
+                        var arguments = argumentList.ChildNodesAndTokens().Where(n => n.IsKind(SyntaxKind.Argument)).Select(n => n.ChildNodesAndTokens().Single());
+                        var parameters = targetMethod.GetParameters();
+                        Debug.Assert(arguments.Count() == parameters.Length);
+
+                        // TODO: add baking in literals
+                        if (arguments.All(a => a.IsKind(SyntaxKind.InvocationExpression)))
+                        {
+                            // foreach (var argument in arguments)
+                            // {
+                            //     Console.WriteLine(argument.ChildNodesAndTokens().Select(n => (n, n.Kind())).ListToString());
+                            //     Console.WriteLine();
+                            // }
+
+                            var returnType = targetMethod.ReturnType == typeof(void) ? "void" : "dynamic";
+                            var baseMethodName = string.Join("", targetMethod.Name.Where(ch => char.IsLetterOrDigit(ch)));
+                            var attrSource = $"[WorkshopCodeName(\"{targetCode}\")]";
+                            var methodSource = $"static {returnType} Impl_{baseMethodName}_{m_substituteMethodCount++} ({ arguments.Select((a, i) => $"dynamic arg{i}").ListToString()}) => null;";
+                            var generatedTree = SyntaxFactory.ParseSyntaxTree(string.Join('\n', attrSource, methodSource));
+                            var generatedMethod = (await generatedTree.GetRootAsync()).ChildNodes().Single();
+                            Debug.Assert(generatedMethod.IsKind(SyntaxKind.MethodDeclaration));
+
+                            Console.WriteLine(generatedMethod);
+                            Console.WriteLine();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     static void SimplifyInstructions(List<Instruction> instructions)
     {
-        // TODO: add analyzer to prevent storing un-storable variables on stack (Array, Player, etc)
-        
     SimplifyInstructions_Start:
         var workshopCalls = instructions.Where(i => i.OpCode == OpCodes.Call && GetWorkshopMethod(i.Operand as MethodReference) != null);
         foreach (var call in workshopCalls)
@@ -844,11 +909,11 @@ class Transpiler
         m_functionIds = methods.Zip(Enumerable.Range(1, methods.Count), (m, i) => (m, i)).ToDictionary(pair => pair.m, pair => pair.i);
     }
 
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         var transpiler = new Transpiler();
         var source = File.ReadAllText("Test\\Test.cs");
-        var rules = transpiler.TranspileToRules(source);
+        var rules = await transpiler.TranspileToRules(source);
         Console.WriteLine(rules);
         TextCopy.Clipboard.SetText(rules);
     }
