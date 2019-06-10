@@ -186,7 +186,8 @@ class Transpiler
         var firstActions = new LazyString[]
         {
             () => "Abort If Condition Is False;",
-            () => "Wait(0, Ignore Condition);",
+            // () => "Wait(0, Ignore Condition);",
+            () => "Wait(0.5, Abort When False);",
             SetGlobal(Variables.Temporary, JumpOffsetStack.GetLastElement(0)),
         };
 
@@ -241,12 +242,12 @@ class Transpiler
         dict[OpCodes.Add] = (method, instruction) => DoBinaryOp(Add);
         dict[OpCodes.Sub] = (method, instruction) => DoBinaryOp(Subtract);
 
-        // TODO: pop parameters off stack
         dict[OpCodes.Ret] = (method, instruction) => CallStack.Pop(1).
             Concat(LocalsStack.Pop(GetNumLocalVariables(method))).
+            Concat(ParameterStack.Pop(method.Parameters.Count)).
             Concat(new LazyString[]
                 {
-                    () => "Abort;"
+                    () => "Loop;"
                 });
 
         // jump if true
@@ -358,7 +359,7 @@ class Transpiler
             foreach (var action in LocalsStack.Push(() => "0"))
                 yield return action;
 
-        yield return () => "Abort;";
+        yield return () => "Loop;";
     }
 
     static IEnumerable<LazyString> Impl_Call_WorkshopAction(MethodDefinition method, Instruction instruction, MethodReference targetMethodRef)
