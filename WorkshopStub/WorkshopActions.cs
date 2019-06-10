@@ -1178,7 +1178,7 @@ namespace Workshop
         /// 
         /// Time - The duration of the pause. A minimum value of 0.250 seconds is required. Can use most Number based Value Syntax.
         /// Wait Behavior - Specifies if and how the wait can be interrupted. If the condition list is ignored, the wait will not be interrupted, otherwise, the condition list will determine if and when the action list will abort or restart.
-        [WorkshopCodeName("WAIT")]
-        public static void Wait() { }
+        // [WorkshopCodeName("WAIT")]
+        // public static void Wait() { }
     }
 }

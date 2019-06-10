@@ -958,7 +958,7 @@ namespace Workshop
         /// 
         /// Team - The team or teams on which to count players. Can use most Team based Value Syntax to provide this value.
         [WorkshopCodeName("NUMBER OF PLAYERS")]
-        public static object NumberOfPlayers() => throw new NotImplementedException();
+        public static int NumberOfPlayers() => throw new NotImplementedException();
 
         /// NUMBER OF PLAYERS ON OBJECTIVE
         /// The number of players occupying a payload or a control point (either on a team or in the match).
@@ -1344,7 +1344,7 @@ namespace Workshop
         /// Array - The array whose element to acquire. Can use most Array based Value Syntax to provide this value.
         /// Index - The index whose element to acquire. Can use most Number based Value Syntax to provide this value.
         [WorkshopCodeName("VALUE IN ARRAY")]
-        public static object ValueInArray() => throw new NotImplementedException();
+        public static T ValueInArray<T>(Array<T> array, int index) => throw new NotImplementedException();
 
         /// VECTOR
         /// A vector composed of three real numbers (X, Y, Z) where X is left, Y is Up, and Z is forward. Vectors are used for position, direction, and velocity.

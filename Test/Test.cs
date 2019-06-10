@@ -29,11 +29,16 @@ public static class MainClass
 
     public static void Main()
     {
-        var players = Workshop.Values.AllPlayers(Workshop.Team.All());
-        var value = Workshop.Values.LastOf(players);
-        Workshop.Actions.DebugLog(value);
-        // for (int i = 0; i != 1337; ++i)
-        //     Workshop.Actions.Wait(0.01f);
+        for (int i = 0; true; ++i)
+        {
+            if (i == Workshop.Values.NumberOfPlayers())
+                i = 0;
+
+            var players = Workshop.Values.AllPlayers(Workshop.Team.All());
+            var value = Workshop.Values.ValueInArray(Workshop.Values.AllPlayers(Workshop.Team.All()), i);
+            Workshop.Actions.DebugLog(value);
+            Workshop.Actions.Wait(1);
+        }
     }
 
     // public static float RecursiveFibonacci(int n, float a = 0, float b = 1)

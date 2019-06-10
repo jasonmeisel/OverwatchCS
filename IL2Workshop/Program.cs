@@ -193,6 +193,19 @@ public static class Actions
 
 class Transpiler
 {
+    struct GeneratedMethod
+    {
+        public delegate string InvokeFunc(object[] parameters);
+
+        public InvokeFunc Invoke;
+        public ParameterInfo[] Parameters;
+
+        public override string ToString()
+        {
+            return Invoke(new object[Parameters.Length]);
+        }
+    }
+
     IEnumerable<LazyString> MethodHeaderActions(MethodInfo method)
     {
         var firstActions = new LazyString[]
@@ -549,8 +562,8 @@ class Transpiler
             return Impl_Call_CustomMethod(method, instruction, targetMethodDef);
         if (instruction.Operand is MethodReference targetMethodRef)
             return Impl_Call_WorkshopAction(method, instruction, targetMethodRef);
-        if (instruction.Operand is string code)
-            return VariableStack.Push(() => code);
+        if (instruction.Operand is GeneratedMethod generatedMethod)
+            return VariableStack.Push(() => generatedMethod.Invoke(new object[0]));
         throw new ArgumentException();
     }
 
@@ -749,15 +762,38 @@ class Transpiler
         foreach (var call in workshopCalls)
         {
             // TODO: multiple parameters
-            var code = GetCodeName(GetWorkshopMethod(call.Operand as MethodReference));
-            if (code != null && call.Previous?.OpCode == OpCodes.Call)
+            var targetMethod = GetWorkshopMethod(call.Operand as MethodReference);
+            var code = GetCodeName(targetMethod);
+            var parameters = targetMethod?.GetParameters();
+            if (code != null && parameters.Length > 0 && call.Previous?.OpCode == OpCodes.Call)
             {
-                var prevCode = GetCodeName(GetWorkshopMethod(call.Previous.Operand as MethodReference)) ??
+                var prevTargetMethod = GetWorkshopMethod(call.Previous.Operand as MethodReference);
+                var prevCode = GetCodeName(prevTargetMethod) ??
                     call.Previous.Operand as string;
                 if (prevCode != null)
                 {
                     instructions.Remove(call.Previous);
-                    call.Operand = $"{code}({prevCode})";
+
+                    switch (parameters.Length)
+                    {
+                        case 1:
+                            call.Operand = new GeneratedMethod
+                            {
+                                Invoke = p => $"{code}({prevCode})",
+                                Parameters = new ParameterInfo[0],
+                            };
+                            break;
+                        case 2:
+                            call.Operand = new GeneratedMethod
+                            {
+                                Invoke = p => $"{code}({prevCode}, {p[0]})",
+                                Parameters = parameters.Skip(1).ToArray(),
+                            };
+                            break;
+                        default:
+                            throw new Exception();
+                    }
+
                     goto SimplifyInstructions_Start;
                 }
             }
