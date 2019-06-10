@@ -25,10 +25,10 @@ public static class MainClass
         }
     }
 
-    // public static float RecursiveFibonacci(int n, float a = 0, float b = 1)
-    // {
-    // 	if (n == 1)
-    //         return b;
-    //     return RecursiveFibonacci(n - 1, b, a + b);
-    // }
+    public static float RecursiveFibonacci(int n, float a = 0, float b = 1)
+    {
+    	if (n == 1)
+            return b;
+        return RecursiveFibonacci(n - 1, b, a + b);
+    }
 }

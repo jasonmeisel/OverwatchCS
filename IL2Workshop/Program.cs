@@ -57,7 +57,12 @@ public static class Actions
 
     public static LazyString ArrayAppend(char arrayVar, LazyString value)
     {
-        return SetGlobal(arrayVar, () => $"Append To Array({GetGlobal(arrayVar)()}, {value()})");
+        return SetGlobal(arrayVar, ArrayConcat(GetGlobal(arrayVar), value));
+    }
+
+    public static LazyString ArrayConcat(LazyString a, LazyString b)
+    {
+        return () => $"Append To Array({a()}, {b()})";
     }
 
     public static LazyString[] PushToStack(char stackVar, char stackIndexVar, LazyString value)
@@ -205,6 +210,7 @@ class Program
                 () => "Abort;"
             };
 
+        // jump if true
         dict[OpCodes.Brtrue_S] = (method, instruction) =>
             new[] { SetGlobal(Variables.Temporary, GetLastElementOfVariableStack(0)) }.
                 Concat(PopVariableStack(1)).
@@ -215,6 +221,23 @@ class Program
                     () => "Loop;",
                 });
 
+        // jump if not equal
+        dict[OpCodes.Bne_Un_S] = (method, instruction) =>
+            new[] {
+                SetGlobal(Variables.Temporary, ArraySlice(
+                    GetGlobal(Variables.VariableStack),
+                    Subtract(GetGlobal(Variables.VariableStackIndex), () => "1"),
+                    () => "2"))
+                }.
+                Concat(PopVariableStack(2)).
+                Concat(new[]
+                {
+                    SkipIf(Equal(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), ArraySubscript(GetGlobal(Variables.Temporary), () => "1")), () => "2"),
+                    SetGlobal(Variables.JumpOffset, () => ((Instruction)instruction.Operand).Offset.ToString()),
+                    () => "Loop;",
+                });
+
+        // jump
         dict[OpCodes.Br_S] = (method, instruction) => new LazyString[]
             {
                 SetGlobal(Variables.JumpOffset, () => ((Instruction)instruction.Operand).Offset.ToString()),
@@ -385,6 +408,7 @@ rule(""{0}"")
 {2}
 {3}
 }}";
+
     static string EventFormat => @"
     event
     {{
