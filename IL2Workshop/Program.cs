@@ -805,7 +805,29 @@ class Transpiler
             return SyntaxFactory.ParseSyntaxTree($"internal static class Generated {{ {m_methodsSource.ToString()} }}");
         }
 
-        // string ArgumentToString(ArgumentSyntax )
+        string InvocationToString(InvocationExpressionSyntax invocation)
+        {
+            var memberAccess = (MemberAccessExpressionSyntax)invocation.Expression;
+            var argumentList = invocation.ArgumentList;
+
+            var targetMethod = GetWorkshopMethodFromMemberAccess(memberAccess);
+            var targetCode = GetCodeName(targetMethod);
+            var parameters = targetMethod.GetParameters();
+            if (targetCode != null)
+            {
+                if (parameters.Length != 0)
+                {
+                    var arguments = argumentList.Arguments.Select(a => a.Expression);
+                    Debug.Assert(arguments.Count() == parameters.Length);
+
+                    // TODO: add baking in literals
+                    var argCodes = arguments.Cast<InvocationExpressionSyntax>().Select(InvocationToString).ListToString();
+                    return $"{targetCode}({argCodes})";
+                }
+                return targetCode;
+            }
+            throw null;
+        }
 
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocation)
         {
@@ -821,36 +843,24 @@ class Transpiler
                 Debug.Assert(arguments.Count() == parameters.Length);
 
                 // TODO: add baking in literals
-                if (arguments.All(a => a.IsKind(SyntaxKind.InvocationExpression)))
-                {
-                    var argMethods = arguments.Cast<InvocationExpressionSyntax>().Select(a => GetWorkshopMethodFromMemberAccess((MemberAccessExpressionSyntax)a.Expression)).ToArray();
+                var methodSemantics = (Microsoft.CodeAnalysis.IMethodSymbol)m_semanticModel.GetSymbolInfo(invocation).Symbol;
+                var returnType = methodSemantics.ReturnType;
+                var baseMethodName = string.Join("", targetMethod.Name.Where(ch => char.IsLetterOrDigit(ch)));
+                var paramListSource = ""; // arguments.Select((a, i) => $"dynamic arg{i}").ListToString();
+                var generatedMethodName = $"Impl_{baseMethodName}_{m_methodCount++}";
+                var methodSource = $"internal static {returnType} {generatedMethodName} ({paramListSource}) => throw null;";
+                m_methodsSource.WriteLine(methodSource);
+                m_methodsSource.WriteLine();
 
-                    // TODO: support parameter forwarding
-                    // TODO: recursively generated methods
-                    if (argMethods.All(m => m.GetParameters().Length == 0))
-                    {
-                        var argCodes = argMethods.Select(GetCodeName).ToArray();
+                var workshopCode = InvocationToString(invocation);
+                m_generatedMethodToWorkshopCode[generatedMethodName] = () => workshopCode;
 
-                        var methodSemantics = (Microsoft.CodeAnalysis.IMethodSymbol)m_semanticModel.GetSymbolInfo(invocation).Symbol;
-                        var returnType = methodSemantics.ReturnType;
-                        var baseMethodName = string.Join("", targetMethod.Name.Where(ch => char.IsLetterOrDigit(ch)));
-                        var paramListSource = ""; // arguments.Select((a, i) => $"dynamic arg{i}").ListToString();
-                        var generatedMethodName = $"Impl_{baseMethodName}_{m_methodCount++}";
-                        var methodSource = $"internal static {returnType} {generatedMethodName} ({paramListSource}) => throw null;";
-                        m_methodsSource.WriteLine(methodSource);
-                        m_methodsSource.WriteLine();
-
-                        var workshopCode = $"{targetCode}({argCodes.ListToString()})";
-                        m_generatedMethodToWorkshopCode[generatedMethodName] = () => workshopCode;
-                        
-                        // Console.WriteLine(invocation.DescendantNodesAndTokens().Select(n => n.Kind()).ListToString());
-                        return SyntaxFactory.InvocationExpression(
-                            SyntaxFactory.MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName("Generated"),
-                                SyntaxFactory.IdentifierName(generatedMethodName)));
-                    }
-                }
+                // Console.WriteLine(invocation.DescendantNodesAndTokens().Select(n => n.Kind()).ListToString());
+                return SyntaxFactory.InvocationExpression(
+                    SyntaxFactory.MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        SyntaxFactory.IdentifierName("Generated"),
+                        SyntaxFactory.IdentifierName(generatedMethodName)));
             }
             return base.VisitInvocationExpression(invocation);
         }
