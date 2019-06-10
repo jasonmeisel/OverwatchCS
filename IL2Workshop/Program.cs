@@ -763,7 +763,7 @@ class Transpiler
                 Instructions = method.Body.Instructions.ToList(),
             };
 
-            SimplifyInstructions(methodInfo.Instructions);
+            // SimplifyInstructions(methodInfo.Instructions);
 
             foreach (var instr in methodInfo.Instructions)
                 Console.WriteLine(instr);

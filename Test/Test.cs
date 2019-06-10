@@ -42,7 +42,7 @@ public static class MainClass
 
         for (int i = 0; true; ++i)
         {
-            Workshop.Actions.DebugLog(Workshop.Values.CosineFromRadians(i));
+            Workshop.Actions.DebugLog(Workshop.Values.CosineFromRadians(Workshop.Values.CosineFromRadians(i)));
             Workshop.Actions.Wait(1);
         }
     }
