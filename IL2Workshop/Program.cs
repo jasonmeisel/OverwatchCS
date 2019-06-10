@@ -30,6 +30,42 @@ public static class Variables
 
 public static class Actions
 {
+    public class Stack
+    {
+        public char stackVar;
+        public char stackIndexVar;
+
+        public LazyString[] Push(LazyString value)
+        {
+            return new[] {
+                ArrayAppend(stackVar, value),
+                SetGlobal(stackIndexVar, () => $"Add(1, {GetGlobal(stackIndexVar)()})"),
+            };
+        }
+
+        public LazyString[] Pop(int count)
+        {
+            var newSize = Add(GetGlobal(stackIndexVar), () => (1 - count).ToString());
+            return new[] {
+                SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", newSize)),
+                SetGlobal(stackIndexVar, Add(newSize, () => "-1")),
+            };
+        }
+
+        public LazyString GetLastElement(int offset)
+        {
+            return ArraySubscript(GetGlobal(stackVar), Add(GetGlobal(stackIndexVar), () => (-offset).ToString()));
+        }
+
+        public LazyString[] Resize(LazyString size)
+        {
+            return new[] {
+                ResizeArray(stackVar, size),
+                SetGlobal(stackIndexVar, Add(size, () => "-1")),
+            };
+        }
+    }
+
     public static LazyString GetGlobal(char variable)
     {
         return () => $"Global Variable({variable})";
@@ -65,70 +101,14 @@ public static class Actions
         return () => $"Append To Array({a()}, {b()})";
     }
 
-    public static LazyString[] PushToStack(char stackVar, char stackIndexVar, LazyString value)
-    {
-        return new[] {
-            ArrayAppend(stackVar, value),
-            SetGlobal(stackIndexVar, () => $"Add(1, {GetGlobal(stackIndexVar)()})"),
-        };
-    }
-
-    public static LazyString GetLastElementOfStack(char stackVar, char stackIndexVar, int offset)
-    {
-        return ArraySubscript(GetGlobal(stackVar), Add(GetGlobal(stackIndexVar), () => (-offset).ToString()));
-    }
-
-    public static LazyString[] ResizeStack(char stackVar, char stackIndexVar, LazyString size)
-    {
-        return new[] {
-            ResizeArray(stackVar, size),
-            SetGlobal(stackIndexVar, Add(size, () => "-1")),
-        };
-    }
-
     public static LazyString ResizeArray(char stackVar, LazyString size)
     {
         return SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", size));
     }
 
-    public static LazyString[] PopStack(char stackVar, char stackIndexVar, int count)
-    {
-        var newSize = Add(GetGlobal(stackIndexVar), () => (1 - count).ToString());
-        return new[] {
-            SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", newSize)),
-            SetGlobal(stackIndexVar, Add(newSize, () => "-1")),
-        };
-    }
-
-    public static LazyString[] PushToVariableStack(LazyString value)
-    {
-        return PushToStack(Variables.VariableStack, Variables.VariableStackIndex, value);
-    }
-
-    public static LazyString[] PopVariableStack(int count)
-    {
-        return PopStack(Variables.VariableStack, Variables.VariableStackIndex, count);
-    }
-
-    public static LazyString GetLastElementOfVariableStack(int offset)
-    {
-        return GetLastElementOfStack(Variables.VariableStack, Variables.VariableStackIndex, offset);
-    }
-
-    public static LazyString[] PushToParameterStack(LazyString value)
-    {
-        return PushToStack(Variables.ParameterStack, Variables.ParameterStackIndex, value);
-    }
-
-    public static LazyString GetLastElementOfParameterStack(int offset)
-    {
-        return GetLastElementOfStack(Variables.ParameterStack, Variables.ParameterStackIndex, offset);
-    }
-
-    public static LazyString[] PopParameterStack(int count)
-    {
-        return PopStack(Variables.ParameterStack, Variables.ParameterStackIndex, count);
-    }
+    public static Stack VariableStack = new Stack { stackVar = Variables.VariableStack, stackIndexVar = Variables.VariableStackIndex };
+    public static Stack ParameterStack = new Stack { stackVar = Variables.ParameterStack, stackIndexVar = Variables.ParameterStackIndex };
+    public static Stack CallStack = new Stack { stackVar = Variables.CallStack, stackIndexVar = Variables.CallStackIndex };
 
     public static LazyString Add(LazyString valueA, LazyString valueB)
     {
@@ -193,13 +173,13 @@ class Transpiler
         var dict = new Dictionary<OpCode, ToWorkshopActionFunc>();
 
         dict[OpCodes.Ldarg_0] = (method, instruction) =>
-            PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 1));
+            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 1));
         dict[OpCodes.Ldarg_1] = (method, instruction) =>
-            PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 2));
+            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 2));
         dict[OpCodes.Ldarg_2] = (method, instruction) =>
-            PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 3));
+            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 3));
         dict[OpCodes.Ldarg_3] = (method, instruction) =>
-            PushToVariableStack(GetLastElementOfParameterStack(method.Parameters.Count - 4));
+            VariableStack.Push(ParameterStack.GetLastElement(method.Parameters.Count - 4));
 
         dict[OpCodes.Add] = (method, instruction) => DoBinaryOp(Add);
         dict[OpCodes.Sub] = (method, instruction) => DoBinaryOp(Subtract);
@@ -213,8 +193,8 @@ class Transpiler
 
         // jump if true
         dict[OpCodes.Brtrue_S] = (method, instruction) =>
-            new[] { SetGlobal(Variables.Temporary, GetLastElementOfVariableStack(0)) }.
-                Concat(PopVariableStack(1)).
+            new[] { SetGlobal(Variables.Temporary, VariableStack.GetLastElement(0)) }.
+                Concat(VariableStack.Pop(1)).
                 Concat(new[]
                 {
                     SkipIf(Equal(GetGlobal(Variables.Temporary), () => "0"), () => "2"),
@@ -230,7 +210,7 @@ class Transpiler
                     Subtract(GetGlobal(Variables.VariableStackIndex), () => "1"),
                     () => "2"))
                 }.
-                Concat(PopVariableStack(2)).
+                Concat(VariableStack.Pop(2)).
                 Concat(new[]
                 {
                     SkipIf(Equal(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), ArraySubscript(GetGlobal(Variables.Temporary), () => "1")), () => "2"),
@@ -248,18 +228,18 @@ class Transpiler
         // shouldn't need to convert
         dict[OpCodes.Conv_R4] = (method, instruction) => new LazyString[0];
 
-        dict[OpCodes.Ldc_I4_0] = (method, instruction) => PushToVariableStack(() => "0");
-        dict[OpCodes.Ldc_I4_1] = (method, instruction) => PushToVariableStack(() => "1");
-        dict[OpCodes.Ldc_R4] = (method, instruction) => PushToVariableStack(() => ((float)instruction.Operand).ToString());
-        dict[OpCodes.Dup] = (method, instruction) => PushToVariableStack(GetLastElementOfVariableStack(0));
+        dict[OpCodes.Ldc_I4_0] = (method, instruction) => VariableStack.Push(() => "0");
+        dict[OpCodes.Ldc_I4_1] = (method, instruction) => VariableStack.Push(() => "1");
+        dict[OpCodes.Ldc_R4] = (method, instruction) => VariableStack.Push(() => ((float)instruction.Operand).ToString());
+        dict[OpCodes.Dup] = (method, instruction) => VariableStack.Push(VariableStack.GetLastElement(0));
 
         // TODO: create local variables stack (using num loc variables from method def)
         dict[OpCodes.Stloc_0] = (method, instruction) =>
-            new[] { SetGlobal('A', GetLastElementOfVariableStack(0)) }.Concat(PopVariableStack(1)).ToArray();
+            new[] { SetGlobal('A', VariableStack.GetLastElement(0)) }.Concat(VariableStack.Pop(1)).ToArray();
         dict[OpCodes.Stloc_1] = (method, instruction) =>
-            new[] { SetGlobal('B', GetLastElementOfVariableStack(0)) }.Concat(PopVariableStack(1)).ToArray();
-        dict[OpCodes.Ldloc_0] = (method, instruction) => PushToVariableStack(GetGlobal('A'));
-        dict[OpCodes.Ldloc_1] = (method, instruction) => PushToVariableStack(GetGlobal('B'));
+            new[] { SetGlobal('B', VariableStack.GetLastElement(0)) }.Concat(VariableStack.Pop(1)).ToArray();
+        dict[OpCodes.Ldloc_0] = (method, instruction) => VariableStack.Push(GetGlobal('A'));
+        dict[OpCodes.Ldloc_1] = (method, instruction) => VariableStack.Push(GetGlobal('B'));
 
         dict[OpCodes.Starg_S] = Impl_Starg_S;
         dict[OpCodes.Call] = Impl_Call;
@@ -287,7 +267,7 @@ class Transpiler
             () => targetMethod.Parameters.Count.ToString()));
         yield return SetGlobal(Variables.ParameterStackIndex,
             Add(GetGlobal(Variables.ParameterStackIndex), () => targetMethod.Parameters.Count.ToString()));
-        foreach (var action in PopStack(Variables.VariableStack, Variables.VariableStackIndex, targetMethod.Parameters.Count))
+        foreach (var action in VariableStack.Pop(targetMethod.Parameters.Count))
             yield return action;
 
         // TODO: functions should be a stack
@@ -302,17 +282,17 @@ class Transpiler
         switch (targetMethodRef.Name)
         {
             case "Wait":
-                yield return () => $"Wait({GetLastElementOfVariableStack(0)()}, Ignore Condition);";
+                yield return () => $"Wait({VariableStack.GetLastElement(0)()}, Ignore Condition);";
                 break;
             case "DebugLog":
-                yield return () => $"Big Message(All Players(All Teams), String(\"({{0}})\", {GetLastElementOfVariableStack(0)()}, Null, Null));";
+                yield return () => $"Big Message(All Players(All Teams), String(\"({{0}})\", {VariableStack.GetLastElement(0)()}, Null, Null));";
                 yield return () => "Wait(0, Ignore Condition);";
                 break;
             default:
                 throw new ArgumentException();
         }
 
-        foreach (var action in PopVariableStack(targetMethodRef.Parameters.Count))
+        foreach (var action in VariableStack.Pop(targetMethodRef.Parameters.Count))
             yield return action;
     }
 
@@ -330,20 +310,20 @@ class Transpiler
             Subtract(GetGlobal(Variables.ParameterStackIndex), () => (method.Parameters.Count - 1).ToString()),
             () => method.Parameters.Count.ToString()));
 
-        foreach (var action in PopParameterStack(method.Parameters.Count))
+        foreach (var action in ParameterStack.Pop(method.Parameters.Count))
             yield return action;
 
         foreach (var i in Enumerable.Range(0, method.Parameters.Count))
         {
-            var push = PushToParameterStack(
+            var push = ParameterStack.Push(
                 instruction.Operand == method.Parameters[i] ?
-                GetLastElementOfVariableStack(0) :
+                VariableStack.GetLastElement(0) :
                 ArraySubscript(GetGlobal(Variables.Temporary), i));
             foreach (var action in push)
                 yield return action;
         }
 
-        foreach (var action in PopVariableStack(1))
+        foreach (var action in VariableStack.Pop(1))
             yield return action;
     }
 
@@ -356,10 +336,10 @@ class Transpiler
                 ArrayAppend(Variables.Temporary, ArraySubscript(GetGlobal(Variables.VariableStack), GetGlobal(Variables.VariableStackIndex)))
             }.Concat(
             // pop them off the stack
-            PopStack(Variables.VariableStack, Variables.VariableStackIndex, 2)
+            VariableStack.Pop(2)
         ).Concat(
             // push the addition of them onto the stack
-            PushToVariableStack(binaryOp(ArraySubscript(GetGlobal(Variables.Temporary), 0), ArraySubscript(GetGlobal(Variables.Temporary), 1)))
+            VariableStack.Push(binaryOp(ArraySubscript(GetGlobal(Variables.Temporary), 0), ArraySubscript(GetGlobal(Variables.Temporary), 1)))
         ).ToArray();
     }
 
