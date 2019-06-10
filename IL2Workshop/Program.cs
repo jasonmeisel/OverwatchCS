@@ -164,7 +164,7 @@ public static class Actions
 
 class Transpiler
 {
-    static LazyString[] MethodHeaderActions(MethodDefinition method)
+    LazyString[] MethodHeaderActions(MethodDefinition method)
     {
         var firstActions = new LazyString[]
         {
@@ -185,9 +185,10 @@ class Transpiler
         return firstActions.Concat(targetJumps).ToArray();
     }
 
-    static readonly Dictionary<OpCode, ToWorkshopActionFunc> s_toWorkshopActionsDict = CreateToWorkshopActionsDict();
+    Dictionary<OpCode, ToWorkshopActionFunc> s_toWorkshopActionsDict;
+    Dictionary<OpCode, ToWorkshopActionFunc> ToWorkshopActionsDict => s_toWorkshopActionsDict = s_toWorkshopActionsDict ?? CreateToWorkshopActionsDict();
 
-    static Dictionary<OpCode, ToWorkshopActionFunc> CreateToWorkshopActionsDict()
+    Dictionary<OpCode, ToWorkshopActionFunc> CreateToWorkshopActionsDict()
     {
         var dict = new Dictionary<OpCode, ToWorkshopActionFunc>();
 
@@ -266,28 +267,35 @@ class Transpiler
         return dict;
     }
 
-    private static IEnumerable<LazyString> Impl_Call(MethodDefinition method, Instruction instruction)
+    IEnumerable<LazyString> Impl_Call(MethodDefinition method, Instruction instruction)
     {
+        if (instruction.Operand is MethodDefinition)
+            return Impl_Call_CustomMethod(method, instruction);
         if (instruction.Operand is MethodReference targetMethodRef)
-            return CallWorkshopAction(method, instruction, targetMethodRef);
-
-        var targetMethod = (MethodDefinition)instruction.Operand;
-        return new[] {
-                // pop the parameters off the variable stack and onto the parameter stack
-                ArrayAppend(Variables.ParameterStack, ArraySlice(
-                    GetGlobal(Variables.VariableStack),
-                    Subtract(GetGlobal(Variables.VariableStackIndex), () => (targetMethod.Parameters.Count - 1).ToString()),
-                    () => targetMethod.Parameters.Count.ToString())),
-                SetGlobal(Variables.ParameterStackIndex,
-                    Add(GetGlobal(Variables.ParameterStackIndex), () => targetMethod.Parameters.Count.ToString())),
-            }.Concat(
-            PopStack(Variables.VariableStack, Variables.VariableStackIndex, targetMethod.Parameters.Count)
-        ).ToArray();
-
-        // TODO: set up functions to be called and call it
+            return Impl_Call_WorkshopAction(method, instruction, targetMethodRef);
+        throw new ArgumentException();
     }
 
-    static IEnumerable<LazyString> CallWorkshopAction(MethodDefinition method, Instruction instruction, MethodReference targetMethodRef)
+    IEnumerable<LazyString> Impl_Call_CustomMethod(MethodDefinition method, Instruction instruction)
+    {
+        var targetMethod = (MethodDefinition)instruction.Operand;
+
+        // pop the parameters off the variable stack and onto the parameter stack
+        yield return ArrayAppend(Variables.ParameterStack, ArraySlice(
+            GetGlobal(Variables.VariableStack),
+            Subtract(GetGlobal(Variables.VariableStackIndex), () => (targetMethod.Parameters.Count - 1).ToString()),
+            () => targetMethod.Parameters.Count.ToString()));
+        yield return SetGlobal(Variables.ParameterStackIndex,
+            Add(GetGlobal(Variables.ParameterStackIndex), () => targetMethod.Parameters.Count.ToString()));
+        foreach (var action in PopStack(Variables.VariableStack, Variables.VariableStackIndex, targetMethod.Parameters.Count))
+            yield return action;
+
+        // TODO: functions should be a stack
+        var functionId = GetFunctionId(method);
+        yield return SetGlobal(Variables.CallStack, () => functionId.ToString());
+    }
+
+    static IEnumerable<LazyString> Impl_Call_WorkshopAction(MethodDefinition method, Instruction instruction, MethodReference targetMethodRef)
     {
         // TODO: assert that the method reference is a workshop action
 
@@ -300,15 +308,17 @@ class Transpiler
                 yield return () => $"Big Message(All Players(All Teams), String(\"({{0}})\", {GetLastElementOfVariableStack(0)()}, Null, Null));";
                 yield return () => "Wait(0, Ignore Condition);";
                 break;
+            default:
+                throw new ArgumentException();
         }
 
         foreach (var action in PopVariableStack(targetMethodRef.Parameters.Count))
             yield return action;
     }
 
-    static IEnumerable<LazyString> ToWorkshopActions(MethodDefinition method, Instruction instruction)
+    IEnumerable<LazyString> ToWorkshopActions(MethodDefinition method, Instruction instruction)
     {
-        if (s_toWorkshopActionsDict.TryGetValue(instruction.OpCode, out var toActions))
+        if (ToWorkshopActionsDict.TryGetValue(instruction.OpCode, out var toActions))
             return toActions(method, instruction);
         throw new Exception($"Unsupported opcode {instruction.OpCode}");
     }
@@ -353,9 +363,15 @@ class Transpiler
         ).ToArray();
     }
 
-    private static int CalcNumActionsToSkip(MethodDefinition method, Instruction start, Instruction end)
+    int CalcNumActionsToSkip(MethodDefinition method, Instruction start, Instruction end)
     {
         return method.Body.Instructions.SkipWhile(i => i != start).TakeWhile(i => i != end).Sum(i => ToWorkshopActions(method, i).Count()) - 1;
+    }
+
+    Dictionary<MethodDefinition, int> m_functionIds;
+    int GetFunctionId(MethodDefinition method)
+    {
+        return m_functionIds[method];
     }
 
     public string TranspileToRules(string source)
@@ -384,9 +400,11 @@ class Transpiler
         }
 
         var module = ModuleDefinition.ReadModule("AsmBuild.dll");
+        var methods = module.GetType("MainClass").Methods;
+        GenerateFunctionIds(methods);
 
         var ruleWriter = new StringWriter();
-        foreach (var method in module.GetType("MainClass").Methods)
+        foreach (var method in methods)
         {
             foreach (var instr in method.Body.Instructions)
                 Console.WriteLine(instr);
@@ -396,6 +414,12 @@ class Transpiler
         }
 
         return ruleWriter.ToString();
+    }
+
+    void GenerateFunctionIds(Mono.Collections.Generic.Collection<MethodDefinition> methods)
+    {
+        // start at 1 so that 0 doesn't set any functions off
+        m_functionIds = methods.Zip(Enumerable.Range(1, methods.Count), (m, i) => (m, i)).ToDictionary(pair => pair.m, pair => pair.i);
     }
 
     static void Main(string[] args)
@@ -433,7 +457,7 @@ rule(""{0}"")
 {0}
     }}";
 
-    static void ConvertMethodToRule(StringWriter ruleWriter, MethodDefinition method)
+    void ConvertMethodToRule(StringWriter ruleWriter, MethodDefinition method)
     {
         var writer = new StringWriter();
         var writeLine = (Action<object>)(str => writer.WriteLine($"        {str}"));
@@ -455,7 +479,7 @@ rule(""{0}"")
             RuleFormat,
             method.Name,
             string.Format(EventFormat, "Ongoing - Global"),
-            method.Name == "TestWait" ? "" : string.Format(ConditionsFormat, "Global Variable(F) == 1"),
+            method.Name == "Main" ? "" : string.Format(ConditionsFormat, $"Global Variable(F) == {GetFunctionId(method)}"),
             string.Format(ActionsFormat, writer.ToString())));
     }
 }
