@@ -1018,6 +1018,9 @@ class Transpiler
         var rules = transpiler.TranspileToRules(source);
         Console.WriteLine(rules);
         TextCopy.Clipboard.SetText(rules);
+
+        Console.WriteLine();
+        Console.WriteLine("Copied rules to clipboard. Open the workshop and click paste.");
     }
 
     static string RuleFormat => @"
