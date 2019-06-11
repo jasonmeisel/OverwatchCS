@@ -7,10 +7,9 @@ namespace Workshop
     public struct Array<TElement> {}
     public struct Vector {}
 
-    public struct Team
+    public enum Team
     {
-        [WorkshopCodeName("All Teams")]
-        public static Team All() => throw new NotImplementedException();
+        [WorkshopCodeName("All Teams")] All,
     }
 
     public struct StringValue {}
@@ -1690,6 +1689,8 @@ namespace Workshop
         /// </summary>
         [WorkshopCodeName("VALUE IN ARRAY")]
         public static T ValueInArray<T>(this Array<T> array, int index) => throw new NotImplementedException();
+        [WorkshopCodeName("VALUE IN ARRAY")]
+        public static T GetElement<T>(this Array<T> array, int index) => throw new NotImplementedException();
 
         /// <summary>
         /// VECTOR

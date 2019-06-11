@@ -41,15 +41,18 @@ public static class MainClass
     //     }
     // }
 
+    static void PrintPlayerAndHero(Player player, Hero hero)
+    {
+        BigMessage(AllPlayers(Team.All), String("{0} -> {1}", player, hero));
+    }
+
     public static void Main()
     {
-        for (int i = 0; true; ++i)
+        for (int index = 0; true; ++index)
         {
-            StartAccelerating(LastOf(AllPlayers(Team.All())), Forward(), 100, 5, RelativeTo.Player);
-
-            // var numPlayers = NumberOfPlayers(Team.All());
-            // var player = AllPlayers(Team.All()).ValueInArray(i % numPlayers);
-            // BigMessage(AllPlayers(Team.All()), String("{0} {1}", player, HeroOf(player)));
+            var numPlayers = NumberOfPlayers(Team.All);
+            var player = AllPlayers(Team.All).GetElement(index % numPlayers);
+            PrintPlayerAndHero(player, HeroOf(player));
             Wait(1);
         }
     }
