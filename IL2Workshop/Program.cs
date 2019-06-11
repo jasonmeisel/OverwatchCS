@@ -870,29 +870,28 @@ class Transpiler
             var targetCode = GetCodeName(targetMethod);
             if (targetCode != null)
             {
-                var arguments = argumentList.Arguments.ToArray();
+                // TODO: add baking in literals
+                var parameterTypes = targetMethod.Parameters.Select(p => p.Type.ToString()).ToList();
+                var arguments = argumentList.Arguments.Select(a => a.Expression).ToList();
 
                 // test for extension method
                 // TODO: support struct methods?
                 var isStatic = targetMethod.IsStatic;
                 if (!isStatic && invocation.Expression is MemberAccessExpressionSyntax memberAccess)
                 {
-                    arguments = new[] { SyntaxFactory.Argument(memberAccess.Expression) }.
-                        Concat(arguments).
-                        ToArray();
+                    arguments.Insert(0, memberAccess.Expression);
+                    parameterTypes.Insert(0, targetMethod.ReceiverType.ToString());
                 }
 
                 if (arguments.Count() != 0)
                 {
-                    // TODO: add baking in literals
-                    var methodSemantics = (Microsoft.CodeAnalysis.IMethodSymbol)m_semanticModel.GetSymbolInfo(invocation).Symbol;
-                    var argCodes = arguments.Zip(methodSemantics.Parameters, (a, p) =>
-                        a.Expression is InvocationExpressionSyntax i ?
+                    var argCodes = arguments.Zip(parameterTypes, (a, p) =>
+                        a is InvocationExpressionSyntax i ?
                             InvocationToWorkshopCode(i) :
                             (
                                 code: "<PARAM>",
-                                paramTypes: new[] { p.Type.ToString() },
-                                arguments: new[] { a }
+                                paramTypes: new[] { p },
+                                arguments: new[] { SyntaxFactory.Argument(a) }
                             )).
                         ToArray();
 
@@ -950,7 +949,8 @@ class Transpiler
                 default:
                     Console.WriteLine(invocation);
                     Console.WriteLine(invocation.Expression);
-                    return m_semanticModel.GetSymbolInfo(invocation.Expression).Symbol as IMethodSymbol;
+                    var symbolInfo = m_semanticModel.GetSymbolInfo(invocation.Expression);
+                    return symbolInfo.Symbol as IMethodSymbol;
             }
         }
     }
