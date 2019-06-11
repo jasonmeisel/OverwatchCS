@@ -36,7 +36,7 @@ public static class MainClass
         {
             var numPlayers = NumberOfPlayers(Team.All());
             var player = AllPlayers(Team.All()).ValueInArray(i % numPlayers);
-            BigMessage(AllPlayers(Team.All()), String("({0})", player));
+            BigMessage(AllPlayers(Team.All()), String("{0} {1}", player, HeroOf(player)));
             Wait(1);
         }
     }

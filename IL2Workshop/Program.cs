@@ -681,6 +681,11 @@ class Transpiler
                 }
                 else
                     yield return () => code + ";";
+
+                // string variable fix
+                if (code.ToLower().StartsWith("big message"))
+                    yield return () => "Wait(0, Ignore Condition);";
+
                 break;
         }
 

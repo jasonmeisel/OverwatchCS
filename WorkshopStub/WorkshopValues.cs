@@ -524,7 +524,7 @@ namespace Workshop
         /// Player - The player whose hero to acquire. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
         [WorkshopCodeName("HERO OF")]
-        public static object HeroOf() => throw new NotImplementedException();
+        public static Hero HeroOf(Player player) => throw new NotImplementedException();
 
         /// <summary>
         /// HORIZONTAL ANGLE FROM DIRECTION
