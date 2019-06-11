@@ -13,6 +13,8 @@ namespace Workshop
         public static Team All() => throw new NotImplementedException();
     }
 
+    public struct StringValue {}
+
     public static class Values
     {
         /// <summary>
@@ -1178,7 +1180,7 @@ namespace Workshop
         /// Team - The team or teams on which to check for the hero being played. Can use most Team based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCodeName("NUMBER OF HEROES")]
-        public static object NumberOfHeroes() => throw new NotImplementedException();
+        public static int NumberOfHeroes(Hero hero, Team team) => throw new NotImplementedException();
 
         /// <summary>
         /// NUMBER OF LIVING PLAYERS
@@ -1580,7 +1582,7 @@ namespace Workshop
         /// {2} - The third value in the string.
         /// </summary>
         [WorkshopCodeName("STRING")]
-        public static object String() => throw new NotImplementedException();
+        public static StringValue String(string format, object value0 = null, object value1 = null, object value2 = null) => throw new NotImplementedException();
 
         /// <summary>
         /// SUBTRACT

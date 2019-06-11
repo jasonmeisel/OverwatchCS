@@ -475,7 +475,7 @@ class Transpiler
         dict[OpCodes.Bge_Un_S] = Impl_UnimplementedOp;
 
         dict[OpCodes.Ldc_I4_6] = Impl_UnimplementedOp;
-        dict[OpCodes.Ldc_I4_5] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldc_I4_5] = (method, Instruction) => VariableStack.Push(() => "5");
         dict[OpCodes.Ldc_I4_4] = Impl_UnimplementedOp;
         dict[OpCodes.Ldc_I4_3] = Impl_UnimplementedOp;
         dict[OpCodes.Break] = Impl_UnimplementedOp;
@@ -866,13 +866,20 @@ class Transpiler
         {
             var argumentList = invocation.ArgumentList;
 
-            var targetMethod = GetMethodSemantics(invocation);
+            var targetMethod = GetMethodSemantics(invocation).OriginalDefinition;
             var targetCode = GetCodeName(targetMethod);
             if (targetCode != null)
             {
-                // TODO: add baking in literals
                 var parameterTypes = targetMethod.Parameters.Select(p => p.Type.ToString()).ToList();
                 var arguments = argumentList.Arguments.Select(a => a.Expression).ToList();
+
+                // add support for defaults
+                while (parameterTypes.Count != arguments.Count)
+                {
+                    var parameterSymbol = targetMethod.Parameters[arguments.Count];
+                    Debug.Assert(parameterSymbol.HasExplicitDefaultValue);
+                    arguments.Add(SyntaxFactory.ParseExpression(parameterSymbol.ExplicitDefaultValue?.ToString() ?? "null"));
+                }
 
                 // test for extension method
                 // TODO: support struct methods?
@@ -886,14 +893,25 @@ class Transpiler
                 if (arguments.Count() != 0)
                 {
                     var argCodes = arguments.Zip(parameterTypes, (a, p) =>
-                        a is InvocationExpressionSyntax i ?
-                            InvocationToWorkshopCode(i) :
-                            (
-                                code: "<PARAM>",
-                                paramTypes: new[] { p },
-                                arguments: new[] { SyntaxFactory.Argument(a) }
-                            )).
-                        ToArray();
+                    {
+                        switch (a)
+                        {
+                            case InvocationExpressionSyntax i:
+                                return InvocationToWorkshopCode(i);
+                            case LiteralExpressionSyntax literal:
+                                return (
+                                    code: literal.ToString(),
+                                    paramTypes: new string[0],
+                                    arguments: new ArgumentSyntax[0]
+                                );
+                            default:
+                                return (
+                                    code: "<PARAM>",
+                                    paramTypes: new[] { p },
+                                    arguments: new[] { SyntaxFactory.Argument(a) }
+                                );
+                        }
+                    }).ToArray();
 
                     return (
                         $"{targetCode}({argCodes.Select(a => a.code).ListToString()})",

@@ -86,7 +86,7 @@ namespace Workshop
         /// Header - The message to be displayed. Can use most String based Value Syntax to specify.
         /// </summary>
         [WorkshopCodeName("BIG MESSAGE")]
-        public static void BigMessage() { }
+        public static void BigMessage(Array<Player> playersVisibleTo, StringValue header) {}
 
         /// <summary>
         /// CHASE GLOBAL VARIABLE AT RATE
