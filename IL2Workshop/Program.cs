@@ -697,13 +697,13 @@ class Transpiler
                 yield return action;
     }
 
-    private static string GetCodeName(System.Reflection.MethodInfo targetMethod)
+    private static string GetCodeName(System.Reflection.MemberInfo targetMethod)
     {
         var attributes = targetMethod?.GetCustomAttributes(typeof(WorkshopCodeName), true);
         return (attributes?.FirstOrDefault() as WorkshopCodeName)?.Name;
     }
 
-    private static string GetCodeName(IMethodSymbol targetMethod)
+    private static string GetCodeName(ISymbol targetMethod)
     {
         return targetMethod.GetAttributes().
             FirstOrDefault(attr => attr.AttributeClass.Name == typeof(WorkshopCodeName).Name)?.
@@ -883,7 +883,17 @@ class Transpiler
                 {
                     var parameterSymbol = targetMethod.Parameters[arguments.Count];
                     Debug.Assert(parameterSymbol.HasExplicitDefaultValue);
-                    arguments.Add(SyntaxFactory.ParseExpression(parameterSymbol.ExplicitDefaultValue?.ToString() ?? "null"));
+                    var paramType = parameterSymbol.Type;
+                    if (paramType.TypeKind == TypeKind.Enum)
+                    {
+                        var paramEnumType = GetWorkshopType(paramType.ToString());
+                        var enumName = paramEnumType.GetEnumName(parameterSymbol.ExplicitDefaultValue);
+                        // var enumMember = paramEnumType.GetMember(enumName).FirstOrDefault();
+                        // var enumCode = GetCodeName(enumMember);
+                        arguments.Add(SyntaxFactory.ParseExpression($"{paramEnumType.FullName}.{ enumName}"));
+                    }
+                    else
+                        arguments.Add(SyntaxFactory.ParseExpression(parameterSymbol.ExplicitDefaultValue?.ToString() ?? "null"));
                 }
 
                 // test for extension method
@@ -909,13 +919,22 @@ class Transpiler
                                     paramTypes: new string[0],
                                     arguments: new ArgumentSyntax[0]
                                 );
-                            default:
-                                return (
-                                    code: "<PARAM>",
-                                    paramTypes: new[] { p },
-                                    arguments: new[] { SyntaxFactory.Argument(a) }
-                                );
+                            case MemberAccessExpressionSyntax enumAccess:
+                                var code = a.SyntaxTree == m_semanticModel.SyntaxTree ?
+                                    GetCodeName(m_semanticModel.GetSymbolInfo(a).Symbol) :
+                                    GetCodeName(GetWorkshopType(enumAccess.Expression.ToString()).GetMember(enumAccess.Name.ToString()).FirstOrDefault());
+                                if (code != null)
+                                {
+                                    return (code, paramTypes: new string[0], arguments: new ArgumentSyntax[0]);
+                                }
+                                break;
                         }
+
+                        return (
+                            code: "<PARAM>",
+                            paramTypes: new[] { p },
+                            arguments: new[] { SyntaxFactory.Argument(a) }
+                        );
                     }).ToArray();
 
                     return (

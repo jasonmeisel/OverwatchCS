@@ -1129,7 +1129,7 @@ namespace Workshop
         /// Reevaluation - Specifies which of this actions inputs will be continously reevaluated. This action will keep asking for and using new values from reevaluated inputs. You can choose from “Direction, Rate, and Max Speed” or “None”.
         /// </summary>
         [WorkshopCodeName("START ACCELERATING")]
-        public static void StartAccelerating() { }
+        public static void StartAccelerating(Player player, Vector direction, float rate, float maxSpeed, RelativeTo relativeTo, NoneValue reevaluation = NoneValue.None) { }
 
         /// <summary>
         /// START CAMERA

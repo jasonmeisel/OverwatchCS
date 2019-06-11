@@ -15,6 +15,17 @@ namespace Workshop
 
     public struct StringValue {}
 
+    public enum NoneValue
+    {
+        [WorkshopCodeName("None")] None
+    }
+
+    public enum RelativeTo
+    {
+        [WorkshopCodeName("To World")] World,
+        [WorkshopCodeName("To Player")] Player,
+    }
+
     public static class Values
     {
         /// <summary>
@@ -443,7 +454,7 @@ namespace Workshop
         /// There are no definitions to this value.
         /// </summary>
         [WorkshopCodeName("FORWARD")]
-        public static object Forward() => throw new NotImplementedException();
+        public static Vector Forward() => throw new NotImplementedException();
 
         /// <summary>
         /// GLOBAL VARIABLE
@@ -1693,7 +1704,7 @@ namespace Workshop
         /// If you are using this value to populate for another value in a condition or action, you can click the live capture button to collect the current position your hero or spectator ghost in the game environment.
         /// </summary>
         [WorkshopCodeName("VECTOR")]
-        public static object Vector() => throw new NotImplementedException();
+        public static Vector Vector(float x, float y, float z) => throw new NotImplementedException();
 
         /// <summary>
         /// VECTOR TOWARDS
