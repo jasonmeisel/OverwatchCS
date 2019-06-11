@@ -3,8 +3,45 @@ using System;
 namespace Workshop
 {
     public class Player {}
-    public class Hero {}
-    public struct Array<TElement> {}
+    public enum Hero
+    {
+        [WorkshopCodeName("Hero(Ana)")] Ana,
+        [WorkshopCodeName("Hero(Ashe)")] Ashe,
+        [WorkshopCodeName("Hero(Baptiste)")] Baptiste,
+        [WorkshopCodeName("Hero(Bastion)")] Bastion,
+        [WorkshopCodeName("Hero(Brigitte)")] Brigitte,
+        [WorkshopCodeName("Hero(D.Va)")] DVa,
+        [WorkshopCodeName("Hero(Doomfist)")] Doomfist,
+        [WorkshopCodeName("Hero(Genji)")] Genji,
+        [WorkshopCodeName("Hero(Hanzo)")] Hanzo,
+        [WorkshopCodeName("Hero(Junkrat)")] Junkrat,
+        [WorkshopCodeName("Hero(Lúcio)")] Lucio,
+        [WorkshopCodeName("Hero(McCree)")] McCree,
+        [WorkshopCodeName("Hero(Mei)")] Mei,
+        [WorkshopCodeName("Hero(Mercy)")] Mercy,
+        [WorkshopCodeName("Hero(Moira)")] Moira,
+        [WorkshopCodeName("Hero(Orisa)")] Orisa,
+        [WorkshopCodeName("Hero(Pharah)")] Pharah,
+        [WorkshopCodeName("Hero(Reaper)")] Reaper,
+        [WorkshopCodeName("Hero(Reinhardt)")] Reinhardt,
+        [WorkshopCodeName("Hero(Roadhog)")] Roadhog,
+        [WorkshopCodeName("Hero(Soldier: 76)")] Soldier76,
+        [WorkshopCodeName("Hero(Sombra)")] Sombra,
+        [WorkshopCodeName("Hero(Symmetra)")] Symmetra,
+        [WorkshopCodeName("Hero(Torbjörn)")] Torbjorn,
+        [WorkshopCodeName("Hero(Tracer)")] Tracer,
+        [WorkshopCodeName("Hero(Widowmaker)")] Widowmaker,
+        [WorkshopCodeName("Hero(Winston)")] Winston,
+        [WorkshopCodeName("Hero(Wrecking Ball)")] WreckingBall,
+        [WorkshopCodeName("Hero(Zarya)")] Zarya,
+        [WorkshopCodeName("Hero(Zenyatta)")] Zenyatta,
+    }
+
+    public struct Array<TElement>
+    {
+        public static implicit operator Array<TElement>(TElement val) => default(Array<TElement>);
+    }
+
     public struct Vector {}
 
     public enum Team
@@ -513,8 +550,8 @@ namespace Workshop
         /// 
         /// Hero - A hero constant. (i.e. Tracer, Reaper, Mercy, Reinhardt. etc.)
         /// </summary>
-        [WorkshopCodeName("HERO")]
-        public static object Hero() => throw new NotImplementedException();
+        // [WorkshopCodeName("HERO")]
+        // public static object Hero() => throw new NotImplementedException();
 
         /// <summary>
         /// HERO ICON STRING
@@ -1591,8 +1628,10 @@ namespace Workshop
         /// {1} - The second value in the string.
         /// {2} - The third value in the string.
         /// </summary>
-        [WorkshopCodeName("STRING")]
-        public static StringValue String(string format, object value0 = null, object value1 = null, object value2 = null) => throw new NotImplementedException();
+        [WorkshopCodeName("STRING")] public static StringValue String<TValue0, TValue1, TValue2>(string format, TValue0 value0, TValue1 value1, TValue2 value2) => throw new NotImplementedException();
+        [WorkshopCodeName("STRING")] public static StringValue String<TValue0, TValue1>(string format, TValue0 value0, TValue1 value1, object value2 = null) => throw new NotImplementedException();
+        [WorkshopCodeName("STRING")] public static StringValue String<TValue0>(string format, TValue0 value0, object value1 = null, object value2 = null) => throw new NotImplementedException();
+        [WorkshopCodeName("STRING")] public static StringValue String(string format, object value0 = null, object value1 = null, object value2 = null) => throw new NotImplementedException();
 
         /// <summary>
         /// SUBTRACT

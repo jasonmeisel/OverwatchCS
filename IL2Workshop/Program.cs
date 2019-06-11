@@ -871,11 +871,12 @@ class Transpiler
         {
             var argumentList = invocation.ArgumentList;
 
-            var targetMethod = GetMethodSemantics(invocation).OriginalDefinition;
+            var invocationMethodSymbol = GetMethodSemantics(invocation);
+            var targetMethod = invocationMethodSymbol.OriginalDefinition;
             var targetCode = GetCodeName(targetMethod);
             if (targetCode != null)
             {
-                var parameterTypes = targetMethod.Parameters.Select(p => p.Type.ToString()).ToList();
+                var parameterTypes = targetMethod.Parameters.Select(p => GenericToConcrete(invocationMethodSymbol, p.Type).ToString()).ToList();
                 var arguments = argumentList.Arguments.Select(a => a.Expression).ToList();
 
                 // add support for defaults
@@ -890,7 +891,7 @@ class Transpiler
                         var enumName = paramEnumType.GetEnumName(parameterSymbol.ExplicitDefaultValue);
                         // var enumMember = paramEnumType.GetMember(enumName).FirstOrDefault();
                         // var enumCode = GetCodeName(enumMember);
-                        arguments.Add(SyntaxFactory.ParseExpression($"{paramEnumType.FullName}.{ enumName}"));
+                        arguments.Add(SyntaxFactory.ParseExpression($"{paramEnumType.FullName}.{enumName}"));
                     }
                     else
                         arguments.Add(SyntaxFactory.ParseExpression(parameterSymbol.ExplicitDefaultValue?.ToString() ?? "null"));
@@ -946,6 +947,13 @@ class Transpiler
                 return (targetCode, new string[0], new ArgumentSyntax[0]);
             }
             throw null;
+        }
+
+        // if paramType is one of the generic types, swap it with the concrete type that's being used
+        static ITypeSymbol GenericToConcrete(IMethodSymbol targetMethod, ITypeSymbol paramType)
+        {
+            return targetMethod.TypeParameters.Zip(targetMethod.TypeArguments).
+                FirstOrDefault(paramArg => paramArg.First.Name == paramType.Name).Second ?? paramType;
         }
 
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocation)

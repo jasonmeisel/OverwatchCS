@@ -935,7 +935,7 @@ namespace Workshop
         /// Hero - The hero or heroes that will be available. If no heroes are provided, the action has no effect. Can use most Hero based Value Syntax for this value including compatible Arrays.
         /// </summary>
         [WorkshopCodeName("SET PLAYER ALLOWED HEROES")]
-        public static void SetPlayerAllowedHeroes() { }
+        public static void SetPlayerAllowedHeroes(Array<Player> players, Array<Hero> heroes) { }
 
         /// <summary>
         /// SET PLAYER SCORE
