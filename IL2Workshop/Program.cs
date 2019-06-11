@@ -192,6 +192,31 @@ public static class Actions
     {
         return () => $"Subtract({valueA()}, {valueB()})";
     }
+    public static LazyString Mul(LazyString valueA, LazyString valueB)
+    {
+        return () => $"Multiply({valueA()}, {valueB()})";
+    }
+    
+    public static LazyString Div(LazyString valueA, LazyString valueB)
+    {
+        return () => $"Divide({valueA()}, {valueB()})";
+    }
+    
+    public static LazyString Mod(LazyString valueA, LazyString valueB)
+    {
+        return () => $"Modulo({valueA()}, {valueB()})";
+    }
+    
+    public static LazyString And(LazyString valueA, LazyString valueB)
+    {
+        return () => $"And({valueA()}, {valueB()})";
+    }
+    
+    public static LazyString Or(LazyString valueA, LazyString valueB)
+    {
+        return () => $"Or({valueA()}, {valueB()})";
+    }
+    
 
     public static LazyString Max(LazyString valueA, LazyString valueB)
     {
@@ -256,7 +281,7 @@ class Transpiler
             SetGlobal(LocalsStack.stackVar, CreateArray(1)),
             SetGlobal(ParameterStack.stackVar, CreateArray(1)),
             SetGlobal(VariableStack.stackVar, CreateArray(1)),
-        };
+        }.Concat(CreateLocals(method.Definition)).ToArray();
         var mainActionsCount = mainActions.Count();
         var skipMainActions = SkipIf(NotEqual(GetGlobal(JumpOffsetStack.stackVar), () => "0"), () => mainActionsCount.ToString());
         return new[] { skipMainActions }.Concat(mainActions).Concat(headerActions);
@@ -493,13 +518,13 @@ class Transpiler
 
         dict[OpCodes.Add] = (method, instruction) => DoBinaryOp(Add);
         dict[OpCodes.Sub] = (method, instruction) => DoBinaryOp(Subtract);
-        dict[OpCodes.Mul] = Impl_UnimplementedOp;
-        dict[OpCodes.Div] = Impl_UnimplementedOp;
+        dict[OpCodes.Mul] = (method, instruction) => DoBinaryOp(Mul);
+        dict[OpCodes.Div] = (method, instruction) => DoBinaryOp(Div);
         dict[OpCodes.Div_Un] = Impl_UnimplementedOp;
-        dict[OpCodes.Rem] = Impl_UnimplementedOp;
+        dict[OpCodes.Rem] = (method, instruction) => DoBinaryOp(Mod);
         dict[OpCodes.Rem_Un] = Impl_UnimplementedOp;
-        dict[OpCodes.And] = Impl_UnimplementedOp;
-        dict[OpCodes.Or] = Impl_UnimplementedOp;
+        dict[OpCodes.And] = (method, instruction) => DoBinaryOp(And);
+        dict[OpCodes.Or] = (method, instruction) => DoBinaryOp(Or);
         dict[OpCodes.Xor] = Impl_UnimplementedOp;
         dict[OpCodes.Shl] = Impl_UnimplementedOp;
         dict[OpCodes.Shr] = Impl_UnimplementedOp;
@@ -606,12 +631,18 @@ class Transpiler
         foreach (var action in JumpOffsetStack.Push(() => "0"))
             yield return action;
 
+        foreach (var action in CreateLocals(targetMethod))
+            yield return action;
+
+        yield return () => "Loop;";
+    }
+
+    static IEnumerable<LazyString> CreateLocals(MethodDefinition targetMethod)
+    {
         // TODO: optimize this
         foreach (var i in Enumerable.Range(0, GetNumLocalVariables(targetMethod)))
             foreach (var action in LocalsStack.Push(() => "0"))
                 yield return action;
-
-        yield return () => "Loop;";
     }
 
     static IEnumerable<LazyString> Impl_Call_WorkshopAction(MethodInfo method, Instruction instruction, MethodReference targetMethodRef, string codeOverride = null)
@@ -795,8 +826,6 @@ class Transpiler
             };
 
             // TODO: add analyzer to prevent storing un-storable variables on stack (Array, Player, etc)
-
-            // SimplifyInstructions(methodInfo.Instructions);
 
             foreach (var instr in methodInfo.Instructions)
                 Console.WriteLine(instr);
