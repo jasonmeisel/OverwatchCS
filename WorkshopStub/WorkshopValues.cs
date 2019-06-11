@@ -4,6 +4,7 @@ namespace Workshop
 {
     public class Player {}
     public struct Array<TElement> {}
+    public struct Vector {}
 
     public struct Team
     {
@@ -1088,7 +1089,7 @@ namespace Workshop
         /// 
         /// Player - The player whose position to acquire. Can use most Player based Value Syntax to provide this value.
         [WorkshopCodeName("POSITION OF")]
-        public static object PositionOf() => throw new NotImplementedException();
+        public static Vector PositionOf(Player player) => throw new NotImplementedException();
 
         /// RAISE TO POWER
         /// The left-hand operand raised to the power of the right-hand operand. For example 2 ^ 3 = 8
@@ -1344,7 +1345,7 @@ namespace Workshop
         /// Array - The array whose element to acquire. Can use most Array based Value Syntax to provide this value.
         /// Index - The index whose element to acquire. Can use most Number based Value Syntax to provide this value.
         [WorkshopCodeName("VALUE IN ARRAY")]
-        public static T ValueInArray<T>(Array<T> array, int index) => throw new NotImplementedException();
+        public static T ValueInArray<T>(this Array<T> array, int index) => throw new NotImplementedException();
 
         /// VECTOR
         /// A vector composed of three real numbers (X, Y, Z) where X is left, Y is Up, and Z is forward. Vectors are used for position, direction, and velocity.

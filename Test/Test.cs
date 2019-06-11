@@ -35,7 +35,7 @@ public static class MainClass
         for (int i = 0; true; ++i)
         {
             var numPlayers = NumberOfPlayers(Team.All());
-            var value = ValueInArray(AllPlayers(Team.All()), i % numPlayers);
+            var value = AllPlayers(Team.All()).ValueInArray(i % numPlayers);
             DebugLog(value);
             Wait(1);
         }
