@@ -23,6 +23,24 @@ public static class Extensions
     {
         return string.Join(separator, list);
     }
+
+    public static IEnumerable<T> Interleave<T>(this IEnumerable<T> list, IEnumerable<T> list2)
+    {
+        var enum1 = list.GetEnumerator();
+        var enum2 = list2.GetEnumerator();
+        while (true)
+        {
+            if (enum1.MoveNext())
+                yield return enum1.Current;
+            else
+                yield break;
+
+            if (enum2.MoveNext())
+                yield return enum2.Current;
+            else
+                yield break;
+        }
+    }
 }
 
 class MethodInfo
@@ -596,7 +614,7 @@ class Transpiler
         yield return () => "Loop;";
     }
 
-    static IEnumerable<LazyString> Impl_Call_WorkshopAction(MethodInfo method, Instruction instruction, MethodReference targetMethodRef, LazyString codeOverride = null)
+    static IEnumerable<LazyString> Impl_Call_WorkshopAction(MethodInfo method, Instruction instruction, MethodReference targetMethodRef, string codeOverride = null)
     {
         // TODO: assert that the method reference is a workshop action
 
@@ -613,14 +631,17 @@ class Transpiler
                 break;
             default:
                 var targetMethod = GetWorkshopMethod(targetMethodRef);
-                var code = codeOverride?.Invoke() ?? GetCodeName(targetMethod);
+                var code = codeOverride ?? GetCodeName(targetMethod);
                 if (code == null)
                     throw new ArgumentException();
 
                 var parameters = targetMethodRef.Parameters;
-                var paramList = parameters.Select((p, i) => VariableStack.GetLastElement(parameters.Count - i - 1)()).ListToString();
-                if (!string.IsNullOrEmpty(paramList))
-                    code = $"{code}({paramList})";
+                var paramList = parameters.Select((p, i) => VariableStack.GetLastElement(parameters.Count - i - 1)());
+                if (parameters.Any())
+                    if (code.Contains("<PARAM>"))
+                        code = code.Split("<PARAM>").Interleave(paramList).ListToString("");
+                    else
+                        code = $"{code}({paramList.ListToString()})";
 
                 if (targetMethodRef.ReturnType.Name != "Void")
                 {
@@ -721,7 +742,7 @@ class Transpiler
         return m_functionIds[method];
     }
 
-    Dictionary<string, LazyString> m_generatedMethodToWorkshopCode = new Dictionary<string, LazyString>();
+    Dictionary<string, string> m_generatedMethodToWorkshopCode = new Dictionary<string, string>();
 
     public string TranspileToRules(string source)
     {
@@ -792,9 +813,9 @@ class Transpiler
         int m_methodCount = 0;
         StringWriter m_methodsSource = new StringWriter();
         SemanticModel m_semanticModel;
-        Dictionary<string, LazyString> m_generatedMethodToWorkshopCode;
+        Dictionary<string, string> m_generatedMethodToWorkshopCode;
 
-        public MethodSubstituter(SemanticModel semanticModel, Dictionary<string, LazyString> generatedMethodToWorkshopCode)
+        public MethodSubstituter(SemanticModel semanticModel, Dictionary<string, string> generatedMethodToWorkshopCode)
         {
             m_semanticModel = semanticModel;
             m_generatedMethodToWorkshopCode = generatedMethodToWorkshopCode;
@@ -805,36 +826,47 @@ class Transpiler
             return SyntaxFactory.ParseSyntaxTree($"internal static class Generated {{ {m_methodsSource.ToString()} }}");
         }
 
-        string InvocationToString(InvocationExpressionSyntax invocation)
+        (string code, string[] paramTypes, ArgumentSyntax[] arguments) InvocationToWorkshopCode(InvocationExpressionSyntax invocation)
         {
-            var memberAccess = (MemberAccessExpressionSyntax)invocation.Expression;
             var argumentList = invocation.ArgumentList;
 
-            var targetMethod = GetWorkshopMethodFromMemberAccess(memberAccess);
+            var targetMethod = GetWorkshopMethodFromInvocation(invocation);
             var targetCode = GetCodeName(targetMethod);
             var parameters = targetMethod.GetParameters();
             if (targetCode != null)
             {
                 if (parameters.Length != 0)
                 {
-                    var arguments = argumentList.Arguments.Select(a => a.Expression);
+                    var arguments = argumentList.Arguments;
                     Debug.Assert(arguments.Count() == parameters.Length);
 
                     // TODO: add baking in literals
-                    var argCodes = arguments.Cast<InvocationExpressionSyntax>().Select(InvocationToString).ListToString();
-                    return $"{targetCode}({argCodes})";
+                    var methodSemantics = (Microsoft.CodeAnalysis.IMethodSymbol)m_semanticModel.GetSymbolInfo(invocation).Symbol;
+                    var argCodes = arguments.Zip(methodSemantics.Parameters, (a, p) =>
+                        a.Expression is InvocationExpressionSyntax i ?
+                            InvocationToWorkshopCode(i) :
+                            (
+                                code: "<PARAM>",
+                                paramTypes: new[] { p.Type.ToString() },
+                                arguments: new[] { a }
+                            ));
+
+                    return (
+                        $"{targetCode}({argCodes.Select(a => a.code).ListToString()})",
+                        argCodes.SelectMany(a => a.paramTypes).ToArray(),
+                        argCodes.SelectMany(a => a.arguments).ToArray()
+                    );
                 }
-                return targetCode;
+                return (targetCode, new string[0], new ArgumentSyntax[0]);
             }
             throw null;
         }
 
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocation)
         {
-            var memberAccess = (MemberAccessExpressionSyntax)invocation.Expression;
             var argumentList = invocation.ArgumentList;
 
-            var targetMethod = GetWorkshopMethodFromMemberAccess(memberAccess);
+            var targetMethod = GetWorkshopMethodFromInvocation(invocation);
             var targetCode = GetCodeName(targetMethod);
             var parameters = targetMethod.GetParameters();
             if (targetCode != null && parameters.Any())
@@ -842,33 +874,39 @@ class Transpiler
                 var arguments = argumentList.Arguments.Select(a => a.Expression);
                 Debug.Assert(arguments.Count() == parameters.Length);
 
+                var baseMethodName = string.Join("", targetMethod.Name.Where(ch => char.IsLetterOrDigit(ch)));
+                var generatedMethodName = $"Impl_{baseMethodName}_{m_methodCount++}";
+                var workshopCode = InvocationToWorkshopCode(invocation);
+                m_generatedMethodToWorkshopCode[generatedMethodName] = workshopCode.code;
+
                 // TODO: add baking in literals
                 var methodSemantics = (Microsoft.CodeAnalysis.IMethodSymbol)m_semanticModel.GetSymbolInfo(invocation).Symbol;
                 var returnType = methodSemantics.ReturnType;
-                var baseMethodName = string.Join("", targetMethod.Name.Where(ch => char.IsLetterOrDigit(ch)));
-                var paramListSource = ""; // arguments.Select((a, i) => $"dynamic arg{i}").ListToString();
-                var generatedMethodName = $"Impl_{baseMethodName}_{m_methodCount++}";
+                var paramListSource = workshopCode.paramTypes.Select((type, i) => $"{type} arg{i}").ListToString();
                 var methodSource = $"internal static {returnType} {generatedMethodName} ({paramListSource}) => throw null;";
                 m_methodsSource.WriteLine(methodSource);
                 m_methodsSource.WriteLine();
 
-                var workshopCode = InvocationToString(invocation);
-                m_generatedMethodToWorkshopCode[generatedMethodName] = () => workshopCode;
+                Console.WriteLine(methodSource);
 
-                // Console.WriteLine(invocation.DescendantNodesAndTokens().Select(n => n.Kind()).ListToString());
                 return SyntaxFactory.InvocationExpression(
                     SyntaxFactory.MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,
                         SyntaxFactory.IdentifierName("Generated"),
-                        SyntaxFactory.IdentifierName(generatedMethodName)));
+                        SyntaxFactory.IdentifierName(generatedMethodName)),
+                    SyntaxFactory.ArgumentList(
+                        SyntaxFactory.SeparatedList(workshopCode.arguments)));
             }
             return base.VisitInvocationExpression(invocation);
         }
-    }
 
-    static System.Reflection.MethodInfo GetWorkshopMethodFromMemberAccess(MemberAccessExpressionSyntax memberAccess)
-    {
-        return GetWorkshopMethod(memberAccess.Expression.ToString(), memberAccess.Name.ToString());
+        System.Reflection.MethodInfo GetWorkshopMethodFromInvocation(InvocationExpressionSyntax invocation)
+        {
+            var methodSemantics = (Microsoft.CodeAnalysis.IMethodSymbol)m_semanticModel.GetSymbolInfo(invocation).Symbol;
+            return GetWorkshopMethod(
+                methodSemantics.ContainingType.ToString(),
+                methodSemantics.Name);
+        }
     }
 
     void GenerateFunctionIds(Mono.Collections.Generic.Collection<MethodDefinition> methods)

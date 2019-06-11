@@ -958,7 +958,7 @@ namespace Workshop
         /// 
         /// Team - The team or teams on which to count players. Can use most Team based Value Syntax to provide this value.
         [WorkshopCodeName("NUMBER OF PLAYERS")]
-        public static int NumberOfPlayers() => throw new NotImplementedException();
+        public static int NumberOfPlayers(Team team) => throw new NotImplementedException();
 
         /// NUMBER OF PLAYERS ON OBJECTIVE
         /// The number of players occupying a payload or a control point (either on a team or in the match).
@@ -1285,7 +1285,7 @@ namespace Workshop
         /// 
         /// Team - Specifies which team the value outputs to. This can be set to All, Team 1, or Team 2.
         [WorkshopCodeName("TEAM")]
-        public static object Team() => throw new NotImplementedException();
+        public static object _Team() => throw new NotImplementedException();
 
         /// TEAM OF
         /// The team of a player. If the game mode is free-for-all, the team is considered to be all.
