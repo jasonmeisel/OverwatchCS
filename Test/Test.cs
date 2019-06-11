@@ -40,7 +40,7 @@ public static class MainClass
     //         Wait(1);
     //     }
     // }
-
+    
     static void PrintPlayerAndHero(Player player, Hero hero)
     {
         BigMessage(AllPlayers(Team.All), String("{0} -> {1}", player, hero));
