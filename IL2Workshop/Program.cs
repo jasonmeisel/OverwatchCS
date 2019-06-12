@@ -130,7 +130,6 @@ public static class Actions
     public static class TaskQueue
     {
         static char QueueVar => Variables.TaskQueue;
-        static LazyString SentinelValue => (() => "1234.5678");
 
         public static LazyString PushTask(LazyString value)
         {
