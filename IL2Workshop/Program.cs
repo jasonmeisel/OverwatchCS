@@ -830,6 +830,8 @@ class Transpiler
         GenerateFunctionIds(methods);
 
         var ruleWriter = new StringWriter();
+        GenerateEntryPointRule(ruleWriter);
+
         foreach (var method in methods)
         {
             var methodInfo = new MethodInfo
@@ -848,6 +850,21 @@ class Transpiler
         }
 
         return ruleWriter.ToString();
+    }
+
+    static IEnumerable<LazyString> EntryPointActions()
+    {
+        yield return () => "Abort;";
+    }
+
+    private static void GenerateEntryPointRule(StringWriter ruleWriter)
+    {
+        var actions = new LazyString[0];
+        ruleWriter.WriteLine(GenerateRule(
+            "EntryPoint",
+            "Ongoing - Global;",
+            "",
+            EntryPointActions().Select(a => $"        {a()}").ListToString("\n")));
     }
 
     class MethodSubstituter : CSharpSyntaxRewriter
