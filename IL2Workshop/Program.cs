@@ -873,10 +873,11 @@ class Transpiler
         var ruleWriter = new StringWriter();
 
         var mainMethod = methods.Single(m => m.Name == "Main");
+        var updateMethod = methods.SingleOrDefault(m => m.Name == "Update");
         var entryPointActionsText = EntryPointActions(mainMethod).Select(a => $"        {a()}").ListToString("\n");
         ruleWriter.WriteLine(GenerateRule("EntryPoint", "Ongoing - Global;", "", entryPointActionsText));
 
-        var taskRunnerActionsText = TaskRunnerActions().Select(a => $"        {a()}").ListToString("\n");
+        var taskRunnerActionsText = TaskRunnerActions(updateMethod).Select(a => $"        {a()}").ListToString("\n");
         ruleWriter.WriteLine(GenerateRule("TaskRunner", "Ongoing - Global;", $"{FunctionCondition(0)()} == True;", taskRunnerActionsText));
 
         foreach (var method in methods)
@@ -911,7 +912,7 @@ class Transpiler
             yield return action;
     }
 
-    IEnumerable<LazyString> TaskRunnerActions()
+    IEnumerable<LazyString> TaskRunnerActions(MethodDefinition updateMethod)
     {
         yield return () => $"Abort If (Not({FunctionCondition(0)()}));";
 
@@ -921,7 +922,13 @@ class Transpiler
         yield return () => "Wait(0, Ignore Condition);";
 
         var functionId = ArraySubscript(GetGlobal(Variables.Temporary), 0);
-        yield return LoopIf(Equal(functionId, () => "0"));
+
+        // if there's no function, call Update (if it exists, otherwise just loop)
+        var updateCallActions = updateMethod == null ? new LazyString[0] : Impl_Call_CustomMethod_Direct(updateMethod);
+        yield return SkipIf(NotEqual(functionId, () => "0"), () => (updateCallActions.Count() + 1).ToString());
+        foreach (var action in updateCallActions)
+            yield return action;
+        yield return () => "Loop;";
 
         // push event params onto stack before calling
         yield return ArrayAppend(Variables.ParameterStack, ArraySlice(GetGlobal(Variables.Temporary), () => "1", () => "3"));

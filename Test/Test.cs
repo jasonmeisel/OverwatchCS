@@ -47,6 +47,11 @@ public static class MainClass
         // BigMessage(AllPlayers(Team.All), String("HELLO"));
     }
 
+    public static void Update()
+    {
+        BigMessage(AllPlayers(Team.All), String("Hello"));
+    }
+
     public static void Main()
     {
         // for (int count = 0; true; ++count)
