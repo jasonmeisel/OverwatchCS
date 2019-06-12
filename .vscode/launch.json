@@ -8,9 +8,9 @@
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build IL2Workshop",
+            "preLaunchTask": "build OverwatchCS",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/IL2Workshop/bin/Debug/netcoreapp3.0/IL2Workshop.dll",
+            "program": "${workspaceFolder}/OverwatchCS/bin/Debug/netcoreapp3.0/OverwatchCS.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window

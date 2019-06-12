@@ -2,12 +2,12 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build IL2Workshop",
+            "label": "build OverwatchCS",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/IL2Workshop/IL2Workshop.csproj"
+                "${workspaceFolder}/OverwatchCS/OverwatchCS.csproj"
             ],
             "problemMatcher": "$tsc",
             "group": {
