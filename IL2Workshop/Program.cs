@@ -51,6 +51,8 @@ class MethodInfo
 
 public static class Variables
 {
+    public static char TaskQueue => 'E';
+
     public static char CallStack => 'F';
     public static char CallStackIndex => 'G';
 
@@ -125,6 +127,29 @@ public static class Actions
         }
     }
 
+    public static class TaskQueue
+    {
+        static char QueueVar => Variables.TaskQueue;
+        static LazyString SentinelValue => (() => "1234.5678");
+
+        static LazyString PushValues(LazyString value)
+        {
+            // push to the end, that way we can pop without knowing the size
+            return SetGlobal(QueueVar, ArrayConcat(GetGlobal(QueueVar), value));
+        }
+
+        public static LazyString PushTask(int callbackFunctionId)
+        {
+            return PushValues(() => callbackFunctionId.ToString());
+        }
+
+        public static IEnumerable<LazyString> PopTaskTo(char variable)
+        {
+            yield return SetGlobal(variable, ArraySubscript(GetGlobal(QueueVar), 0));
+            yield return SetGlobal(QueueVar, ArraySlice(GetGlobal(QueueVar), () => "1", () => "9999999"));
+        }
+    }
+
     public static LazyString GetGlobal(char variable)
     {
         return () => $"Global Variable({variable})";
@@ -133,6 +158,11 @@ public static class Actions
     public static LazyString SetGlobal(char variable, LazyString value)
     {
         return () => $"Set Global Variable({variable}, {value()});";
+    }
+
+    public static LazyString ArrayIndexOf(LazyString array, LazyString value)
+    {
+        return () => $"Index Of Array Value({array()}, {value()})";
     }
 
     public static LazyString ArraySubscript(LazyString array, int index)
@@ -170,11 +200,21 @@ public static class Actions
         return SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", size));
     }
 
+    public static LazyString EmptyArray()
+    {
+        return () => "Empty Array";
+    }
+
     public static LazyString CreateArray(int count)
     {
         if (count == 0)
-            return () => "Empty Array";
+            return EmptyArray();
         return ArrayConcat(CreateArray(count - 1), () => "0");
+    }
+
+    public static LazyString ArrayFromValue(LazyString value)
+    {
+        return ArrayConcat(EmptyArray(), value);
     }
 
     public static Stack VariableStack = new Stack { stackVar = Variables.VariableStack, stackIndexVar = Variables.VariableStackIndex };
@@ -242,6 +282,11 @@ public static class Actions
     {
         return () => $"Skip If({value()}, {actionCount()});";
     }
+
+    public static LazyString LoopIf(LazyString value)
+    {
+        return () => $"Loop If({value()});";
+    }
 }
 
 
@@ -249,11 +294,9 @@ class Transpiler
 {
     IEnumerable<LazyString> MethodHeaderActions(MethodInfo method)
     {
-        var isEvent = GetCustomAttribute<WorkshopEventAttribute>(method) != null;
         var firstActions = new LazyString[]
         {
-            // TODO: don't break jumps when using events
-            () => $"Abort If ({( isEvent ? "False" : $"Not({FunctionCondition(method)()})" )});",
+            () => $"Abort If (Not({FunctionCondition(method)()}));",
             () => "Wait(0, Abort When False);",
             SetGlobal(Variables.Temporary, JumpOffsetStack.GetLastElement(0)),
         };
@@ -620,13 +663,19 @@ class Transpiler
         yield return () => "Loop;";
     }
 
+    IEnumerable<LazyString> Impl_Call_CustomMethod_Direct_NoLocals(LazyString functionId)
+    {
+        foreach (var action in CallStack.Push(functionId))
+            yield return action;
+    }
+
     IEnumerable<LazyString> Impl_Call_CustomMethod_Direct(MethodDefinition targetMethod)
     {
         foreach (var action in CreateLocals(targetMethod))
             yield return action;
 
         var functionId = GetFunctionId(targetMethod);
-        foreach (var action in CallStack.Push(() => functionId.ToString()))
+        foreach (var action in Impl_Call_CustomMethod_Direct_NoLocals(() => functionId.ToString()))
             yield return action;
     }
 
@@ -820,7 +869,13 @@ class Transpiler
         GenerateFunctionIds(methods);
 
         var ruleWriter = new StringWriter();
-        GenerateEntryPointRule(ruleWriter, methods.Single(m => m.Name == "Main"));
+
+        var mainMethod = methods.Single(m => m.Name == "Main");
+        var entryPointActionsText = EntryPointActions(mainMethod).Select(a => $"        {a()}").ListToString("\n");
+        ruleWriter.WriteLine(GenerateRule("EntryPoint", "Ongoing - Global;", "", entryPointActionsText));
+
+        var taskRunnerActionsText = TaskRunnerActions().Select(a => $"        {a()}").ListToString("\n");
+        ruleWriter.WriteLine(GenerateRule("TaskRunner", "Ongoing - Global;", $"{FunctionCondition(0)()} == True;", taskRunnerActionsText));
 
         foreach (var method in methods)
         {
@@ -844,6 +899,7 @@ class Transpiler
 
     IEnumerable<LazyString> EntryPointActions(MethodDefinition mainMethod)
     {
+        yield return SetGlobal(Variables.TaskQueue, EmptyArray());
         yield return SetGlobal(JumpOffsetStack.stackVar, CreateArray(1));
         yield return SetGlobal(LocalsStack.stackVar, CreateArray(1));
         yield return SetGlobal(ParameterStack.stackVar, CreateArray(1));
@@ -853,14 +909,20 @@ class Transpiler
             yield return action;
     }
 
-    void GenerateEntryPointRule(StringWriter ruleWriter, MethodDefinition mainMethod)
+    IEnumerable<LazyString> TaskRunnerActions()
     {
-        var actions = new LazyString[0];
-        ruleWriter.WriteLine(GenerateRule(
-            "EntryPoint",
-            "Ongoing - Global;",
-            "",
-            EntryPointActions(mainMethod).Select(a => $"        {a()}").ListToString("\n")));
+        yield return () => $"Abort If (Not({FunctionCondition(0)()}));";
+
+        foreach (var action in TaskQueue.PopTaskTo(Variables.Temporary))
+            yield return action;
+        
+        yield return () => "Wait(0, Ignore Condition);";
+        yield return LoopIf(Equal(GetGlobal(Variables.Temporary), () => "0"));
+
+        foreach (var action in Impl_Call_CustomMethod_Direct_NoLocals(GetGlobal(Variables.Temporary)))
+            yield return action;
+
+        yield return () => "Loop;";
     }
 
     class MethodSubstituter : CSharpSyntaxRewriter
@@ -903,8 +965,6 @@ class Transpiler
                     {
                         var paramEnumType = GetWorkshopType(paramType.ToString());
                         var enumName = paramEnumType.GetEnumName(parameterSymbol.ExplicitDefaultValue);
-                        // var enumMember = paramEnumType.GetMember(enumName).FirstOrDefault();
-                        // var enumCode = GetCodeName(enumMember);
                         arguments.Add(SyntaxFactory.ParseExpression($"{paramEnumType.FullName}.{enumName}"));
                     }
                     else
@@ -1084,19 +1144,17 @@ rule(""{0}"")
         if (workshopEventAttr != null)
         {
             ruleWriter.WriteLine(GenerateRule(
-                method.Definition.Name,
+                $"Event Task for: {method.Definition.Name}",
                 workshopEventAttr.Text,
                 $"",
-                writer.ToString()));
+                TaskQueue.PushTask(GetFunctionId(method.Definition))()));
         }
-        else
-        {
-            ruleWriter.WriteLine(GenerateRule(
-                method.Definition.Name,
-                "Ongoing - Global;",
-                $"{FunctionCondition(method)()} == True;",
-                writer.ToString()));
-        }
+
+        ruleWriter.WriteLine(GenerateRule(
+            method.Definition.Name,
+            "Ongoing - Global;",
+            $"{FunctionCondition(method)()} == True;",
+            writer.ToString()));
     }
     static AttributeType GetCustomAttribute<AttributeType>(MethodInfo method) where AttributeType : class
     {
@@ -1118,8 +1176,14 @@ rule(""{0}"")
             string.Format(ActionsFormat, actionsText));
     }
 
-    private LazyString FunctionCondition(MethodInfo method)
+    LazyString FunctionCondition(MethodInfo method)
     {
-        return Equal(ArrayLast(GetGlobal(CallStack.stackVar)), () => GetFunctionId(method.Definition).ToString());
+        var functionId = GetFunctionId(method.Definition);
+        return FunctionCondition(functionId);
+    }
+
+    static LazyString FunctionCondition(int functionId)
+    {
+        return Equal(ArrayLast(GetGlobal(CallStack.stackVar)), () => functionId.ToString());
     }
 }
