@@ -212,20 +212,9 @@ partial class Transpiler
                 () => "Loop;",
             });
 
-        dict[OpCodes.Brfalse_S] = Impl_UnimplementedOp;
-
-        // jump if true
-        dict[OpCodes.Brtrue_S] = (method, instruction) =>
-            new[] { SetGlobal(Variables.Temporary, VariableStack.GetLastElement(0)) }.
-                Concat(VariableStack.Pop(1)).
-                Concat(new[]
-                {
-                    SkipIf(Equal(GetGlobal(Variables.Temporary), () => "0"), () => "3"),
-                }).
-                Concat(JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand))).
-                Concat(new LazyString[] {
-                    () => "Loop;",
-                });
+        dict[OpCodes.Brfalse_S] = (method, instruction) => Impl_Jump_If(instruction, 1, Equal(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), () => "0"));
+        dict[OpCodes.Brtrue_S] = (method, instruction) => Impl_Jump_If(instruction, 1, NotEqual(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), () => "0"));
+        
         dict[OpCodes.Beq_S] = Impl_UnimplementedOp;
         dict[OpCodes.Bge_S] = Impl_UnimplementedOp;
         dict[OpCodes.Bgt_S] = Impl_UnimplementedOp;
@@ -331,23 +320,27 @@ partial class Transpiler
         return dict;
     }
 
-    static IEnumerable<LazyString> Impl_Jump_If(Instruction instruction, Func<LazyString, LazyString, LazyString> condition)
+    static IEnumerable<LazyString> Impl_Jump_If(Instruction instruction, int valuesToPop, LazyString condition)
     {
-        return new[] {
-                SetGlobal(Variables.Temporary, ArraySlice(
-                    GetGlobal(Variables.VariableStack),
-                    Subtract(GetGlobal(Variables.VariableStackIndex), () => "1"),
-                    () => "2"))
-                }.
-                        Concat(VariableStack.Pop(2)).
-                        Concat(new[]
-                        {
-                    SkipIf(Not(condition(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), ArraySubscript(GetGlobal(Variables.Temporary), () => "1"))), () => "3"),
-                        }).
-                        Concat(JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand))).
-                        Concat(new LazyString[] {
-                    () => "Loop;",
-                        });
+        yield return SetGlobal(Workshop.Globals.Temporary, ArraySlice(
+            GetGlobal(Workshop.Globals.VariableStack),
+            Subtract(GetGlobal(Workshop.Globals.VariableStackIndex), () => (valuesToPop - 1).ToString()),
+            () => valuesToPop.ToString()));
+
+        foreach (var action in VariableStack.Pop(valuesToPop))
+            yield return action;
+
+        yield return SkipIf(Not(condition), () => "3");
+        
+        foreach (var action in JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand)))
+            yield return action;
+
+        yield return () => "Loop;";
+    }
+
+    static IEnumerable<LazyString> Impl_Jump_If(Instruction instruction, Func<LazyString, LazyString, LazyString> binaryCondition)
+    {
+        return Impl_Jump_If(instruction, 2, binaryCondition(ArraySubscript(GetGlobal(Workshop.Globals.Temporary), () => "0"), ArraySubscript(GetGlobal(Workshop.Globals.Temporary), () => "1")));
     }
 
     int GetStaticFieldIndex(object operand)
