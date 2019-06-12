@@ -60,7 +60,6 @@ public static class MainClass
         //     BigMessage(AllPlayers(Team.All), String("{0} - {1}", index, player));
         //     Wait(1);
         // }
-        Abort();
     }
 
     // public static float RecursiveFibonacci(int n, float a = 0, float b = 1)

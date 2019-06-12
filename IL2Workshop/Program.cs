@@ -425,10 +425,9 @@ class Transpiler
         dict[OpCodes.Ret] = (method, instruction) => CallStack.Pop(1).
             Concat(LocalsStack.Pop(GetNumLocalVariables(method.Definition))).
             Concat(ParameterStack.Pop(method.Definition.Parameters.Count)).
-            Concat(new LazyString[]
-                {
-                    () => "Loop;"
-                });
+            // only loop when returning for non-main methods
+            // (this is so you can call functions recursively)
+            Concat(IsMethodMain(method.Definition) ? new LazyString[0] : new LazyString[] { () => "Loop;" });
 
         dict[OpCodes.Br_S] = (method, instruction) =>
             JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand)).
