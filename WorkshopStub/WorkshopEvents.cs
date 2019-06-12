@@ -10,7 +10,7 @@ namespace Workshop
         /// Tutorials:
         /// 
         /// Tutorial Video by WyomingMyst 308
-        [WorkshopCodeName("ONGOING - GLOBAL")]
+        [WorkshopCode("ONGOING - GLOBAL")]
         OngoingGlobal,
 
         /// ONGOING - EACH PLAYER
@@ -31,7 +31,7 @@ namespace Workshop
         /// ALL - This event will affect all players regardless of team, slot position, or hero selected.
         /// SLOT # (0-11) -  This event affect the slot assignment of that specific player in the order of the Lobby (see diagram below)
         /// {HERO NAME} - This event affects any players using the specified hero.
-        [WorkshopCodeName("ONGOING - EACH PLAYER")]
+        [WorkshopCode("ONGOING - EACH PLAYER")]
         OngoingEachPlayer,
 
         /// PLAYER EARNED ELIMINATION
@@ -52,7 +52,7 @@ namespace Workshop
         /// ALL - This event will affect all players regardless of team, slot position, or hero selected.
         /// SLOT # (0-11) -  This event affect the slot assignment of that specific player in the order of the Lobby (see diagram below)
         /// {HERO NAME} - This event affects any players using the specified hero.
-        [WorkshopCodeName("PLAYER EARNED ELIMINATION")]
+        [WorkshopCode("PLAYER EARNED ELIMINATION")]
         PlayerEarnedElimination,
 
         /// PLAYER DEALT FINAL BLOW
@@ -73,7 +73,7 @@ namespace Workshop
         /// ALL - This event will affect all players regardless of team, slot position, or hero selected.
         /// SLOT # (0-11) -  This event affect the slot assignment of that specific player in the order of the Lobby (see diagram below)
         /// {HERO NAME} - This event affects any players using the specified hero.
-        [WorkshopCodeName("PLAYER DEALT FINAL BLOW")]
+        [WorkshopCode("PLAYER DEALT FINAL BLOW")]
         PlayerDealtFinalBlow,
 
         /// PLAYER DEALT DAMAGE
@@ -94,7 +94,7 @@ namespace Workshop
         /// ALL - This event will affect all players regardless of team, slot position, or hero selected.
         /// SLOT # (0-11) -  This event affect the slot assignment of that specific player in the order of the Lobby (see diagram below)
         /// {HERO NAME} - This event affects any players using the specified hero.
-        [WorkshopCodeName("PLAYER DEALT DAMAGE")]
+        [WorkshopCode("PLAYER DEALT DAMAGE")]
         PlayerDealtDamage,
 
         /// PLAYER TOOK DAMAGE
@@ -115,7 +115,7 @@ namespace Workshop
         /// ALL - This event will affect all players regardless of team, slot position, or hero selected.
         /// SLOT # (0-11) -  This event affect the slot assignment of that specific player in the order of the Lobby (see diagram below)
         /// {HERO NAME} - This event affects any players using the specified hero.
-        [WorkshopCodeName("PLAYER TOOK DAMAGE")]
+        [WorkshopCode("PLAYER TOOK DAMAGE")]
         PlayerTookDamage,
 
         /// PLAYER DIED
@@ -136,7 +136,7 @@ namespace Workshop
         /// ALL - This event will affect all players regardless of team, slot position, or hero selected.
         /// SLOT # (0-11) -  This event affect the slot assignment of that specific player in the order of the Lobby (see diagram below)
         /// {HERO NAME} - This event affects any players using the specified hero.
-        [WorkshopCodeName("PLAYER DIED")]
+        [WorkshopCode("PLAYER DIED")]
         PlayerDied,
     }
 }

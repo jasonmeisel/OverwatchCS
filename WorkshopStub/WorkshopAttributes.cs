@@ -7,12 +7,17 @@ using System;
 // "(?!        )(\/\/\/[\s\S\r]*?)(?=        \[Workshop)"
 // "/// <summary>\n        $1        /// </summary>\n"
 
-public class WorkshopCodeName : System.Attribute
+public class WorkshopCodeAttribute : Attribute
 {
     public string Name;
 
-    public WorkshopCodeName(string name)
+    public WorkshopCodeAttribute(string name)
     {
         Name = name;
     }
+}
+
+public class WorkshopEventAttribute : Attribute
+{
+    
 }

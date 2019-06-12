@@ -5,36 +5,36 @@ namespace Workshop
     public class Player {}
     public enum Hero
     {
-        [WorkshopCodeName("Hero(Ana)")] Ana,
-        [WorkshopCodeName("Hero(Ashe)")] Ashe,
-        [WorkshopCodeName("Hero(Baptiste)")] Baptiste,
-        [WorkshopCodeName("Hero(Bastion)")] Bastion,
-        [WorkshopCodeName("Hero(Brigitte)")] Brigitte,
-        [WorkshopCodeName("Hero(D.Va)")] DVa,
-        [WorkshopCodeName("Hero(Doomfist)")] Doomfist,
-        [WorkshopCodeName("Hero(Genji)")] Genji,
-        [WorkshopCodeName("Hero(Hanzo)")] Hanzo,
-        [WorkshopCodeName("Hero(Junkrat)")] Junkrat,
-        [WorkshopCodeName("Hero(Lúcio)")] Lucio,
-        [WorkshopCodeName("Hero(McCree)")] McCree,
-        [WorkshopCodeName("Hero(Mei)")] Mei,
-        [WorkshopCodeName("Hero(Mercy)")] Mercy,
-        [WorkshopCodeName("Hero(Moira)")] Moira,
-        [WorkshopCodeName("Hero(Orisa)")] Orisa,
-        [WorkshopCodeName("Hero(Pharah)")] Pharah,
-        [WorkshopCodeName("Hero(Reaper)")] Reaper,
-        [WorkshopCodeName("Hero(Reinhardt)")] Reinhardt,
-        [WorkshopCodeName("Hero(Roadhog)")] Roadhog,
-        [WorkshopCodeName("Hero(Soldier: 76)")] Soldier76,
-        [WorkshopCodeName("Hero(Sombra)")] Sombra,
-        [WorkshopCodeName("Hero(Symmetra)")] Symmetra,
-        [WorkshopCodeName("Hero(Torbjörn)")] Torbjorn,
-        [WorkshopCodeName("Hero(Tracer)")] Tracer,
-        [WorkshopCodeName("Hero(Widowmaker)")] Widowmaker,
-        [WorkshopCodeName("Hero(Winston)")] Winston,
-        [WorkshopCodeName("Hero(Wrecking Ball)")] WreckingBall,
-        [WorkshopCodeName("Hero(Zarya)")] Zarya,
-        [WorkshopCodeName("Hero(Zenyatta)")] Zenyatta,
+        [WorkshopCode("Hero(Ana)")] Ana,
+        [WorkshopCode("Hero(Ashe)")] Ashe,
+        [WorkshopCode("Hero(Baptiste)")] Baptiste,
+        [WorkshopCode("Hero(Bastion)")] Bastion,
+        [WorkshopCode("Hero(Brigitte)")] Brigitte,
+        [WorkshopCode("Hero(D.Va)")] DVa,
+        [WorkshopCode("Hero(Doomfist)")] Doomfist,
+        [WorkshopCode("Hero(Genji)")] Genji,
+        [WorkshopCode("Hero(Hanzo)")] Hanzo,
+        [WorkshopCode("Hero(Junkrat)")] Junkrat,
+        [WorkshopCode("Hero(Lúcio)")] Lucio,
+        [WorkshopCode("Hero(McCree)")] McCree,
+        [WorkshopCode("Hero(Mei)")] Mei,
+        [WorkshopCode("Hero(Mercy)")] Mercy,
+        [WorkshopCode("Hero(Moira)")] Moira,
+        [WorkshopCode("Hero(Orisa)")] Orisa,
+        [WorkshopCode("Hero(Pharah)")] Pharah,
+        [WorkshopCode("Hero(Reaper)")] Reaper,
+        [WorkshopCode("Hero(Reinhardt)")] Reinhardt,
+        [WorkshopCode("Hero(Roadhog)")] Roadhog,
+        [WorkshopCode("Hero(Soldier: 76)")] Soldier76,
+        [WorkshopCode("Hero(Sombra)")] Sombra,
+        [WorkshopCode("Hero(Symmetra)")] Symmetra,
+        [WorkshopCode("Hero(Torbjörn)")] Torbjorn,
+        [WorkshopCode("Hero(Tracer)")] Tracer,
+        [WorkshopCode("Hero(Widowmaker)")] Widowmaker,
+        [WorkshopCode("Hero(Winston)")] Winston,
+        [WorkshopCode("Hero(Wrecking Ball)")] WreckingBall,
+        [WorkshopCode("Hero(Zarya)")] Zarya,
+        [WorkshopCode("Hero(Zenyatta)")] Zenyatta,
     }
 
     public struct Array<TElement>
@@ -46,20 +46,20 @@ namespace Workshop
 
     public enum Team
     {
-        [WorkshopCodeName("All Teams")] All,
+        [WorkshopCode("All Teams")] All,
     }
 
     public struct StringValue {}
 
     public enum NoneValue
     {
-        [WorkshopCodeName("None")] None
+        [WorkshopCode("None")] None
     }
 
     public enum RelativeTo
     {
-        [WorkshopCodeName("To World")] World,
-        [WorkshopCodeName("To Player")] Player,
+        [WorkshopCode("To World")] World,
+        [WorkshopCode("To Player")] Player,
     }
 
     public static class Values
@@ -71,7 +71,7 @@ namespace Workshop
         /// 
         /// Value - You can specify any Value Syntax to define the Absolute Value.
         /// </summary>
-        [WorkshopCodeName("ABSOLUTE VALUE")]
+        [WorkshopCode("ABSOLUTE VALUE")]
         public static T AbsoluteValue<T>(T value) => throw new NotImplementedException();
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Workshop
         /// 
         /// Value - You can specify any Value Syntax to define either addend.
         /// </summary>
-        [WorkshopCodeName("ADD")]
+        [WorkshopCode("ADD")]
         public static T Add<T>(T a, T b) => throw new NotImplementedException();
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Workshop
         /// 
         /// Team - You can specify any Team Syntax to define the array.
         /// </summary>
-        [WorkshopCodeName("ALL DEAD PLAYERS")]
+        [WorkshopCode("ALL DEAD PLAYERS")]
         public static Array<Player> AllDeadPlayers(Team team) => throw new NotImplementedException();
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Workshop
         /// An array of all heroes in Overwatch. Not to be confused with the All Players array
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("ALL HEROES")]
+        [WorkshopCode("ALL HEROES")]
         public static Array<Hero> AllHeroes() => throw new NotImplementedException();
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Workshop
         /// 
         /// Team - You can specify any Team Syntax to define the array.
         /// </summary>
-        [WorkshopCodeName("ALL LIVING PLAYERS")]
+        [WorkshopCode("ALL LIVING PLAYERS")]
         public static Array<Player> AllLivingPlayers(Team team) => throw new NotImplementedException();
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Workshop
         /// 
         /// Team - You can specify any Team Syntax to define the array.
         /// </summary>
-        [WorkshopCodeName("ALL PLAYERS")]
+        [WorkshopCode("ALL PLAYERS")]
         public static Array<Player> AllPlayers(Team team) => throw new NotImplementedException();
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace Workshop
         /// 
         /// Team - You can specify any Team Syntax to define the array.
         /// </summary>
-        [WorkshopCodeName("ALL PLAYERS NOT ON OBJECTIVE")]
+        [WorkshopCode("ALL PLAYERS NOT ON OBJECTIVE")]
         public static Array<Player> AllPlayersNotOnObjective(Team team) => throw new NotImplementedException();
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace Workshop
         /// 
         /// Team - You can specify any Team Syntax to define the array.
         /// </summary>
-        [WorkshopCodeName("ALL PLAYERS ON OBJECTIVE")]
+        [WorkshopCode("ALL PLAYERS ON OBJECTIVE")]
         public static Array<Player> AllPlayersOnObjective(Team team) => throw new NotImplementedException();
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Workshop
         /// 
         /// Player - You can specify any Player Syntax to define the array.
         /// </summary>
-        [WorkshopCodeName("ALLOWED HEROES")]
+        [WorkshopCode("ALLOWED HEROES")]
         public static Array<Hero> AllowedHeroes(Player player) => throw new NotImplementedException();
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace Workshop
         /// 
         /// Player - You can specify any Player Syntax to define the array.
         /// </summary>
-        [WorkshopCodeName("ALTITUDE OF")]
+        [WorkshopCode("ALTITUDE OF")]
         public static float AltitudeOf(Player player) => throw new NotImplementedException();
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Workshop
         /// 
         /// Value - You can specify any Value Syntax to define both of the required values.
         /// </summary>
-        [WorkshopCodeName("AND")]
+        [WorkshopCode("AND")]
         public static object And() => throw new NotImplementedException();
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace Workshop
         /// ( 5,  5) = 0;
         /// (-5, -5) = 0;
         /// </summary>
-        [WorkshopCodeName("ANGLE DIFFERENCE")]
+        [WorkshopCode("ANGLE DIFFERENCE")]
         public static object AngleDifference() => throw new NotImplementedException();
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Workshop
         /// Array - You must specify the Array Syntax you are adding the value to.
         /// Value - You must specify the Value Syntax that you are adding to the array.
         /// </summary>
-        [WorkshopCodeName("APPEND TO ARRAY")]
+        [WorkshopCode("APPEND TO ARRAY")]
         public static object AppendToArray() => throw new NotImplementedException();
 
         /// <summary>
@@ -214,7 +214,7 @@ namespace Workshop
         /// Array - You must specify the Array Syntax you are comparing the value to.
         /// Value - You must specify the Value Syntax that you are comparing to the array.
         /// </summary>
-        [WorkshopCodeName("ARRAY CONTAINS")]
+        [WorkshopCode("ARRAY CONTAINS")]
         public static object ArrayContains() => throw new NotImplementedException();
 
         /// <summary>
@@ -226,7 +226,7 @@ namespace Workshop
         /// Start Index - The first index of the range. Can use most Value Syntax to specify with.
         /// Count - The number of elements in the resulting array. The resulting array will contain fewer elements if the specified range exceeds the bounds of the array. Can use any Number-based Value Syntax to specify with.
         /// </summary>
-        [WorkshopCodeName("ARRAY SLICE")]
+        [WorkshopCode("ARRAY SLICE")]
         public static object ArraySlice() => throw new NotImplementedException();
 
         /// <summary>
@@ -234,7 +234,7 @@ namespace Workshop
         /// The player that dealt damage for the event currently being processed by this rule. May be the same as the victim or the event player.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("ATTACKER")]
+        [WorkshopCode("ATTACKER")]
         public static object Attacker() => throw new NotImplementedException();
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace Workshop
         /// Shorthand for the direction vector(0, 0, -1) which points backwards.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("BACKWARD")]
+        [WorkshopCode("BACKWARD")]
         public static object Backward() => throw new NotImplementedException();
 
         /// <summary>
@@ -253,7 +253,7 @@ namespace Workshop
         /// Center - The position to which to measure proximity. Can use most Value Syntax related to reporting a position in the map.
         /// Team - You can specify any Team Syntax to restrict which players is reported when defining this value.
         /// </summary>
-        [WorkshopCodeName("CLOSEST PLAYER TO")]
+        [WorkshopCode("CLOSEST PLAYER TO")]
         public static object ClosestPlayerTo() => throw new NotImplementedException();
 
         /// <summary>
@@ -265,7 +265,7 @@ namespace Workshop
         /// Condition - One of the standard conditions to use for comparison. See the Condition section for details.
         /// Value - The right hand side of the comparison. This may be any value type if the operation is == or =!, otherwise real numbers are expected. Can use most Value Syntax for the comparison.
         /// </summary>
-        [WorkshopCodeName("COMPARE")]
+        [WorkshopCode("COMPARE")]
         public static object Compare() => throw new NotImplementedException();
 
         /// <summary>
@@ -275,7 +275,7 @@ namespace Workshop
         /// 
         /// Team - You can specify any Team Syntax to define which team reported when defining this value.
         /// </summary>
-        [WorkshopCodeName("CONTROL MODE SCORING PERCENTAGE")]
+        [WorkshopCode("CONTROL MODE SCORING PERCENTAGE")]
         public static object ControlModeScoringPercentage() => throw new NotImplementedException();
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace Workshop
         /// The team that is currently accumulating score percentage in control mode Results in all if neither team is accumulating score.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("CONTROL MODE SCORING TEAM")]
+        [WorkshopCode("CONTROL MODE SCORING TEAM")]
         public static object ControlModeScoringTeam() => throw new NotImplementedException();
 
         /// <summary>
@@ -293,7 +293,7 @@ namespace Workshop
         /// 
         /// Angle - You can specify any Angle Syntax to define this value.
         /// </summary>
-        [WorkshopCodeName("Cosine FROM DEGREES")]
+        [WorkshopCode("Cosine FROM DEGREES")]
         public static object CosineFromDegrees() => throw new NotImplementedException();
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace Workshop
         /// 
         /// Angle - You can specify any Angle Syntax to define this value.
         /// </summary>
-        [WorkshopCodeName("Cosine FROM RADIANS")]
+        [WorkshopCode("Cosine FROM RADIANS")]
         public static float CosineFromRadians(float angle) => throw new NotImplementedException();
 
         /// <summary>
@@ -313,7 +313,7 @@ namespace Workshop
         /// 
         /// Array - You must specify the Array Syntax you are counting the elements to.
         /// </summary>
-        [WorkshopCodeName("COUNT OF")]
+        [WorkshopCode("COUNT OF")]
         public static object CountOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -324,7 +324,7 @@ namespace Workshop
         /// Value - You must specify the first Value Syntax to compare to the second.
         /// Value - You must specify the first Value Syntax to compare to the second.
         /// </summary>
-        [WorkshopCodeName("CROSS PRODUCT")]
+        [WorkshopCode("CROSS PRODUCT")]
         public static object CrossProduct() => throw new NotImplementedException();
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace Workshop
         /// The current array element being considered. Only meaningful during the evaluation of values such as filtered array and sorted array.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("CURRENT ARRAY ELEMENT")]
+        [WorkshopCode("CURRENT ARRAY ELEMENT")]
         public static object CurrentArrayElement() => throw new NotImplementedException();
 
         /// <summary>
@@ -343,7 +343,7 @@ namespace Workshop
         /// Horizontal Angle - The horizontal angle in degrees used to construct the resulting vector. Most angle based Value Syntax can be used here.
         /// Vertical Angle - The vertical angle in degrees used to construct the resulting vector. Most angle based Value Syntax can be used here.
         /// </summary>
-        [WorkshopCodeName("DIRECTION FROM ANGLES")]
+        [WorkshopCode("DIRECTION FROM ANGLES")]
         public static object DirectionFromAngles() => throw new NotImplementedException();
 
         /// <summary>
@@ -354,7 +354,7 @@ namespace Workshop
         /// Start Pos - The position from which the resulting direction vector will point. Most positional based Value Syntax can be used here.
         /// End Pos - The position to which the resulting direction vector will point. Most positional based Value Syntax can be used here.
         /// </summary>
-        [WorkshopCodeName("DIRECTION TOWARDS")]
+        [WorkshopCode("DIRECTION TOWARDS")]
         public static object DirectionTowards() => throw new NotImplementedException();
 
         /// <summary>
@@ -365,7 +365,7 @@ namespace Workshop
         /// Start Pos - One of the two positions used in the distance measurement. Most positional based Value Syntax can be used here.
         /// End Pos - One of the two positions used in the distance measurement. Most positional based Value Syntax can be used here.
         /// </summary>
-        [WorkshopCodeName("DISTANCE BETWEEN")]
+        [WorkshopCode("DISTANCE BETWEEN")]
         public static object DistanceBetween() => throw new NotImplementedException();
 
         /// <summary>
@@ -376,7 +376,7 @@ namespace Workshop
         /// Value - The left-hand operand, may be any value that results in a number or a vector. Any Value Syntax may be used here.
         /// Value - The right-hand operand, may be any value that results in a number or a vector. Any Value Syntax may be used here.
         /// </summary>
-        [WorkshopCodeName("DIVIDE")]
+        [WorkshopCode("DIVIDE")]
         public static object Divide() => throw new NotImplementedException();
 
         /// <summary>
@@ -387,7 +387,7 @@ namespace Workshop
         /// Value - One of the two vector operands of the dot product. Any positional based Syntax may be used here.
         /// Value - One of the two vector operands of the dot product. Any positional based Syntax may be used here.
         /// </summary>
-        [WorkshopCodeName("DOT PRODUCT")]
+        [WorkshopCode("DOT PRODUCT")]
         public static object DotProduct() => throw new NotImplementedException();
 
         /// <summary>
@@ -395,7 +395,7 @@ namespace Workshop
         /// Shorthand for the direction vector(0, -1, 0) which points down.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("DOWN")]
+        [WorkshopCode("DOWN")]
         public static object Down() => throw new NotImplementedException();
 
         /// <summary>
@@ -403,7 +403,7 @@ namespace Workshop
         /// An array with no elements.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("EMPTY ARRAY")]
+        [WorkshopCode("EMPTY ARRAY")]
         public static object EmptyArray() => throw new NotImplementedException();
 
         /// <summary>
@@ -413,7 +413,7 @@ namespace Workshop
         /// 
         /// Entity - The player, icon entity, or effect entity whose existance to check.
         /// </summary>
-        [WorkshopCodeName("ENTITY EXISTS")]
+        [WorkshopCode("ENTITY EXISTS")]
         public static object EntityExists() => throw new NotImplementedException();
 
         /// <summary>
@@ -421,7 +421,7 @@ namespace Workshop
         /// The player executing the rule, as specified by the event, may be the same as the attacker or victim.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("EVENT PLAYER")]
+        [WorkshopCode("EVENT PLAYER")]
         public static object EventPlayer() => throw new NotImplementedException();
 
         /// <summary>
@@ -431,7 +431,7 @@ namespace Workshop
         /// 
         /// Player - The player whose facing direction to acquire. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("FACING DIRECTION OF")]
+        [WorkshopCode("FACING DIRECTION OF")]
         public static object FacingDirectionOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -439,7 +439,7 @@ namespace Workshop
         /// The Boolean value of false.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("FALSE")]
+        [WorkshopCode("FALSE")]
         public static object False() => throw new NotImplementedException();
 
         /// <summary>
@@ -450,7 +450,7 @@ namespace Workshop
         /// Center - The position to which to measure proximity. Can use most Value Syntax related to reporting a position in the map.
         /// Team - You can specify any Team Syntax to restrict which players is reported when defining this value.
         /// </summary>
-        [WorkshopCodeName("FARTHEST PLAYER FROM")]
+        [WorkshopCode("FARTHEST PLAYER FROM")]
         public static object FarthestPlayerFrom() => throw new NotImplementedException();
 
         /// <summary>
@@ -461,7 +461,7 @@ namespace Workshop
         /// Array - The array whose copy will be filtered. Can use most Array Syntax to specify.
         /// Condition - The condition that is evaluated for each element of the copied array. If the condition is true, the element is kept in the copied array. Use the current array element value to reference the element of the array currently being considered.
         /// </summary>
-        [WorkshopCodeName("FILTERED ARRAY")]
+        [WorkshopCode("FILTERED ARRAY")]
         public static object FilteredArray() => throw new NotImplementedException();
 
         /// <summary>
@@ -471,7 +471,7 @@ namespace Workshop
         /// 
         /// Array - The array from which the value is acquired. Can use most Array Syntax to specify.
         /// </summary>
-        [WorkshopCodeName("FIRST OF")]
+        [WorkshopCode("FIRST OF")]
         public static object FirstOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -481,7 +481,7 @@ namespace Workshop
         /// 
         /// Team - The team whose flag position to acquire.
         /// </summary>
-        [WorkshopCodeName("FLAG POSITION")]
+        [WorkshopCode("FLAG POSITION")]
         public static object FlagPosition() => throw new NotImplementedException();
 
         /// <summary>
@@ -489,7 +489,7 @@ namespace Workshop
         /// Shorthand for the direction vector(0, 0, 1) which points forward.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("FORWARD")]
+        [WorkshopCode("FORWARD")]
         public static Vector Forward() => throw new NotImplementedException();
 
         /// <summary>
@@ -499,7 +499,7 @@ namespace Workshop
         /// 
         /// Variable - Variable specified by a single alphabetic letter (A through Z).
         /// </summary>
-        [WorkshopCodeName("GLOBAL VARIABLE")]
+        [WorkshopCode("GLOBAL VARIABLE")]
         public static object GlobalVariable() => throw new NotImplementedException();
 
         /// <summary>
@@ -509,7 +509,7 @@ namespace Workshop
         /// 
         /// Entity - The player, icon entity, or effect entity whose presence in world to check.
         /// </summary>
-        [WorkshopCodeName("HAS SPAWNED")]
+        [WorkshopCode("HAS SPAWNED")]
         public static object HasSpawned() => throw new NotImplementedException();
 
         /// <summary>
@@ -520,7 +520,7 @@ namespace Workshop
         /// Player - The player whose status to check.
         /// Status - The status to check for. Values include Hacked, Burning, Knocked Down, Asleep, Frozen, Unkillable, Invincible, Phased Out, Rooted, or Stunned.
         /// </summary>
-        [WorkshopCodeName("HAS STATUS")]
+        [WorkshopCode("HAS STATUS")]
         public static object HasStatus() => throw new NotImplementedException();
 
         /// <summary>
@@ -530,7 +530,7 @@ namespace Workshop
         /// 
         /// Player - The player whose health to acquire.
         /// </summary>
-        [WorkshopCodeName("HEALTH")]
+        [WorkshopCode("HEALTH")]
         public static object Health() => throw new NotImplementedException();
 
         /// <summary>
@@ -540,7 +540,7 @@ namespace Workshop
         /// 
         /// Player - The player whose health percentage to acquire.
         /// </summary>
-        [WorkshopCodeName("HEALTH PERCENT")]
+        [WorkshopCode("HEALTH PERCENT")]
         public static object HealthPercent() => throw new NotImplementedException();
 
         /// <summary>
@@ -550,7 +550,7 @@ namespace Workshop
         /// 
         /// Hero - A hero constant. (i.e. Tracer, Reaper, Mercy, Reinhardt. etc.)
         /// </summary>
-        // [WorkshopCodeName("HERO")]
+        // [WorkshopCode("HERO")]
         // public static object Hero() => throw new NotImplementedException();
 
         /// <summary>
@@ -560,7 +560,7 @@ namespace Workshop
         /// 
         /// Value - The hero that will be converted as an icon.
         /// </summary>
-        [WorkshopCodeName("HERO ICON STRING")]
+        [WorkshopCode("HERO ICON STRING")]
         public static object HeroIconString() => throw new NotImplementedException();
 
         /// <summary>
@@ -570,7 +570,7 @@ namespace Workshop
         /// 
         /// Player - The player whose hero to acquire. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("HERO OF")]
+        [WorkshopCode("HERO OF")]
         public static Hero HeroOf(Player player) => throw new NotImplementedException();
 
         /// <summary>
@@ -580,7 +580,7 @@ namespace Workshop
         /// 
         /// Direction - The direction vector from which to acquire a horizontal angle in degrees. The vector is unitized before calculation begins. Can use most Vector based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("HORIZONTAL ANGLE FROM DIRECTION")]
+        [WorkshopCode("HORIZONTAL ANGLE FROM DIRECTION")]
         public static object HorizontalAngleFromDirection() => throw new NotImplementedException();
 
         /// <summary>
@@ -591,7 +591,7 @@ namespace Workshop
         /// Player - The player whose current facing angle begins. Can use most player based Value Syntax to retrieve this value.
         /// Position - The position in the world in where the angle ends.
         /// </summary>
-        [WorkshopCodeName("HORIZONTAL ANGLE TOWARDS")]
+        [WorkshopCode("HORIZONTAL ANGLE TOWARDS")]
         public static object HorizontalAngleTowards() => throw new NotImplementedException();
 
         /// <summary>
@@ -601,7 +601,7 @@ namespace Workshop
         /// 
         /// Player - The player whose facing direction to acquire. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("HORIZONTAL FACING ANGLE OF")]
+        [WorkshopCode("HORIZONTAL FACING ANGLE OF")]
         public static object HorizontalFacingAngleOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -611,7 +611,7 @@ namespace Workshop
         /// 
         /// Player - The player whose facing direction to acquire. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("HORIZONTAL SPEED OF")]
+        [WorkshopCode("HORIZONTAL SPEED OF")]
         public static object HorizontalSpeedOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -622,7 +622,7 @@ namespace Workshop
         /// Array - The array in which to search for the specified value. Can use most Array based Value Syntax to retrieve this value.
         /// Value - The value for which to search. Can use most Number based Value Syntax to retrive this value.
         /// </summary>
-        [WorkshopCodeName("INDEX OF ARRAY VALUE")]
+        [WorkshopCode("INDEX OF ARRAY VALUE")]
         public static object IndexOfArrayValue() => throw new NotImplementedException();
 
         /// <summary>
@@ -632,7 +632,7 @@ namespace Workshop
         /// 
         /// Player - The player whose life to check. Can use most player based Value Syntax to retrive this value.
         /// </summary>
-        [WorkshopCodeName("IS ALIVE")]
+        [WorkshopCode("IS ALIVE")]
         public static object IsAlive() => throw new NotImplementedException();
 
         /// <summary>
@@ -640,7 +640,7 @@ namespace Workshop
         /// Whether the match is currently in its assemble heroes phase.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("IS ASSEMBLING HEROES")]
+        [WorkshopCode("IS ASSEMBLING HEROES")]
         public static object IsAssemblingHeroes() => throw new NotImplementedException();
 
         /// <summary>
@@ -648,7 +648,7 @@ namespace Workshop
         /// Whether the match is between rounds.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("IS BETWEEN ROUNDS")]
+        [WorkshopCode("IS BETWEEN ROUNDS")]
         public static object IsBetweenRounds() => throw new NotImplementedException();
 
         /// <summary>
@@ -659,7 +659,7 @@ namespace Workshop
         /// Player - The player whose button to check. Can use most player based Value Syntax to retrieve this value.
         /// Button - The button to check. Designed by any action inputs by ability but not directional inputs. (i.e. Primary Fire, Secondary Fire, Ultimate Ability, Jump, Crouch, etc.)
         /// </summary>
-        [WorkshopCodeName("IS BUTTON HELD")]
+        [WorkshopCode("IS BUTTON HELD")]
         public static object IsButtonHeld() => throw new NotImplementedException();
 
         /// <summary>
@@ -670,7 +670,7 @@ namespace Workshop
         /// Player - The player whose communication status to check. Can use most player based Value Syntax to retrieve this value.
         /// Type - The type of communication to consider. The duration of emotes is exact, the duration of voice lines is assumed to be 4 seconds, and all other durations are assumed to be 2 seconds. Any of the four emote slots, four voice lines slots, or any standard communication (Need healing, Ultimate Status, etc.) can be designated.
         /// </summary>
-        [WorkshopCodeName("IS COMMUNICATING")]
+        [WorkshopCode("IS COMMUNICATING")]
         public static object IsCommunicating() => throw new NotImplementedException();
 
         /// <summary>
@@ -680,7 +680,7 @@ namespace Workshop
         /// 
         /// Player - The player whose communication status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS COMMUNICATING ANY")]
+        [WorkshopCode("IS COMMUNICATING ANY")]
         public static object IsCommunicatingAny() => throw new NotImplementedException();
 
         /// <summary>
@@ -690,7 +690,7 @@ namespace Workshop
         /// 
         /// Player - The player whose emoting status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS COMMUNICATING ANY EMOTE")]
+        [WorkshopCode("IS COMMUNICATING ANY EMOTE")]
         public static object IsCommunicatingAnyEmote() => throw new NotImplementedException();
 
         /// <summary>
@@ -700,7 +700,7 @@ namespace Workshop
         /// 
         /// Player - The player whose voice line status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS COMMUNICATING ANY VOICE LINE")]
+        [WorkshopCode("IS COMMUNICATING ANY VOICE LINE")]
         public static object IsCommunicatingAnyVoiceLine() => throw new NotImplementedException();
 
         /// <summary>
@@ -708,7 +708,7 @@ namespace Workshop
         /// Whether the point is locked in control mode.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("IS CONTROL MODE POINT LOCKED")]
+        [WorkshopCode("IS CONTROL MODE POINT LOCKED")]
         public static object IsControlModePointLocked() => throw new NotImplementedException();
 
         /// <summary>
@@ -718,7 +718,7 @@ namespace Workshop
         /// 
         /// Player - The player whose crouching status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS CROUCHING")]
+        [WorkshopCode("IS CROUCHING")]
         public static object IsCrouching() => throw new NotImplementedException();
 
         /// <summary>
@@ -726,7 +726,7 @@ namespace Workshop
         /// Whether the current game of capture the flag is in sudden death.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("IS CTF MODE IN SUDDEN DEATH")]
+        [WorkshopCode("IS CTF MODE IN SUDDEN DEATH")]
         public static object IsCtfModeInSuddenDeath() => throw new NotImplementedException();
 
         /// <summary>
@@ -736,7 +736,7 @@ namespace Workshop
         /// 
         /// Player - The player whose death to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS DEAD")]
+        [WorkshopCode("IS DEAD")]
         public static object IsDead() => throw new NotImplementedException();
 
         /// <summary>
@@ -746,7 +746,7 @@ namespace Workshop
         /// 
         /// Player - The player whose primary weapon attack to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS FIRING PRIMARY")]
+        [WorkshopCode("IS FIRING PRIMARY")]
         public static object IsFiringPrimary() => throw new NotImplementedException();
 
         /// <summary>
@@ -756,7 +756,7 @@ namespace Workshop
         /// 
         /// Player - The player whose secondary weapon attack to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS FIRING SECONDARY")]
+        [WorkshopCode("IS FIRING SECONDARY")]
         public static object IsFiringSecondary() => throw new NotImplementedException();
 
         /// <summary>
@@ -766,7 +766,7 @@ namespace Workshop
         /// 
         /// Team - The player whose flag to check. Can use most team based Value Syntax to retrive this value.
         /// </summary>
-        [WorkshopCodeName("IS FLAG AT BASE")]
+        [WorkshopCode("IS FLAG AT BASE")]
         public static object IsFlagAtBase() => throw new NotImplementedException();
 
         /// <summary>
@@ -774,7 +774,7 @@ namespace Workshop
         /// Whether the main phase of the match is in progress (during which time combat and scoring are allowed).
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("IS GAME IN PROGRESS")]
+        [WorkshopCode("IS GAME IN PROGRESS")]
         public static object IsGameInProgress() => throw new NotImplementedException();
 
         /// <summary>
@@ -785,7 +785,7 @@ namespace Workshop
         /// Hero - The hero to check for play. Can use most team based Value Syntax to retrive this value. Any applicable Hero based Value Syntax can be used.
         /// Team - The team or teams on which to check for the hero being played. Can use most team based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS HERO BEING PLAYED")]
+        [WorkshopCode("IS HERO BEING PLAYED")]
         public static object IsHeroBeingPlayed() => throw new NotImplementedException();
 
         /// <summary>
@@ -795,7 +795,7 @@ namespace Workshop
         /// 
         /// Player - The player whose airborne status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS IN AIR")]
+        [WorkshopCode("IS IN AIR")]
         public static object IsInAir() => throw new NotImplementedException();
 
         /// <summary>
@@ -807,7 +807,7 @@ namespace Workshop
         /// End Pos - The end position for the line of sight check. Most positional based Value Syntax can be used here.
         /// Barriers - Defines how barriers affect line of sight, when considering whether a barrier belongs to an enemy, the allegiance of the player provided to start pos (if any) is used. Can be set to “Barriers do not block LOS”, Enemy barriers block LOS", and “All barriers block LOS”.
         /// </summary>
-        [WorkshopCodeName("IS IN LINE OF SIGHT")]
+        [WorkshopCode("IS IN LINE OF SIGHT")]
         public static object IsInLineOfSight() => throw new NotImplementedException();
 
         /// <summary>
@@ -815,7 +815,7 @@ namespace Workshop
         /// Whether the match is currently in its setup phase.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("IS IN SETUP")]
+        [WorkshopCode("IS IN SETUP")]
         public static object IsInSetup() => throw new NotImplementedException();
 
         /// <summary>
@@ -825,7 +825,7 @@ namespace Workshop
         /// 
         /// Player - The player whose spawn room status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS IN SPAWN ROOM")]
+        [WorkshopCode("IS IN SPAWN ROOM")]
         public static object IsInSpawnRoom() => throw new NotImplementedException();
 
         /// <summary>
@@ -837,7 +837,7 @@ namespace Workshop
         /// Location - The location to test if it’s within view. Most positional based Value Syntax can be used here.
         /// View Angle - The view angle to compare against in degrees. Can use most angle based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS IN VIEW ANGLE")]
+        [WorkshopCode("IS IN VIEW ANGLE")]
         public static object IsInViewAngle() => throw new NotImplementedException();
 
         /// <summary>
@@ -845,7 +845,7 @@ namespace Workshop
         /// Whether the match has finished.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("IS MATCH COMPLETE")]
+        [WorkshopCode("IS MATCH COMPLETE")]
         public static object IsMatchComplete() => throw new NotImplementedException();
 
         /// <summary>
@@ -855,7 +855,7 @@ namespace Workshop
         /// 
         /// Player - The player whose moving status status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS MOVING")]
+        [WorkshopCode("IS MOVING")]
         public static object IsMoving() => throw new NotImplementedException();
 
         /// <summary>
@@ -865,7 +865,7 @@ namespace Workshop
         /// 
         /// Number - The index of the objective to consider, starting at 0 and counting up. Each control point, payload checkpoint, and payload destination has its own index. Can use most number based Value Syntax to retrieve this value. Value must be in the form of an integer (whole number).
         /// </summary>
-        [WorkshopCodeName("IS OBJECTIVE COMPLETE")]
+        [WorkshopCode("IS OBJECTIVE COMPLETE")]
         public static object IsObjectiveComplete() => throw new NotImplementedException();
 
         /// <summary>
@@ -875,7 +875,7 @@ namespace Workshop
         /// 
         /// Player - The player whose ground status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS ON GROUND")]
+        [WorkshopCode("IS ON GROUND")]
         public static object IsOnGround() => throw new NotImplementedException();
 
         /// <summary>
@@ -885,7 +885,7 @@ namespace Workshop
         /// 
         /// Player - The player whose objective status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS ON OBJECTIVE")]
+        [WorkshopCode("IS ON OBJECTIVE")]
         public static object IsOnObjective() => throw new NotImplementedException();
 
         /// <summary>
@@ -895,7 +895,7 @@ namespace Workshop
         /// 
         /// Player - The player whose wall status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS ON WALL")]
+        [WorkshopCode("IS ON WALL")]
         public static object IsOnWall() => throw new NotImplementedException();
 
         /// <summary>
@@ -905,7 +905,7 @@ namespace Workshop
         /// 
         /// Player - The player whose portrait to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS PORTRAIT ON FIRE")]
+        [WorkshopCode("IS PORTRAIT ON FIRE")]
         public static object IsPortraitOnFire() => throw new NotImplementedException();
 
         /// <summary>
@@ -915,7 +915,7 @@ namespace Workshop
         /// 
         /// Player - The player whose standing status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS STANDING")]
+        [WorkshopCode("IS STANDING")]
         public static object IsStanding() => throw new NotImplementedException();
 
         /// <summary>
@@ -925,7 +925,7 @@ namespace Workshop
         /// 
         /// Team - The team whose role to check. Can use most Team Based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS TEAM ON DEFENSE")]
+        [WorkshopCode("IS TEAM ON DEFENSE")]
         public static object IsTeamOnDefense() => throw new NotImplementedException();
 
         /// <summary>
@@ -935,7 +935,7 @@ namespace Workshop
         /// 
         /// Team - The team whose role to check. Can use most Team Based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS TEAM ON OFFENSE")]
+        [WorkshopCode("IS TEAM ON OFFENSE")]
         public static object IsTeamOnOffense() => throw new NotImplementedException();
 
         /// <summary>
@@ -946,7 +946,7 @@ namespace Workshop
         /// Array - The array whose values will be considered. Can use most Array Based Value Syntax to retrieve this value.
         /// Condition - The condition that is evaluated for each element of the specified array, Use the current array element value to reference the element of the array currently being considered. Can use most Comparative based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS TRUE FOR ALL")]
+        [WorkshopCode("IS TRUE FOR ALL")]
         public static object IsTrueForAll() => throw new NotImplementedException();
 
         /// <summary>
@@ -957,7 +957,7 @@ namespace Workshop
         /// Array - The array whose values will be considered. Can use most Array Based Value Syntax to retrieve this value.
         /// Condition - The condition that is evaluated for each element of the specified array, Use the current array element value to reference the element of the array currently being considered. Can use most Comparative based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS TRUE FOR ANY")]
+        [WorkshopCode("IS TRUE FOR ANY")]
         public static object IsTrueForAny() => throw new NotImplementedException();
 
         /// <summary>
@@ -967,7 +967,7 @@ namespace Workshop
         /// 
         /// Player - The player whose ability 1 usage to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS USING ABILITY 1")]
+        [WorkshopCode("IS USING ABILITY 1")]
         public static object IsUsingAbility1() => throw new NotImplementedException();
 
         /// <summary>
@@ -977,7 +977,7 @@ namespace Workshop
         /// 
         /// Player - The player whose ability 2 usage to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS USING ABILITY 2")]
+        [WorkshopCode("IS USING ABILITY 2")]
         public static object IsUsingAbility2() => throw new NotImplementedException();
 
         /// <summary>
@@ -987,7 +987,7 @@ namespace Workshop
         /// 
         /// Player - The player whose ultimate ability usage to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
-        [WorkshopCodeName("IS USING ULTIMATE")]
+        [WorkshopCode("IS USING ULTIMATE")]
         public static object IsUsingUltimate() => throw new NotImplementedException();
 
         /// <summary>
@@ -995,7 +995,7 @@ namespace Workshop
         /// Whether the match is waiting for players to join before starting.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("IS WAITING FOR PLAYERS")]
+        [WorkshopCode("IS WAITING FOR PLAYERS")]
         public static object IsWaitingForPlayers() => throw new NotImplementedException();
 
         /// <summary>
@@ -1003,7 +1003,7 @@ namespace Workshop
         /// A reference to the last effect or icon entity created by the event player (or created at the global level).
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("LAST CREATED ENTITY")]
+        [WorkshopCode("LAST CREATED ENTITY")]
         public static object LastCreatedEntity() => throw new NotImplementedException();
 
         /// <summary>
@@ -1011,7 +1011,7 @@ namespace Workshop
         /// An ID representing the most recent damage over time action that was executed by the event player (or executed at the global level).
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("LAST DAMAGE OVER TIME ID")]
+        [WorkshopCode("LAST DAMAGE OVER TIME ID")]
         public static object LastDamageOverTimeId() => throw new NotImplementedException();
 
         /// <summary>
@@ -1019,7 +1019,7 @@ namespace Workshop
         /// An ID representing the most recent heal over time action that was executed by the event player (or executed at the global level).
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("LAST HEAL OVER TIME ID")]
+        [WorkshopCode("LAST HEAL OVER TIME ID")]
         public static object LastHealOverTimeId() => throw new NotImplementedException();
 
         /// <summary>
@@ -1029,7 +1029,7 @@ namespace Workshop
         /// 
         /// Array - The array from which the value is created. Can use most Array based Value Syntax to provide this data.
         /// </summary>
-        [WorkshopCodeName("LAST OF")]
+        [WorkshopCode("LAST OF")]
         public static T LastOf<T>(Array<T> value) => throw new NotImplementedException();
 
         /// <summary>
@@ -1037,7 +1037,7 @@ namespace Workshop
         /// A reference to the last piece of text created by the event player (or created at the global level) via the create HUD text or create in-world text action.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("LAST TEXT ID")]
+        [WorkshopCode("LAST TEXT ID")]
         public static object LastTextId() => throw new NotImplementedException();
 
         /// <summary>
@@ -1045,7 +1045,7 @@ namespace Workshop
         /// Shorthand for the directional vector(1, 0, 0), which points to the left.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("LEFT")]
+        [WorkshopCode("LEFT")]
         public static object Left() => throw new NotImplementedException();
 
         /// <summary>
@@ -1057,7 +1057,7 @@ namespace Workshop
         /// Relative player - The player to whom the resulting vector will be relative. Can use most Player based Value Syntax to provide this data.
         /// Transformation - Specifies whether the vector should receive a rotation and a translation (usually applied to positions) or only a rotation (usually applied to directions and velocities). You can choose from Rotation or Rotation and Translation. Rotation is that the resulting vector will be rotated to the new frame of reference. Use this option when the provided vector is in a direction or velocity. Rotation and translation is that the resulting vector will be rotated and translated to the new frame of reference. Use this option when the provided vector is a position.
         /// </summary>
-        [WorkshopCodeName("LOCAL VECTOR OF")]
+        [WorkshopCode("LOCAL VECTOR OF")]
         public static object LocalVectorOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1065,7 +1065,7 @@ namespace Workshop
         /// The current round of the match, counting up from 1. This will return a numerical value
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("MATCH ROUND")]
+        [WorkshopCode("MATCH ROUND")]
         public static object MatchRound() => throw new NotImplementedException();
 
         /// <summary>
@@ -1073,7 +1073,7 @@ namespace Workshop
         /// The amount of time in seconds remaining in the current game mode phase. This will return a numerical value.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("MATCH TIME")]
+        [WorkshopCode("MATCH TIME")]
         public static object MatchTime() => throw new NotImplementedException();
 
         /// <summary>
@@ -1084,7 +1084,7 @@ namespace Workshop
         /// Value - The left-hand operand. May be any value that results in a number. Can use any Number based Value syntax to compare with.
         /// Value - The right-hand operand. May be any value that results in a number. Can use any Number based Value syntax to compare with.
         /// </summary>
-        [WorkshopCodeName("MAX")]
+        [WorkshopCode("MAX")]
         public static object Max() => throw new NotImplementedException();
 
         /// <summary>
@@ -1094,7 +1094,7 @@ namespace Workshop
         /// 
         /// Player - The player whose max health to compare. Can use any Player based Value syntax to provide with.
         /// </summary>
-        [WorkshopCodeName("MAX HEALTH")]
+        [WorkshopCode("MAX HEALTH")]
         public static object MaxHealth() => throw new NotImplementedException();
 
         /// <summary>
@@ -1105,7 +1105,7 @@ namespace Workshop
         /// Value - The left-hand operand. May be any value that results in a number. Can use any Number based Value syntax to compare with.
         /// Value - The right-hand operand. May be any value that results in a number. Can use any Number based Value syntax to compare with.
         /// </summary>
-        [WorkshopCodeName("MIN")]
+        [WorkshopCode("MIN")]
         public static object Min() => throw new NotImplementedException();
 
         /// <summary>
@@ -1116,7 +1116,7 @@ namespace Workshop
         /// Value - The left-hand operand. May be any value that results in a number. Can use any Number based Value syntax.
         /// Value - The right-hand operand. May be any value that results in a number. Can use any Number based Value syntax.
         /// </summary>
-        [WorkshopCodeName("MODULO")]
+        [WorkshopCode("MODULO")]
         public static object Modulo() => throw new NotImplementedException();
 
         /// <summary>
@@ -1127,7 +1127,7 @@ namespace Workshop
         /// Value - The left-hand operand. May be any value that results in a number or a vector. Can use any Number based or Vector based Value syntax to multiply with.
         /// Value - The left-hand operand. May be any value that results in a number or a vector. Can use any Number based or Vector based Value syntax to multiply with.
         /// </summary>
-        [WorkshopCodeName("MULTIPLY")]
+        [WorkshopCode("MULTIPLY")]
         public static object Multiply() => throw new NotImplementedException();
 
         /// <summary>
@@ -1137,7 +1137,7 @@ namespace Workshop
         /// 
         /// Position - The position from which to search for the nearest walkable position. Can use any Vector based Value syntax to divide with.
         /// </summary>
-        [WorkshopCodeName("NEAREST WALKABLE POSITION")]
+        [WorkshopCode("NEAREST WALKABLE POSITION")]
         public static object NearestWalkablePosition() => throw new NotImplementedException();
 
         /// <summary>
@@ -1147,7 +1147,7 @@ namespace Workshop
         /// 
         /// Vector - The vector to normalize. Can use any Vector based Value syntax to divide with.
         /// </summary>
-        [WorkshopCodeName("NORMALIZE")]
+        [WorkshopCode("NORMALIZE")]
         public static object Normalize() => throw new NotImplementedException();
 
         /// <summary>
@@ -1157,7 +1157,7 @@ namespace Workshop
         /// 
         /// Value - When this input is false (or equivalent to false), then the not value is true. Otherwise, the not value is false. Can use most Boolean-based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("NOT")]
+        [WorkshopCode("NOT")]
         public static object Not() => throw new NotImplementedException();
 
         /// <summary>
@@ -1165,7 +1165,7 @@ namespace Workshop
         /// The absence of a player, used when no player is desired for a particular input, equivalent to the real number 0 for the purposes of comparison and debugging.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("NULL")]
+        [WorkshopCode("NULL")]
         public static object Null() => throw new NotImplementedException();
 
         /// <summary>
@@ -1175,7 +1175,7 @@ namespace Workshop
         /// 
         /// Number - A real number constant. Can use most Number based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("NUMBER")]
+        [WorkshopCode("NUMBER")]
         public static object Number() => throw new NotImplementedException();
 
         /// <summary>
@@ -1185,7 +1185,7 @@ namespace Workshop
         /// 
         /// Team - The team or teams on which to count players. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("NUMBER OF DEAD PLAYERS")]
+        [WorkshopCode("NUMBER OF DEAD PLAYERS")]
         public static object NumberOfDeadPlayers() => throw new NotImplementedException();
 
         /// <summary>
@@ -1195,7 +1195,7 @@ namespace Workshop
         /// 
         /// Player - The player whose death count to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("NUMBER OF DEATHS")]
+        [WorkshopCode("NUMBER OF DEATHS")]
         public static object NumberOfDeaths() => throw new NotImplementedException();
 
         /// <summary>
@@ -1205,7 +1205,7 @@ namespace Workshop
         /// 
         /// Player - The player whose elimination count to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("NUMBER OF ELIMINATIONS")]
+        [WorkshopCode("NUMBER OF ELIMINATIONS")]
         public static object NumberOfEliminations() => throw new NotImplementedException();
 
         /// <summary>
@@ -1215,7 +1215,7 @@ namespace Workshop
         /// 
         /// Player - The player whose final blow count to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("NUMBER OF FINAL BLOWS")]
+        [WorkshopCode("NUMBER OF FINAL BLOWS")]
         public static object NumberOfFinalBlows() => throw new NotImplementedException();
 
         /// <summary>
@@ -1226,7 +1226,7 @@ namespace Workshop
         /// Hero - The hero to check for play. Can use most Hero based Value Syntax to provide this value.
         /// Team - The team or teams on which to check for the hero being played. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("NUMBER OF HEROES")]
+        [WorkshopCode("NUMBER OF HEROES")]
         public static int NumberOfHeroes(Hero hero, Team team) => throw new NotImplementedException();
 
         /// <summary>
@@ -1236,7 +1236,7 @@ namespace Workshop
         /// 
         /// Team - The team or teams on which to count players. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("NUMBER OF LIVING PLAYERS")]
+        [WorkshopCode("NUMBER OF LIVING PLAYERS")]
         public static object NumberOfLivingPlayers() => throw new NotImplementedException();
 
         /// <summary>
@@ -1246,7 +1246,7 @@ namespace Workshop
         /// 
         /// Team - The team or teams on which to count players. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("NUMBER OF PLAYERS")]
+        [WorkshopCode("NUMBER OF PLAYERS")]
         public static int NumberOfPlayers(Team team) => throw new NotImplementedException();
 
         /// <summary>
@@ -1256,7 +1256,7 @@ namespace Workshop
         /// 
         /// Team - The team or teams on which to count players. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("NUMBER OF PLAYERS ON OBJECTIVE")]
+        [WorkshopCode("NUMBER OF PLAYERS ON OBJECTIVE")]
         public static object NumberOfPlayersOnObjective() => throw new NotImplementedException();
 
         /// <summary>
@@ -1264,7 +1264,7 @@ namespace Workshop
         /// The control point, payload checkpoint, or payload destination currently active (either 0, 1, or 2). Valid in Assault, Assault/Escort (Hybrid), Escort, and Control.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("OBJECTIVE INDEX")]
+        [WorkshopCode("OBJECTIVE INDEX")]
         public static object ObjectiveIndex() => throw new NotImplementedException();
 
         /// <summary>
@@ -1274,7 +1274,7 @@ namespace Workshop
         /// 
         /// Number - The index of the objective to consider, starting at 0 and counting up. Each control point, payload checkpoint, and payload destination as its own index. Can use most Number based Value Syntax to provide this value, but must output in a integer of 0, 1, or 2.
         /// </summary>
-        [WorkshopCodeName("OBJECTIVE POSITION")]
+        [WorkshopCode("OBJECTIVE POSITION")]
         public static object ObjectivePosition() => throw new NotImplementedException();
 
         /// <summary>
@@ -1284,7 +1284,7 @@ namespace Workshop
         /// 
         /// Team - The team whose opposite to acquire. If all, the result will be all. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("OPPOSITE TEAM OF")]
+        [WorkshopCode("OPPOSITE TEAM OF")]
         public static object OppositeTeamOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1295,7 +1295,7 @@ namespace Workshop
         /// Value - One of the two inputs considered. If either one is true (or equivalent to true), then the OR value is true. Can use most Boolean based Value Syntax to provide this value.
         /// Value - One of the two inputs considered. If either one is true (or equivalent to true), then the OR value is true. Can use most Boolean based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("OR")]
+        [WorkshopCode("OR")]
         public static object Or() => throw new NotImplementedException();
 
         /// <summary>
@@ -1303,7 +1303,7 @@ namespace Workshop
         /// The position in the world of the active payload.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("PAYLOAD POSITION")]
+        [WorkshopCode("PAYLOAD POSITION")]
         public static object PayloadPosition() => throw new NotImplementedException();
 
         /// <summary>
@@ -1311,7 +1311,7 @@ namespace Workshop
         /// The current progress towards the destination for the active payload (expressed as a percentage).
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("PAYLOAD PROGRESS PERCENTAGE")]
+        [WorkshopCode("PAYLOAD PROGRESS PERCENTAGE")]
         public static object PayloadProgressPercentage() => throw new NotImplementedException();
 
         /// <summary>
@@ -1321,7 +1321,7 @@ namespace Workshop
         /// 
         /// Team - The team whose whose flag to check. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("PLAYER CARRYING FLAG")]
+        [WorkshopCode("PLAYER CARRYING FLAG")]
         public static object PlayerCarryingFlag() => throw new NotImplementedException();
 
         /// <summary>
@@ -1332,7 +1332,7 @@ namespace Workshop
         /// Player - The player from whose reticle to search for the closest player. Can use most Player based Value Syntax to provide this value.
         /// Team - The team or teams on which to search for the closest player. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("PLAYER CLOSEST TO RETICLE")]
+        [WorkshopCode("PLAYER CLOSEST TO RETICLE")]
         public static object PlayerClosestToReticle() => throw new NotImplementedException();
 
         /// <summary>
@@ -1343,7 +1343,7 @@ namespace Workshop
         /// Player - The player whose variable to acquire. Can use most Player based Value Syntax to provide this value.
         /// Variable - Variable specified by a single alphabetic letter (A through Z).
         /// </summary>
-        [WorkshopCodeName("PLAYER VARIABLE")]
+        [WorkshopCode("PLAYER VARIABLE")]
         public static object PlayerVariable() => throw new NotImplementedException();
 
         /// <summary>
@@ -1354,7 +1354,7 @@ namespace Workshop
         /// Slot - The slot number from each to acquire a player or players. In team games, each team has slots 0 through 5. In free-for-all games, slots are numbered 0 through 11. Can use most Number based Value Syntax to provide this value.
         /// Team - The team or teams from which to acquire a player or players. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("PLAYERS IN SLOT")]
+        [WorkshopCode("PLAYERS IN SLOT")]
         public static object PlayersInSlot() => throw new NotImplementedException();
 
         /// <summary>
@@ -1366,7 +1366,7 @@ namespace Workshop
         /// Team - The team or teams on which to consider players. Can use most Team based Value Syntax to provide this value.
         /// View Angle - The view angle to compare against in degrees. Can use most Angle based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("PLAYERS IN VIEW ANGLE")]
+        [WorkshopCode("PLAYERS IN VIEW ANGLE")]
         public static object PlayersInViewAngle() => throw new NotImplementedException();
 
         /// <summary>
@@ -1377,7 +1377,7 @@ namespace Workshop
         /// Hero - The hero to check for play. Can use most Hero based Value Syntax to provide this value.
         /// Team - The team or teams on which to check for the hero being played. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("PLAYERS ON HERO")]
+        [WorkshopCode("PLAYERS ON HERO")]
         public static object PlayersOnHero() => throw new NotImplementedException();
 
         /// <summary>
@@ -1390,7 +1390,7 @@ namespace Workshop
         /// Team - The team or teams to which a player must belong to be included in the resulting array. Can use most Team based Value Syntax to provide this value.
         /// LOS Check - Specifies whether and how a player must pass a line-of-sight check to be included in the resulting array. You can choose from Off, Surfaces, Surfaces and Enemy Barriers, and Surfaces and All Barriers. Off will result in the line of sight is never blocked, allowing results through walls. Surfaces will result in line of sight is blocked by ceilings, walls, floors, platforms, and any fixed object that blocks projectiles. Surfaces and Enemy Barriers will result in line of sight is blocked by ceilings, walls, floors, platforms, any fixed object that blocks projectiles, and barriers created by the enemy team. Surfaces and All Barriers will result in line of sight is blocked by ceilings, walls, floors, platforms, any fixed object that blocks projectiles, and all barriers.
         /// </summary>
-        [WorkshopCodeName("PLAYERS WITHIN RADIUS")]
+        [WorkshopCode("PLAYERS WITHIN RADIUS")]
         public static object PlayersWithinRadius() => throw new NotImplementedException();
 
         /// <summary>
@@ -1398,7 +1398,7 @@ namespace Workshop
         /// The current progress towards capture for the active control point (expressed as a percentage).
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("POINT CAPTURE PERCENTAGE")]
+        [WorkshopCode("POINT CAPTURE PERCENTAGE")]
         public static object PointCapturePercentage() => throw new NotImplementedException();
 
         /// <summary>
@@ -1408,7 +1408,7 @@ namespace Workshop
         /// 
         /// Player - The player whose position to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("POSITION OF")]
+        [WorkshopCode("POSITION OF")]
         public static Vector PositionOf(Player player) => throw new NotImplementedException();
 
         /// <summary>
@@ -1419,7 +1419,7 @@ namespace Workshop
         /// Value - The left-hand operand. May be any value that results in a number. Can use most Number based Value Syntax to provide this value.
         /// Value - The right-hand operand. May be any value that results in a number. Can use most Number based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("RAISE TO POWER")]
+        [WorkshopCode("RAISE TO POWER")]
         public static object RaiseToPower() => throw new NotImplementedException();
 
         /// <summary>
@@ -1430,7 +1430,7 @@ namespace Workshop
         /// MIN - The smallest integer allowed. If a real number is provided to this input, it is rounded to the nearest integer. Can use most Number based Value Syntax to provide this value.
         /// MAX - The largest integer allowed. If a real number is provided to this input, it is rounded to the nearest integer. Can use most Number based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("RANDOM INTEGER")]
+        [WorkshopCode("RANDOM INTEGER")]
         public static object RandomInteger() => throw new NotImplementedException();
 
         /// <summary>
@@ -1441,7 +1441,7 @@ namespace Workshop
         /// MIN - The smallest real number allowed. Can use most Number based Value Syntax to provide this value.
         /// MAX - The largest real number allowed. Can use most Number based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("RANDOM REAL")]
+        [WorkshopCode("RANDOM REAL")]
         public static object RandomReal() => throw new NotImplementedException();
 
         /// <summary>
@@ -1451,7 +1451,7 @@ namespace Workshop
         /// 
         /// Array - The array from which to randomly take a value. If a non-array value is provided, the result is simply the provided value. Can use most Array based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("RANDOM VALUE IN ARRAY")]
+        [WorkshopCode("RANDOM VALUE IN ARRAY")]
         public static object RandomValueInArray() => throw new NotImplementedException();
 
         /// <summary>
@@ -1461,7 +1461,7 @@ namespace Workshop
         /// 
         /// Array - The array whose copy will be randomized. Can use most Array based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("RANDOMIZED ARRAY")]
+        [WorkshopCode("RANDOMIZED ARRAY")]
         public static object RandomizedArray() => throw new NotImplementedException();
 
         /// <summary>
@@ -1475,7 +1475,7 @@ namespace Workshop
         /// Players to exclude - Which players cannot be hit by this ray cast. This list takes precedence over players to include. Can use most Player based Value Syntax to provide this value.
         /// Include player owned objects - Whether player owned objects (such as barriers or turrets) should be included in the ray cast. Can use most Boolean based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("RAY CAST HIT NORMAL - New!")]
+        [WorkshopCode("RAY CAST HIT NORMAL - New!")]
         public static object RayCastHitNormal() => throw new NotImplementedException();
 
         /// <summary>
@@ -1489,7 +1489,7 @@ namespace Workshop
         /// Players to exclude - Which players cannot be hit by this ray cast. This list takes precedence over players to include. Can use most Player based Value Syntax to provide this value.
         /// Include player owned objects - Whether player owned objects (such as barriers or turrets) should be included in the ray cast. Can use most Boolean based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("RAY CAST HIT PLAYER - New!")]
+        [WorkshopCode("RAY CAST HIT PLAYER - New!")]
         public static object RayCastHitPlayer() => throw new NotImplementedException();
 
         /// <summary>
@@ -1503,7 +1503,7 @@ namespace Workshop
         /// Players to exclude - Which players cannot be hit by this ray cast. This list takes precedence over players to include. Can use most Player based Value Syntax to provide this value.
         /// Include player owned objects - Whether player owned objects (such as barriers or turrets) should be included in the ray cast. Can use most Boolean based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("RAY CAST HIT POSITION - New!")]
+        [WorkshopCode("RAY CAST HIT POSITION - New!")]
         public static object RayCastHitPosition() => throw new NotImplementedException();
 
         /// <summary>
@@ -1514,7 +1514,7 @@ namespace Workshop
         /// Array - The array from which to remove values. Can use most Array based Value Syntax to provide this value.
         /// Value - The value to remove from the array (if found), if this value itself an array, each matching element is removed. Can use most Array based or Number based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("REMOVE FROM ARRAY")]
+        [WorkshopCode("REMOVE FROM ARRAY")]
         public static object RemoveFromArray() => throw new NotImplementedException();
 
         /// <summary>
@@ -1522,7 +1522,7 @@ namespace Workshop
         /// Shorthand for the directional vector (-1, 0, 0), which points to the right.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("RIGHT")]
+        [WorkshopCode("RIGHT")]
         public static object Right() => throw new NotImplementedException();
 
         /// <summary>
@@ -1533,7 +1533,7 @@ namespace Workshop
         /// Value - The real number to round. Can use most Number based Value Syntax to provide this value.
         /// Rounding Type - Determines the direction in which the value will be rounded. You can round up, down, or to the nearest integer.
         /// </summary>
-        [WorkshopCodeName("ROUND TO INTEGER")]
+        [WorkshopCode("ROUND TO INTEGER")]
         public static object RoundToInteger() => throw new NotImplementedException();
 
         /// <summary>
@@ -1543,7 +1543,7 @@ namespace Workshop
         /// 
         /// Player - The player whose score to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("SCORE OF")]
+        [WorkshopCode("SCORE OF")]
         public static object ScoreOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1553,7 +1553,7 @@ namespace Workshop
         /// 
         /// Angle - Angle in degrees. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("SINE FROM DEGREES")]
+        [WorkshopCode("SINE FROM DEGREES")]
         public static object SineFromDegrees() => throw new NotImplementedException();
 
         /// <summary>
@@ -1563,7 +1563,7 @@ namespace Workshop
         /// 
         /// Angle - Angle in radians. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("SINE FROM RADIANS")]
+        [WorkshopCode("SINE FROM RADIANS")]
         public static object SineFromRadians() => throw new NotImplementedException();
 
         /// <summary>
@@ -1573,7 +1573,7 @@ namespace Workshop
         /// 
         /// Player - The player whose slot number to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("SLOT OF")]
+        [WorkshopCode("SLOT OF")]
         public static object SlotOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1584,7 +1584,7 @@ namespace Workshop
         /// Array - The array whose copy will be sorted. Can use most Array based Value Syntax to provide this value.
         /// Value Rank - The value that is evaluated for each element of the copied array. The array is sorted by this rank in ascending order. Use the current array element value to reference the element of the array currently being considered. Can use most Number based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("SORTED ARRAY")]
+        [WorkshopCode("SORTED ARRAY")]
         public static object SortedArray() => throw new NotImplementedException();
 
         /// <summary>
@@ -1594,7 +1594,7 @@ namespace Workshop
         /// 
         /// Player - The player whose speed to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("SPEED OF")]
+        [WorkshopCode("SPEED OF")]
         public static object SpeedOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1605,7 +1605,7 @@ namespace Workshop
         /// Player - The player whose speed to acquire. Can use most Player based Value Syntax to provide this value.
         /// Direction - The direction of travel in which to measure the player’s speed. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("SPEED OF IN DIRECTION")]
+        [WorkshopCode("SPEED OF IN DIRECTION")]
         public static object SpeedOfInDirection() => throw new NotImplementedException();
 
         /// <summary>
@@ -1615,7 +1615,7 @@ namespace Workshop
         /// 
         /// Value - The real number value whose square root will be computed. Negative values result in zero. Can use most Number based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("SQUARE ROOT")]
+        [WorkshopCode("SQUARE ROOT")]
         public static object SquareRoot() => throw new NotImplementedException();
 
         /// <summary>
@@ -1628,10 +1628,10 @@ namespace Workshop
         /// {1} - The second value in the string.
         /// {2} - The third value in the string.
         /// </summary>
-        [WorkshopCodeName("STRING")] public static StringValue String<TValue0, TValue1, TValue2>(string format, TValue0 value0, TValue1 value1, TValue2 value2) => throw new NotImplementedException();
-        [WorkshopCodeName("STRING")] public static StringValue String<TValue0, TValue1>(string format, TValue0 value0, TValue1 value1, object value2 = null) => throw new NotImplementedException();
-        [WorkshopCodeName("STRING")] public static StringValue String<TValue0>(string format, TValue0 value0, object value1 = null, object value2 = null) => throw new NotImplementedException();
-        [WorkshopCodeName("STRING")] public static StringValue String(string format, object value0 = null, object value1 = null, object value2 = null) => throw new NotImplementedException();
+        [WorkshopCode("STRING")] public static StringValue String<TValue0, TValue1, TValue2>(string format, TValue0 value0, TValue1 value1, TValue2 value2) => throw new NotImplementedException();
+        [WorkshopCode("STRING")] public static StringValue String<TValue0, TValue1>(string format, TValue0 value0, TValue1 value1, object value2 = null) => throw new NotImplementedException();
+        [WorkshopCode("STRING")] public static StringValue String<TValue0>(string format, TValue0 value0, object value1 = null, object value2 = null) => throw new NotImplementedException();
+        [WorkshopCode("STRING")] public static StringValue String(string format, object value0 = null, object value1 = null, object value2 = null) => throw new NotImplementedException();
 
         /// <summary>
         /// SUBTRACT
@@ -1641,7 +1641,7 @@ namespace Workshop
         /// Value - The left-hand operand. May be any value that results in a number or a vector. Can use most Number based Value Syntax to provide this value.
         /// Value - The right-hand operand. May be any value that results in a number or a vector. Can use most Number based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("SUBTRACT")]
+        [WorkshopCode("SUBTRACT")]
         public static object Subtract() => throw new NotImplementedException();
 
         /// <summary>
@@ -1651,7 +1651,7 @@ namespace Workshop
         /// 
         /// Team - Specifies which team the value outputs to. This can be set to All, Team 1, or Team 2.
         /// </summary>
-        [WorkshopCodeName("TEAM")]
+        [WorkshopCode("TEAM")]
         public static object _Team() => throw new NotImplementedException();
 
         /// <summary>
@@ -1661,7 +1661,7 @@ namespace Workshop
         /// 
         /// Player - The player whose team to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("TEAM OF")]
+        [WorkshopCode("TEAM OF")]
         public static object TeamOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1671,7 +1671,7 @@ namespace Workshop
         /// 
         /// Team - The team whose score to acquire. Can use most Team based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("TEAM SCORE")]
+        [WorkshopCode("TEAM SCORE")]
         public static object TeamScore() => throw new NotImplementedException();
 
         /// <summary>
@@ -1681,7 +1681,7 @@ namespace Workshop
         /// 
         /// Player - The player whose directional input to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("THROTTLE OF")]
+        [WorkshopCode("THROTTLE OF")]
         public static object ThrottleOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1689,7 +1689,7 @@ namespace Workshop
         /// The total time in seconds that have elapsed since the game instance was created (including setup time and transitions).
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("TOTAL TIME PLAYED")]
+        [WorkshopCode("TOTAL TIME PLAYED")]
         public static object TotalTimePlayed() => throw new NotImplementedException();
 
         /// <summary>
@@ -1697,7 +1697,7 @@ namespace Workshop
         /// The Boolean value of true.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("TRUE")]
+        [WorkshopCode("TRUE")]
         public static object True() => throw new NotImplementedException();
 
         /// <summary>
@@ -1707,7 +1707,7 @@ namespace Workshop
         /// 
         /// Player - The player whose ultimate charge percentage to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("ULTIMATE CHARGE PERCENT")]
+        [WorkshopCode("ULTIMATE CHARGE PERCENT")]
         public static object UltimateChargePercent() => throw new NotImplementedException();
 
         /// <summary>
@@ -1715,7 +1715,7 @@ namespace Workshop
         /// Shorthand for the directional vector(0, 1, 0). Which points upward.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("UP")]
+        [WorkshopCode("UP")]
         public static object Up() => throw new NotImplementedException();
 
         /// <summary>
@@ -1726,9 +1726,9 @@ namespace Workshop
         /// Array - The array whose element to acquire. Can use most Array based Value Syntax to provide this value.
         /// Index - The index whose element to acquire. Can use most Number based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("VALUE IN ARRAY")]
+        [WorkshopCode("VALUE IN ARRAY")]
         public static T ValueInArray<T>(this Array<T> array, int index) => throw new NotImplementedException();
-        [WorkshopCodeName("VALUE IN ARRAY")]
+        [WorkshopCode("VALUE IN ARRAY")]
         public static T GetElement<T>(this Array<T> array, int index) => throw new NotImplementedException();
 
         /// <summary>
@@ -1743,7 +1743,7 @@ namespace Workshop
         ///  Live Capture Button:
         /// If you are using this value to populate for another value in a condition or action, you can click the live capture button to collect the current position your hero or spectator ghost in the game environment.
         /// </summary>
-        [WorkshopCodeName("VECTOR")]
+        [WorkshopCode("VECTOR")]
         public static Vector Vector(float x, float y, float z) => throw new NotImplementedException();
 
         /// <summary>
@@ -1754,7 +1754,7 @@ namespace Workshop
         /// Start Pos - The start position for the line of sight check. Most positional based Value Syntax can be used here.
         /// End Pos - The end position for the line of sight check. Most positional based Value Syntax can be used here.
         /// </summary>
-        [WorkshopCodeName("VECTOR TOWARDS")]
+        [WorkshopCode("VECTOR TOWARDS")]
         public static object VectorTowards() => throw new NotImplementedException();
 
         /// <summary>
@@ -1764,7 +1764,7 @@ namespace Workshop
         /// 
         /// Player - The player whose velocity to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("VELOCITY OF")]
+        [WorkshopCode("VELOCITY OF")]
         public static object VelocityOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1774,7 +1774,7 @@ namespace Workshop
         /// 
         /// Direction - The direction vector from which to acquire a vertical angle in degrees. The vector is unitized before calculations begins. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("VERTICAL ANGLE FROM DIRECTION")]
+        [WorkshopCode("VERTICAL ANGLE FROM DIRECTION")]
         public static object VerticalAngleFromDirection() => throw new NotImplementedException();
 
         /// <summary>
@@ -1785,7 +1785,7 @@ namespace Workshop
         /// Position - The player whose current facing the angle begins. Can use most Player based Value Syntax to provide this value.
         /// Position - The direction vector from which to acquire a vertical angle in degrees. The vector is unitized before calculations begins. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("VERTICAL ANGLE TOWARDS")]
+        [WorkshopCode("VERTICAL ANGLE TOWARDS")]
         public static object VerticalAngleTowards() => throw new NotImplementedException();
 
         /// <summary>
@@ -1795,7 +1795,7 @@ namespace Workshop
         /// 
         /// Player - The player whose vertical facing angle to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("VERTICAL FACING ANGLE OF")]
+        [WorkshopCode("VERTICAL FACING ANGLE OF")]
         public static object VerticalFacingAngleOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1805,7 +1805,7 @@ namespace Workshop
         /// 
         /// Player - The player whose vertical speed to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("VERTICAL SPEED OF")]
+        [WorkshopCode("VERTICAL SPEED OF")]
         public static object VerticalSpeedOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1813,7 +1813,7 @@ namespace Workshop
         /// The player that received damage for the event currently being processed by this rule. May be the same as the attacker or the event player.
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCodeName("VICTIM")]
+        [WorkshopCode("VICTIM")]
         public static object Victim() => throw new NotImplementedException();
 
         /// <summary>
@@ -1825,7 +1825,7 @@ namespace Workshop
         /// Relative Player - The player to whom the local vector is relative. Can use most Player based Value Syntax to provide this value.
         /// Local vector - Specifies whether the vector should receive a rotation and a translation (usually applied to positions) or only a rotation (usually applied to directions and velocities). Can select rotation or rotation and translation.
         /// </summary>
-        [WorkshopCodeName("WORLD VECTOR OF")]
+        [WorkshopCode("WORLD VECTOR OF")]
         public static object WorldVectorOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1835,7 +1835,7 @@ namespace Workshop
         /// 
         /// Value - The vector from which to acquire the X component. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("X COMPONENT OF")]
+        [WorkshopCode("X COMPONENT OF")]
         public static object XComponentOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1845,7 +1845,7 @@ namespace Workshop
         /// 
         /// Value - The vector from which to acquire the Y component. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("Y COMPONENT OF")]
+        [WorkshopCode("Y COMPONENT OF")]
         public static object YComponentOf() => throw new NotImplementedException();
 
         /// <summary>
@@ -1855,7 +1855,7 @@ namespace Workshop
         /// 
         /// Value - The vector from which to acquire the Z component. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
-        [WorkshopCodeName("Z COMPONENT OF")]
+        [WorkshopCode("Z COMPONENT OF")]
         public static object ZComponentOf() => throw new NotImplementedException();
 
     }

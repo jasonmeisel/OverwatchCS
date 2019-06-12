@@ -699,14 +699,14 @@ class Transpiler
 
     private static string GetCodeName(System.Reflection.MemberInfo targetMethod)
     {
-        var attributes = targetMethod?.GetCustomAttributes(typeof(WorkshopCodeName), true);
-        return (attributes?.FirstOrDefault() as WorkshopCodeName)?.Name;
+        var attributes = targetMethod?.GetCustomAttributes(typeof(WorkshopCodeAttribute), true);
+        return (attributes?.FirstOrDefault() as WorkshopCodeAttribute)?.Name;
     }
 
     private static string GetCodeName(ISymbol targetMethod)
     {
         return targetMethod.GetAttributes().
-            FirstOrDefault(attr => attr.AttributeClass.Name == typeof(WorkshopCodeName).Name)?.
+            FirstOrDefault(attr => attr.AttributeClass.Name == typeof(WorkshopCodeAttribute).Name)?.
             ConstructorArguments.FirstOrDefault().Value as string;
     }
 

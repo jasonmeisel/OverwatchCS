@@ -15,7 +15,7 @@ namespace Workshop
         /// Stops execution of the action list.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("ABORT")]
+        [WorkshopCode("ABORT")]
         public static void Abort() { }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Workshop
         /// 
         /// Condition - Specifies whether the execution is stopped. Can use most Boolean based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("ABORT IF")]
+        [WorkshopCode("ABORT IF")]
         public static void AbortIf() { }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Workshop
         /// Stops execution of the action list if at least one condition in the condition list is false. If all conditions are true, execution continues with the next action.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("ABORT IF CONDITION IS FALSE")]
+        [WorkshopCode("ABORT IF CONDITION IS FALSE")]
         public static void AbortIfConditionIsFalse() { }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Workshop
         /// Stops execution of the action list if all conditions in the condition list is true. If any are false, execution continues with the next action.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("ABORT IF CONDITION IS TRUE")]
+        [WorkshopCode("ABORT IF CONDITION IS TRUE")]
         public static void AbortIfConditionIsTrue() { }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Workshop
         /// Player - The player or players whose button is being reenabled. Can use most Player based Value Syntax.
         /// Button - The logical button that is being reenabled.
         /// </summary>
-        [WorkshopCodeName("ALLOW BUTTON")]
+        [WorkshopCode("ALLOW BUTTON")]
         public static void AllowButton() { }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Workshop
         /// Cancel Contrary Motion - If the target is moving against the direction of the impulse, this relative velocity is negated before the impulse is applied.
         /// Incorporate Contrary Motion - The impulse is added directly to the velocity of the target, so if the target is moving against the direction of the impulse, it might seem like the impulse has less of an effect.
         /// </summary>
-        [WorkshopCodeName("APPLY IMPLUSE")]
+        [WorkshopCode("APPLY IMPLUSE")]
         public static void ApplyImpluse() { }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Workshop
         /// Visible to - One or more players who will see the message. Can use most Value Syntax to select multiple players to specify.
         /// Header - The message to be displayed. Can use most String based Value Syntax to specify.
         /// </summary>
-        [WorkshopCodeName("BIG MESSAGE")]
+        [WorkshopCode("BIG MESSAGE")]
         public static void BigMessage(Array<Player> playersVisibleTo, StringValue header) {}
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Workshop
         /// Rate - The amount of change that will happen to the variable’s value each second. Can use most Number based Value Syntax to specify.
         /// Reevaluation - Specifies which of this action’s inputs will be continuously reevaluated. This action will keep asking for and using new values from reevaluated inputs. You can specify a Destination and Rate or nothing.
         /// </summary>
-        [WorkshopCodeName("CHASE GLOBAL VARIABLE AT RATE")]
+        [WorkshopCode("CHASE GLOBAL VARIABLE AT RATE")]
         public static void ChaseGlobalVariableAtRate() { }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Workshop
         /// Duration - The amount of time, in seconds, over which the variable’s value will approach the destination. Can use most Number based Value Syntax to specify.
         /// Reevaluation - Specifies which of this action’s inputs will be continuously reevaluated. This action will keep asking for and using new values from reevaluated inputs. You can specify a Destination and Duration or nothing.
         /// </summary>
-        [WorkshopCodeName("CHASE GLOBAL VARIABLE OVER TIME")]
+        [WorkshopCode("CHASE GLOBAL VARIABLE OVER TIME")]
         public static void ChaseGlobalVariableOverTime() { }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Workshop
         /// Rate - The amount of change that will happen to the variable’s value each second. Can use most Number based Value Syntax to specify.
         /// Reevaluation - Specifies which of this action’s inputs will be continuously reevaluated. This action will keep asking for and using new values from reevaluated inputs. You can specify a Destination and Rate or nothing.
         /// </summary>
-        [WorkshopCodeName("CHASE PLAYER VARIABLE AT RATE")]
+        [WorkshopCode("CHASE PLAYER VARIABLE AT RATE")]
         public static void ChasePlayerVariableAtRate() { }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace Workshop
         /// Duration - The amount of time, in seconds, over which the variable’s value will approach the destination. Can use most Number based Value Syntax to specify.
         /// Reevaluation - Specifies which of this action’s inputs will be continuously reevaluated. This action will keep asking for and using new values from reevaluated inputs. You can specify a Destination and Duration or nothing.
         /// </summary>
-        [WorkshopCodeName("CHASE PLAYER VARIABLE OVER TIME")]
+        [WorkshopCode("CHASE PLAYER VARIABLE OVER TIME")]
         public static void ChasePlayerVariableOverTime() { }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Workshop
         /// Player - The player or players from whom the status will be removed. Can use most Player based Value Syntax.
         /// Status - The Status to be removed from the player or players. Values include Hacked, Burning, Knocked Down, Asleep, Frozen, Unkillable, Invincible, Phased Out, Rooted, or Stunned.
         /// </summary>
-        [WorkshopCodeName("CLEAR STATUS")]
+        [WorkshopCode("CLEAR STATUS")]
         public static void ClearStatus() { }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Workshop
         /// Player - The player or players to perform the communication. Can use most Player based Value Syntax.
         /// Type - The type of communication. Can use any equipped emote, equipped voice line, or any other communication effect.
         /// </summary>
-        [WorkshopCodeName("COMMUNICATE")]
+        [WorkshopCode("COMMUNICATE")]
         public static void Communicate() { }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace Workshop
         /// Visible to
         /// None
         /// </summary>
-        [WorkshopCodeName("CREATE EFFECT")]
+        [WorkshopCode("CREATE EFFECT")]
         public static void CreateEffect() { }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace Workshop
         /// String
         /// None
         /// </summary>
-        [WorkshopCodeName("CREATE HUD TEXT")]
+        [WorkshopCode("CREATE HUD TEXT")]
         public static void CreateHudText() { }
 
         /// <summary>
@@ -284,7 +284,7 @@ namespace Workshop
         /// Icon Color - The color of the icon to be created. IF a particular team is chosen, the icon will either be red or blue, depending on whether the team is hostile to the viewer.
         /// Show when offscreen - Should this icon still appear even when it is behind you? Can use most Boolean based Value Syntax to specify.
         /// </summary>
-        [WorkshopCodeName("CREATE ICON")]
+        [WorkshopCode("CREATE ICON")]
         public static void CreateIcon() { }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace Workshop
         /// Visible to and String
         /// None
         /// </summary>
-        [WorkshopCodeName("CREATE IN-WORLD TEXT")]
+        [WorkshopCode("CREATE IN-WORLD TEXT")]
         public static void CreateInWorldText() { }
 
         /// <summary>
@@ -320,7 +320,7 @@ namespace Workshop
         /// Damager - The player who will receive credit for the damage. A damager of null indicates no player will receive credit. Can use most Player based Value Syntax for this value.
         /// Amount - The amount of damage to apply. This amount may be modified by buffs, debuffs, or armor. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("DAMAGE")]
+        [WorkshopCode("DAMAGE")]
         public static void Damage() { }
 
         /// <summary>
@@ -328,7 +328,7 @@ namespace Workshop
         /// Instantly ends the match in a draw. This action has no effect in free-for-all modes.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("DECLARE MATCH DRAW")]
+        [WorkshopCode("DECLARE MATCH DRAW")]
         public static void DeclareMatchDraw() { }
 
         /// <summary>
@@ -338,7 +338,7 @@ namespace Workshop
         /// 
         /// Player - The winning player. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("DECLARE PLAYER VICTORY")]
+        [WorkshopCode("DECLARE PLAYER VICTORY")]
         public static void DeclarePlayerVictory() { }
 
         /// <summary>
@@ -348,7 +348,7 @@ namespace Workshop
         /// 
         /// Team - Round winning team. Can use most Team based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("DECLARE ROUND VICTORY")]
+        [WorkshopCode("DECLARE ROUND VICTORY")]
         public static void DeclareRoundVictory() { }
 
         /// <summary>
@@ -358,7 +358,7 @@ namespace Workshop
         /// 
         /// Team - The winning team. Can use most Team based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("DECLARE TEAM VICTORY")]
+        [WorkshopCode("DECLARE TEAM VICTORY")]
         public static void DeclareTeamVictory() { }
 
         /// <summary>
@@ -366,7 +366,7 @@ namespace Workshop
         /// Destroys all effect entities created by create effect.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("DESTROY ALL EFFECTS")]
+        [WorkshopCode("DESTROY ALL EFFECTS")]
         public static void DestroyAllEffects() { }
 
         /// <summary>
@@ -374,7 +374,7 @@ namespace Workshop
         /// Destroys all icon entities created by create icon.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("DESTROY ALL ICONS")]
+        [WorkshopCode("DESTROY ALL ICONS")]
         public static void DestroyAllIcons() { }
 
         /// <summary>
@@ -382,7 +382,7 @@ namespace Workshop
         /// Destroys all in-world text created by the create in-world effect.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("DESTROY ALL IN-WORLD TEXT")]
+        [WorkshopCode("DESTROY ALL IN-WORLD TEXT")]
         public static void DestroyAllInWorldText() { }
 
         /// <summary>
@@ -392,7 +392,7 @@ namespace Workshop
         /// 
         /// Entity - Specifies which effect entity to destroy. This entity may be the last created entity or a variable into which last created entity was earlier stored.
         /// </summary>
-        [WorkshopCodeName("DESTROY EFFECT")]
+        [WorkshopCode("DESTROY EFFECT")]
         public static void DestroyEffect() { }
 
         /// <summary>
@@ -402,7 +402,7 @@ namespace Workshop
         /// 
         /// Text ID - Specifies which hud text to destroy. This ID may be last text ID or a variable into which last text ID was earlier stored.
         /// </summary>
-        [WorkshopCodeName("DESTROY HUD TEXT")]
+        [WorkshopCode("DESTROY HUD TEXT")]
         public static void DestroyHudText() { }
 
         /// <summary>
@@ -412,7 +412,7 @@ namespace Workshop
         /// 
         /// Text ID - Specifies which icon to destroy. This ID may be last text ID or a variable into which last create entity was earlier stored.
         /// </summary>
-        [WorkshopCodeName("DESTROY ICON")]
+        [WorkshopCode("DESTROY ICON")]
         public static void DestroyIcon() { }
 
         /// <summary>
@@ -420,7 +420,7 @@ namespace Workshop
         /// Disables game mode announcements from the announcer until reenabled or the match ends.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("DISABLE BUILT-IN GAME MODE ANNOUNCER")]
+        [WorkshopCode("DISABLE BUILT-IN GAME MODE ANNOUNCER")]
         public static void DisableBuiltInGameModeAnnouncer() { }
 
         /// <summary>
@@ -428,7 +428,7 @@ namespace Workshop
         /// Disables completion of the match from the game mode itself, only allowing the match to be completed by scripting commands.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("DISABLE BUILT-IN GAME MODE COMPLETION")]
+        [WorkshopCode("DISABLE BUILT-IN GAME MODE COMPLETION")]
         public static void DisableBuiltInGameModeCompletion() { }
 
         /// <summary>
@@ -436,7 +436,7 @@ namespace Workshop
         /// Disables all game-mode music until reenabled or the match ends.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("DISABLE BUILT-IN GAME MODE MUSIC")]
+        [WorkshopCode("DISABLE BUILT-IN GAME MODE MUSIC")]
         public static void DisableBuiltInGameModeMusic() { }
 
         /// <summary>
@@ -446,7 +446,7 @@ namespace Workshop
         /// 
         /// Player - The player or players whose respawning is affected. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("DISABLE BUILT-IN GAME MODE RESPAWNING")]
+        [WorkshopCode("DISABLE BUILT-IN GAME MODE RESPAWNING")]
         public static void DisableBuiltInGameModeRespawning() { }
 
         /// <summary>
@@ -454,7 +454,7 @@ namespace Workshop
         /// Disables changes to player and team scores from the game mode itself, only allowing scores to be changed by scripting commands.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("DISABLE BUILT-IN GAME MODE SCORING")]
+        [WorkshopCode("DISABLE BUILT-IN GAME MODE SCORING")]
         public static void DisableBuiltInGameModeScoring() { }
 
         /// <summary>
@@ -464,7 +464,7 @@ namespace Workshop
         /// 
         /// Player - The player or players whose default death spectate behavior is restored. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("DISABLE DEATH SPECTATE ALL PLAYERS")]
+        [WorkshopCode("DISABLE DEATH SPECTATE ALL PLAYERS")]
         public static void DisableDeathSpectateAllPlayers() { }
 
         /// <summary>
@@ -474,7 +474,7 @@ namespace Workshop
         /// 
         /// Player - The player or players who will revert to seeing their own HUD while death spectating. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("DISABLE DEATH SPECTATE TARGET HUD")]
+        [WorkshopCode("DISABLE DEATH SPECTATE TARGET HUD")]
         public static void DisableDeathSpectateTargetHud() { }
 
         /// <summary>
@@ -484,7 +484,7 @@ namespace Workshop
         /// 
         /// Player - The player executing this rule, as specified by the event. May be the same as the attacker or victim. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("DISALLOW BUTTON")]
+        [WorkshopCode("DISALLOW BUTTON")]
         public static void DisallowButton() { }
 
         /// <summary>
@@ -492,7 +492,7 @@ namespace Workshop
         /// Undoes the effect of the disable built-in game mode announcer action.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("ENABLE BUILT-IN GAME MODE ANNOUNCER")]
+        [WorkshopCode("ENABLE BUILT-IN GAME MODE ANNOUNCER")]
         public static void EnableBuiltInGameModeAnnouncer() { }
 
         /// <summary>
@@ -500,7 +500,7 @@ namespace Workshop
         /// Undoes the effect of the disable built-in game mode completion action.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("ENABLE BUILT-IN GAME MODE COMPLETION")]
+        [WorkshopCode("ENABLE BUILT-IN GAME MODE COMPLETION")]
         public static void EnableBuiltInGameModeCompletion() { }
 
         /// <summary>
@@ -508,7 +508,7 @@ namespace Workshop
         /// Undoes the effect of the disable built-in game mode music action.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("ENABLE BUILT-IN GAME MODE MUSIC")]
+        [WorkshopCode("ENABLE BUILT-IN GAME MODE MUSIC")]
         public static void EnableBuiltInGameModeMusic() { }
 
         /// <summary>
@@ -518,7 +518,7 @@ namespace Workshop
         /// 
         /// Player - The player or players whose respawning is affected. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("ENABLE BUILT-IN GAME MODE RESPAWNING")]
+        [WorkshopCode("ENABLE BUILT-IN GAME MODE RESPAWNING")]
         public static void EnableBuiltInGameModeRespawning() { }
 
         /// <summary>
@@ -526,7 +526,7 @@ namespace Workshop
         /// Undoes the effect of the disable built-in game mode scoring action.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("ENABLE BUILT-IN GAME MODE SCORING")]
+        [WorkshopCode("ENABLE BUILT-IN GAME MODE SCORING")]
         public static void EnableBuiltInGameModeScoring() { }
 
         /// <summary>
@@ -536,7 +536,7 @@ namespace Workshop
         /// 
         /// Player - The player or players who will be allowed to spectate all players. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("ENABLE DEATH SPECTATE ALL PLAYERS")]
+        [WorkshopCode("ENABLE DEATH SPECTATE ALL PLAYERS")]
         public static void EnableDeathSpectateAllPlayers() { }
 
         /// <summary>
@@ -546,7 +546,7 @@ namespace Workshop
         /// 
         /// Player - The player or players who will begin seeing their spectate’s target’s hud while death spectating. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("ENABLE DEATH SPECTATE TARGET HUD")]
+        [WorkshopCode("ENABLE DEATH SPECTATE TARGET HUD")]
         public static void EnableDeathSpectateTargetHud() { }
 
         /// <summary>
@@ -554,7 +554,7 @@ namespace Workshop
         /// Go to the assemble heroes phase of the game mode. Only works if a game is in progress.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("GO TO ASSEMBLE HEROES")]
+        [WorkshopCode("GO TO ASSEMBLE HEROES")]
         public static void GoToAssembleHeroes() { }
 
         /// <summary>
@@ -566,7 +566,7 @@ namespace Workshop
         /// Healer - The player who will receive credit for the healing. A healer of null indicates no player will receive credit. Can use most Player based Value Syntax for this value.
         /// Amount - The amount of healing to apply. This amount may be modified by buffs or debuffs, healing is capped by each player’s max health. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("HEAL")]
+        [WorkshopCode("HEAL")]
         public static void Heal() { }
 
         /// <summary>
@@ -577,7 +577,7 @@ namespace Workshop
         /// Player - The player or players who will be killed. Can use most Player based Value Syntax for this value.
         /// Killer - The player who will receive credit for the kill. A killer of null indicates no player will receive credit. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("KILL")]
+        [WorkshopCode("KILL")]
         public static void Kill() { }
 
         /// <summary>
@@ -585,7 +585,7 @@ namespace Workshop
         /// Restarts the action list from the beginning. To prevent an infinite loop, a wait action must execute between the start of the action list and this action.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("LOOP")]
+        [WorkshopCode("LOOP")]
         public static void Loop() { }
 
         /// <summary>
@@ -595,7 +595,7 @@ namespace Workshop
         /// 
         /// Condition - Specifies whether the loop will occur. Can use most Conditional based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("LOOP IF")]
+        [WorkshopCode("LOOP IF")]
         public static void LoopIf() { }
 
         /// <summary>
@@ -603,7 +603,7 @@ namespace Workshop
         /// Restarts the action list from the beginning if at least one condition in the condition list is false. If all conditions are true, execution continues with the next action. To prevent an infinite loop, a wait action must execute between the start of the action list and this action.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("LOOP IF CONDITION IF FALSE")]
+        [WorkshopCode("LOOP IF CONDITION IF FALSE")]
         public static void LoopIfConditionIfFalse() { }
 
         /// <summary>
@@ -611,7 +611,7 @@ namespace Workshop
         /// Restarts the action list from the beginning if all conditions in the condition list is true. If any are false, execution continues with the next action. To prevent an infinite loop, a wait action must execute between the start of the action list and this action.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("LOOP IF CONDITION IF TRUE")]
+        [WorkshopCode("LOOP IF CONDITION IF TRUE")]
         public static void LoopIfConditionIfTrue() { }
 
         /// <summary>
@@ -623,7 +623,7 @@ namespace Workshop
         /// Operation - The way in which the variable’s value will be changed. Options include standard arithmetic operations as well as array operations for appending and removing values.
         /// Value - The value used for the modification. For arithmetic operations, this is the second of two operands, with the other being the variable’s existing value. For array operations, this is the value to append or remove. Various Value Syntax can be used.
         /// </summary>
-        [WorkshopCodeName("MODIFY GLOBAL VARIABLE")]
+        [WorkshopCode("MODIFY GLOBAL VARIABLE")]
         public static void ModifyGlobalVariable() { }
 
         /// <summary>
@@ -634,7 +634,7 @@ namespace Workshop
         /// Player - The player whose score will change. Can use most Player based Value Syntax for this value.
         /// Score - The amount the score will increase or decrease. If positive, the score will increase. If negative, the score will decrease. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("MODIFY PLAYER SCORE")]
+        [WorkshopCode("MODIFY PLAYER SCORE")]
         public static void ModifyPlayerScore() { }
 
         /// <summary>
@@ -647,7 +647,7 @@ namespace Workshop
         /// Operation - The way in which the variable’s value will be changed. Options include standard arithmetic operations as well as array operations for appending and removing values.
         /// Value - The value used for the modification. For arithmetic operations, this is the second of two operands, with the other being the variable’s existing value. For array operations, this is the value to append or remove. Various Value Syntax can be used.
         /// </summary>
-        [WorkshopCodeName("MODIFY PLAYER VARIABLE")]
+        [WorkshopCode("MODIFY PLAYER VARIABLE")]
         public static void ModifyPlayerVariable() { }
 
         /// <summary>
@@ -658,7 +658,7 @@ namespace Workshop
         /// Team - The team whose score will be changed. Can use most Player based Value Syntax for this value.
         /// Score - The amount the score will increase or decrease. If positive, the score will increase. If negative, the score will decrease. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("MODIFY TEAM SCORE")]
+        [WorkshopCode("MODIFY TEAM SCORE")]
         public static void ModifyTeamScore() { }
 
         /// <summary>
@@ -666,7 +666,7 @@ namespace Workshop
         /// Pauses the match time, players, objective logic, and game mode advancement criteria are unaffected by the pause.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("PAUSE MATCH TIME")]
+        [WorkshopCode("PAUSE MATCH TIME")]
         public static void PauseMatchTime() { }
 
         /// <summary>
@@ -693,7 +693,7 @@ namespace Workshop
         /// Position - The effect’s position. If this value is a player, then the effect will move along with the player, otherwise, the value is interpreted as a position in the world. Can use most Player or Vector based Value Syntax.
         /// Radius - The effect’s radius in meters. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("PLAY EFFECT")]
+        [WorkshopCode("PLAY EFFECT")]
         public static void PlayEffect() { }
 
         /// <summary>
@@ -704,7 +704,7 @@ namespace Workshop
         /// Player - The player or players who will begin preloading a hero or heroes. Only one preload hero action will be active at a time for a given player. Can use most Player based Value Syntax for this value.
         /// Hero - The hero or heroes to begin preloading for the specified player or players. When multiple heroes are specified in an array, the Heroes towards the beginning of the array are prioritized. Can use most Hero based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("PRELOAD HERO")]
+        [WorkshopCode("PRELOAD HERO")]
         public static void PreloadHero() { }
 
         /// <summary>
@@ -715,7 +715,7 @@ namespace Workshop
         /// Player - The player or players for whom virtual button input will be forced. Can use most Player based Value Syntax for this value.
         /// Button - The button to be pressed.
         /// </summary>
-        [WorkshopCodeName("PRESS BUTTON")]
+        [WorkshopCode("PRESS BUTTON")]
         public static void PressButton() { }
 
         /// <summary>
@@ -725,7 +725,7 @@ namespace Workshop
         /// 
         /// Player - The player or players whose hero list is being reset. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("RESET PLAYER HERO AVAILABILITY")]
+        [WorkshopCode("RESET PLAYER HERO AVAILABILITY")]
         public static void ResetPlayerHeroAvailability() { }
 
         /// <summary>
@@ -735,7 +735,7 @@ namespace Workshop
         /// 
         /// Player - The player or players to respawn. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("RESPAWN")]
+        [WorkshopCode("RESPAWN")]
         public static void Respawn() { }
 
         /// <summary>
@@ -745,7 +745,7 @@ namespace Workshop
         /// 
         /// Player - The player or players who will be resurrected. Can use most Player based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("RESURRECT")]
+        [WorkshopCode("RESURRECT")]
         public static void Resurrect() { }
 
         /// <summary>
@@ -756,7 +756,7 @@ namespace Workshop
         /// Player - The player or players whose access to ability 1 is affected. Can use most Player based Value Syntax for this value.
         /// Enabled - Specifies whether the player or players are able to use ability 1. Expects a Boolean Value such as True, False, or Compare. Can use most Boolean based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET ABILITY 1 ENABLED")]
+        [WorkshopCode("SET ABILITY 1 ENABLED")]
         public static void SetAbility1Enabled() { }
 
         /// <summary>
@@ -767,7 +767,7 @@ namespace Workshop
         /// Player - The player or players whose access to ability 2 is affected. Expects a Boolean Value such as True, False, or Compare. Can use most Player based Value Syntax for this value.
         /// Enabled - Specifies whether the player or players are able to use ability 2. Can use most Boolean based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET ABILITY 2 ENABLED")]
+        [WorkshopCode("SET ABILITY 2 ENABLED")]
         public static void SetAbility2Enabled() { }
 
         /// <summary>
@@ -778,7 +778,7 @@ namespace Workshop
         /// Player - The player or players whose aim will be set. Can use most Player based Value Syntax for this value.
         /// Turn Speed Percent - The percentage of normal aim speed to which the player or players will set their aim speed. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET AIM SPEED")]
+        [WorkshopCode("SET AIM SPEED")]
         public static void SetAimSpeed() { }
 
         /// <summary>
@@ -789,7 +789,7 @@ namespace Workshop
         /// Player - The player or players whose damage dealt will be set. Can use most Player based Value Syntax for this value.
         /// Damage Dealt Percent - The percentage of raw damage dealt to which the player or players will set their damage dealt. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET DAMAGE DEALT")]
+        [WorkshopCode("SET DAMAGE DEALT")]
         public static void SetDamageDealt() { }
 
         /// <summary>
@@ -800,7 +800,7 @@ namespace Workshop
         /// Player - The player or players whose damage received will be set. Can use most Player based Value Syntax for this value.
         /// Damage Received Percent - The percentage of raw damage received to which the player or players will set their damage received. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET DAMAGE RECEIVED")]
+        [WorkshopCode("SET DAMAGE RECEIVED")]
         public static void SetDamageReceived() { }
 
         /// <summary>
@@ -812,7 +812,7 @@ namespace Workshop
         /// Direction - The unit direction in which the player or players will face. This value is normalized internally. Can use most Vector based Value Syntax.
         /// *Relative - Specifies direction is relative to world coordinates or the local coordinates of the player or players.
         /// </summary>
-        [WorkshopCodeName("SET FACING")]
+        [WorkshopCode("SET FACING")]
         public static void SetFacing() { }
 
         /// <summary>
@@ -823,7 +823,7 @@ namespace Workshop
         /// Variable - Specifies which Global Variable to store the value into. Specified by a single alphabetic letter (A through Z).
         /// Value - The value that will be stored. Nearly any Value syntax can be used, however it is most common with Number based syntax.
         /// </summary>
-        [WorkshopCodeName("SET GLOBAL VARIABLE")]
+        [WorkshopCode("SET GLOBAL VARIABLE")]
         public static void SetGlobalVariable() { }
 
         /// <summary>
@@ -835,7 +835,7 @@ namespace Workshop
         /// Index - The index of the array to modify. If the index is beyond the end of the array, the array is extended with the new elements given a value of zero. Can use most Number based Value Syntax with this value.
         /// Value - The value that will be stored into the array. Nearly any Value syntax can be used, however it is most common with Number based syntax.
         /// </summary>
-        [WorkshopCodeName("SET GLOBAL VARIABLE INDEX")]
+        [WorkshopCode("SET GLOBAL VARIABLE INDEX")]
         public static void SetGlobalVariableIndex() { }
 
         /// <summary>
@@ -846,7 +846,7 @@ namespace Workshop
         /// Player - The player or players whose movement gravity will be set. Can use most Player based Value Syntax with this value.
         /// Gravity Percent - The percentage of regular movement gravity to which the player or players will set their personal movement gravity. Can use most Number based Value Sytax with this value. 100% is the normal gravity level of the game. Less than that will decrease gravity (allowing higher jumps), higher amounts will result in higher gravity (causing shorter jumps).
         /// </summary>
-        [WorkshopCodeName("SET GRAVITY")]
+        [WorkshopCode("SET GRAVITY")]
         public static void SetGravity() { }
 
         /// <summary>
@@ -857,7 +857,7 @@ namespace Workshop
         /// Player - The player or players whose healing dealt will be set. Can use most Player based Value Syntax for this value.
         /// Healing Dealt Percent - The percentage of raw healing dealt to which the player or players will set their healing dealt. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET HEALING DEALT")]
+        [WorkshopCode("SET HEALING DEALT")]
         public static void SetHealingDealt() { }
 
         /// <summary>
@@ -868,7 +868,7 @@ namespace Workshop
         /// Player - The player or players whose healing received will be set. Can use most Player based Value Syntax for this value.
         /// Healing Received Percent - The percentage of raw healing received to which the player or players will set their healing received. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET HEALING RECEIVED")]
+        [WorkshopCode("SET HEALING RECEIVED")]
         public static void SetHealingReceived() { }
 
         /// <summary>
@@ -879,7 +879,7 @@ namespace Workshop
         /// Player - The player or players who will become invisible. Can use most Player based Value Syntax for this value.
         /// Invisible to - Specifies for whom the player or players will be invisible. Can be set to All, Enemies, or None.
         /// </summary>
-        [WorkshopCodeName("SET INVISIBLE")]
+        [WorkshopCode("SET INVISIBLE")]
         public static void SetInvisible() { }
 
         /// <summary>
@@ -889,7 +889,7 @@ namespace Workshop
         /// 
         /// Time - The match time in seconds. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("SET MATCH TIME")]
+        [WorkshopCode("SET MATCH TIME")]
         public static void SetMatchTime() { }
 
         /// <summary>
@@ -900,7 +900,7 @@ namespace Workshop
         /// Player - The player or players whose max health will be set. Can use most Player based Value Syntax for this value.
         /// Health Percent - The percentage of raw max health to which the player or players will set their max health. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("SET MAX HEALTH")]
+        [WorkshopCode("SET MAX HEALTH")]
         public static void SetMaxHealth() { }
 
         /// <summary>
@@ -911,7 +911,7 @@ namespace Workshop
         /// Player - The player or players whose move speed will be set. Can use most Player based Value Syntax for this value.
         /// Health Percent - The percentage of raw move speed to which the player or players will set their move speed. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("SET MOVE SPEED")]
+        [WorkshopCode("SET MOVE SPEED")]
         public static void SetMoveSpeed() { }
 
         /// <summary>
@@ -923,7 +923,7 @@ namespace Workshop
         /// Header - The message to be displayed. Can use most String based Value Syntax for this value.
         /// Reevaluation - Specifies which of this action’s inputs will be continously reevaluated. The message will keep asking for and using new values from reevaluated inputs. Can choose “Visible to and String” or “String”
         /// </summary>
-        [WorkshopCodeName("SET OBJECTIVE DESCRIPTION")]
+        [WorkshopCode("SET OBJECTIVE DESCRIPTION")]
         public static void SetObjectiveDescription() { }
 
         /// <summary>
@@ -934,7 +934,7 @@ namespace Workshop
         /// Player - The player or players whose hero list is being set. Can use most Player based Value Syntax for this value.
         /// Hero - The hero or heroes that will be available. If no heroes are provided, the action has no effect. Can use most Hero based Value Syntax for this value including compatible Arrays.
         /// </summary>
-        [WorkshopCodeName("SET PLAYER ALLOWED HEROES")]
+        [WorkshopCode("SET PLAYER ALLOWED HEROES")]
         public static void SetPlayerAllowedHeroes(Array<Player> players, Array<Hero> heroes) { }
 
         /// <summary>
@@ -945,7 +945,7 @@ namespace Workshop
         /// Player - The player or players whose score will be set. Can use most Player based Value Syntax for this value.
         /// Score - The score that will be set. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("SET PLAYER SCORE")]
+        [WorkshopCode("SET PLAYER SCORE")]
         public static void SetPlayerScore() { }
 
         /// <summary>
@@ -957,7 +957,7 @@ namespace Workshop
         /// Variable - Specifies which Player Variable to store the value into. Specified by a single alphabetic letter (A through Z).
         /// Value - The value that will be stored. Nearly any Value syntax can be used, however it is most common with Number based syntax.
         /// </summary>
-        [WorkshopCodeName("SET PLAYER VARIABLE")]
+        [WorkshopCode("SET PLAYER VARIABLE")]
         public static void SetPlayerVariable() { }
 
         /// <summary>
@@ -970,7 +970,7 @@ namespace Workshop
         /// Index - The index of the array to modify. If the index is beyond the end of the array, the array is extended with the new elements given a value of zero. Can use most Number based Value Syntax with this value.
         /// Value - The value that will be stored into the array. Nearly any Value syntax can be used, however it is most common with Number based syntax.
         /// </summary>
-        [WorkshopCodeName("SET PLAYER VARIABLE AT INDEX")]
+        [WorkshopCode("SET PLAYER VARIABLE AT INDEX")]
         public static void SetPlayerVariableAtIndex() { }
 
         /// <summary>
@@ -981,7 +981,7 @@ namespace Workshop
         /// Player - The player or players whose access to primary fire is affected. Can use most Player based Value Syntax for this value.
         /// Enabled - Specifies whether the player or players are able to use primary fire. Expects a Boolean Value such as True, False, or Compare. Can use most Boolean based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET PRIMARY FIRE ENABLED")]
+        [WorkshopCode("SET PRIMARY FIRE ENABLED")]
         public static void SetPrimaryFireEnabled() { }
 
         /// <summary>
@@ -992,7 +992,7 @@ namespace Workshop
         /// Player - The player or players whose projectile gravity will be set. Can use most Player based Value Syntax for this value.
         /// Projectile Gravity Percent - The percentage of the regular projectile gravity to which the player or players will set their personal projectile gravity. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("SET PROJECTILE GRAVITY")]
+        [WorkshopCode("SET PROJECTILE GRAVITY")]
         public static void SetProjectileGravity() { }
 
         /// <summary>
@@ -1003,7 +1003,7 @@ namespace Workshop
         /// Player - The player or players whose projectile speed will be set. Can use most Player based Value Syntax for this value.
         /// Projectile Speed Percent - The percentage of the regular projectile speed to which the player or players will set their personal projectile speed. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("SET PROJECTILE SPEED")]
+        [WorkshopCode("SET PROJECTILE SPEED")]
         public static void SetProjectileSpeed() { }
 
         /// <summary>
@@ -1014,7 +1014,7 @@ namespace Workshop
         /// Player - The player or players whose respawn max time will is being defined. Can use most Player based Value Syntax for this value.
         /// Time - The duration between death and respawn in seconds. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("SET RESPAWN MAX TIME")]
+        [WorkshopCode("SET RESPAWN MAX TIME")]
         public static void SetRespawnMaxTime() { }
 
         /// <summary>
@@ -1025,7 +1025,7 @@ namespace Workshop
         /// Player - The player or players whose access to secondary fire is affected. Can use most Player based Value Syntax for this value.
         /// Enabled - Specifies whether the player or players are able to use secondary fire. Expects a Boolean Value such as True, False, or Compare. Can use most Boolean based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET SECONDARY FIRE ENABLED")]
+        [WorkshopCode("SET SECONDARY FIRE ENABLED")]
         public static void SetSecondaryFireEnabled() { }
 
         /// <summary>
@@ -1035,7 +1035,7 @@ namespace Workshop
         /// 
         /// Speed Percent - The simulation rate as a percentage of normal speed. Only rates up to 100% are allowed. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("SET SLOW MOTION")]
+        [WorkshopCode("SET SLOW MOTION")]
         public static void SetSlowMotion() { }
 
         /// <summary>
@@ -1048,7 +1048,7 @@ namespace Workshop
         /// Status - The Status to be applied from the player or players. These behave similarly to statuses applied from hero abilities. Values include Hacked, Burning, Knocked Down, Asleep, Frozen, Unkillable, Invincible, Phased Out, Rooted, or Stunned.
         /// Duration - The duration of the status effect in seconds. To have a status that lasts until a clear status action is executed, proivide an arbitrarily long duration such as 9999. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET STATUS")]
+        [WorkshopCode("SET STATUS")]
         public static void SetStatus() { }
 
         /// <summary>
@@ -1059,7 +1059,7 @@ namespace Workshop
         /// Team - The team or teams whose score will be set. Can use most Team based Value Syntax for this value.
         /// Score - The score that will be set. Can use most Number based Value Syntax for this value.
         /// </summary>
-        [WorkshopCodeName("SET TEAM SCORE")]
+        [WorkshopCode("SET TEAM SCORE")]
         public static void SetTeamScore() { }
 
         /// <summary>
@@ -1070,7 +1070,7 @@ namespace Workshop
         /// Player - The player or players whose access to their ultimate ability is affected. Can use most Player based Value Syntax for this value.
         /// Enabled - Specifies whether the player or players are able to use their ultimate ability. Expects a Boolean Value such as True, False, or Compare. Can use most Boolean based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET ULTIMATE ABILITY ENABLED")]
+        [WorkshopCode("SET ULTIMATE ABILITY ENABLED")]
         public static void SetUltimateAbilityEnabled() { }
 
         /// <summary>
@@ -1081,7 +1081,7 @@ namespace Workshop
         /// Player - The player or players whose ultimate charge will be set. Can use most Player based Value Syntax for this value.
         /// Charge Percent - The percentage of maximum charge. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SET ULTIMATE CHARGE")]
+        [WorkshopCode("SET ULTIMATE CHARGE")]
         public static void SetUltimateCharge() { }
 
         /// <summary>
@@ -1091,7 +1091,7 @@ namespace Workshop
         /// 
         /// Number of actions - The number of action to skip, not including this action. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SKIP")]
+        [WorkshopCode("SKIP")]
         public static void Skip() { }
 
         /// <summary>
@@ -1102,7 +1102,7 @@ namespace Workshop
         /// Condition - Specifies whether the loop will occur. Can use most Conditional based Value Syntax for this value.
         /// Number of actions - The number of action to skip, not including this action. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("SKIP IF")]
+        [WorkshopCode("SKIP IF")]
         public static void SkipIf() { }
 
         /// <summary>
@@ -1113,7 +1113,7 @@ namespace Workshop
         /// Visible to - One or more players who will see the message. Can use most Player based Value Syntax.
         /// Header - The message to be displayed. Can use most String based Value Syntax to specify.
         /// </summary>
-        [WorkshopCodeName("SMALL MESSAGE")]
+        [WorkshopCode("SMALL MESSAGE")]
         public static void SmallMessage() { }
 
         /// <summary>
@@ -1128,7 +1128,7 @@ namespace Workshop
         /// Relative - Specifies whether direction is relavtive to the world coordinates or the local coordinates of the player or players.
         /// Reevaluation - Specifies which of this actions inputs will be continously reevaluated. This action will keep asking for and using new values from reevaluated inputs. You can choose from “Direction, Rate, and Max Speed” or “None”.
         /// </summary>
-        [WorkshopCodeName("START ACCELERATING")]
+        [WorkshopCode("START ACCELERATING")]
         public static void StartAccelerating(Player player, Vector direction, float rate, float maxSpeed, RelativeTo relativeTo, NoneValue reevaluation = NoneValue.None) { }
 
         /// <summary>
@@ -1141,7 +1141,7 @@ namespace Workshop
         /// Look at position - Where the camera looks at, reevaluates continously. Can use most Vector based Value Syntax to specify.
         /// Blend Speed - How fast to blend the camera movement as positions change. 0 means do not blend at all and just change positions instantly. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("START CAMERA")]
+        [WorkshopCode("START CAMERA")]
         public static void StartCamera() { }
 
         /// <summary>
@@ -1154,7 +1154,7 @@ namespace Workshop
         /// Damage Percent - The percentage of damage that will apply to receivers when attacked by damagers. Can use most Number based Value Syntax to specify.
         /// Reevaluation - Specifies which of this action’s inputs will be continously reevaluated. This action will keep asking for and using new values from reevaluated inputs. Can choose from “Receivers, Damagers, and Damage Percent”, “Receivers and Damagers”, or “None”.
         /// </summary>
-        [WorkshopCodeName("START DAMAGE MODIFICATION")]
+        [WorkshopCode("START DAMAGE MODIFICATION")]
         public static void StartDamageModification() { }
 
         /// <summary>
@@ -1167,7 +1167,7 @@ namespace Workshop
         /// Duration - The duration of the damage over time in seconds. To have a DOT that lasts until stopped by script, provide an arbitrarily long duration such as 9999. Can use most Number based Value Syntax to specify.
         /// Damage Per Second - The damage per second for the damage over time. Can use most Number based Value Syntax to specify.
         /// </summary>
-        [WorkshopCodeName("START DAMAGE OVER TIME")]
+        [WorkshopCode("START DAMAGE OVER TIME")]
         public static void StartDamageOverTime() { }
 
         /// <summary>
@@ -1181,7 +1181,7 @@ namespace Workshop
         /// Relative - Specifies whether direction is relative to the world coordinates or the local coordinates of the player or players.
         /// Reevaluation - Specifies which of this actions inputs will be continously reevaluated. This action will keep asking for and using new values from reevaluated inputs. You can choose from “Direction and Turn Rate” or “None”.
         /// </summary>
-        [WorkshopCodeName("START FACING")]
+        [WorkshopCode("START FACING")]
         public static void StartFacing() { }
 
         /// <summary>
@@ -1192,7 +1192,7 @@ namespace Workshop
         /// Player - The player or players who will be forced to be a specified hero. Can use most Player based Value Syntax.
         /// Hero - The hero that the player or players will be forced to be. Can use most Hero based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("START FORCING PLAYER TO BE HERO")]
+        [WorkshopCode("START FORCING PLAYER TO BE HERO")]
         public static void StartForcingPlayerToBeHero() { }
 
         /// <summary>
@@ -1203,7 +1203,7 @@ namespace Workshop
         /// Team - The team whose spawn room will be forced. Can use most Team based Value Syntax.
         /// Room - The number of the spawn room to be forced. 0 is the first spawn room, 1 is the second, and 2 is the third. If this specified spawn room does not exist. Players will use the normal spawn room. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("START FORCING SPAWN ROOM")]
+        [WorkshopCode("START FORCING SPAWN ROOM")]
         public static void StartForcingSpawnRoom() { }
 
         /// <summary>
@@ -1219,7 +1219,7 @@ namespace Workshop
         /// Min Sideways - Sets the minimum run sideways amount. 0 allows the player or players to stop while 1 forces full forward movement. Can use most Number based Value Syntax.
         /// Max Forward - Sets the maximum run sideways amount. 0 allows the player or players to stop while 1 forces full forward movement. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("START FORCING THROTTLE")]
+        [WorkshopCode("START FORCING THROTTLE")]
         public static void StartForcingThrottle() { }
 
         /// <summary>
@@ -1232,7 +1232,7 @@ namespace Workshop
         /// Duration - The duration of the heal over time in seconds. To have a HOT that lasts until stopped by script, provide an arbitrarily long duration such as 9999. Can use most Number based Value Syntax to specify.
         /// Damage Per Second - The heal per second for the heal over time. Can use most Number based Value Syntax to specify.
         /// </summary>
-        [WorkshopCodeName("START HEAL OVER TIME")]
+        [WorkshopCode("START HEAL OVER TIME")]
         public static void StartHealOverTime() { }
 
         /// <summary>
@@ -1243,7 +1243,7 @@ namespace Workshop
         /// Player - The player or players who are holding a button virtually. Can use most Player based Value Syntax.
         /// Button - The logical button that is being held virtually.
         /// </summary>
-        [WorkshopCodeName("START HOLDING BUTTON")]
+        [WorkshopCode("START HOLDING BUTTON")]
         public static void StartHoldingButton() { }
 
         /// <summary>
@@ -1253,7 +1253,7 @@ namespace Workshop
         /// 
         /// Player - The player or players who will stop accelerating. Can use most Player based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP ACCELERATING")]
+        [WorkshopCode("STOP ACCELERATING")]
         public static void StopAccelerating() { }
 
         /// <summary>
@@ -1261,7 +1261,7 @@ namespace Workshop
         /// Stops the all damage modifications that were started using the start damage modification action.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("STOP ALL DAMAGE MODIFICATIONS")]
+        [WorkshopCode("STOP ALL DAMAGE MODIFICATIONS")]
         public static void StopAllDamageModifications() { }
 
         /// <summary>
@@ -1271,7 +1271,7 @@ namespace Workshop
         /// 
         /// Player - The player or players whose scripted damage over time will stop. Can use most Player based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP ALL DAMAGE OVER TIME")]
+        [WorkshopCode("STOP ALL DAMAGE OVER TIME")]
         public static void StopAllDamageOverTime() { }
 
         /// <summary>
@@ -1281,7 +1281,7 @@ namespace Workshop
         /// 
         /// Player - The player or players whose scripted heal over time will stop. Can use most Player based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP ALL HEAL OVER TIME")]
+        [WorkshopCode("STOP ALL HEAL OVER TIME")]
         public static void StopAllHealOverTime() { }
 
         /// <summary>
@@ -1291,7 +1291,7 @@ namespace Workshop
         /// 
         /// Player - The player or players whose forced camera positions will stop. Can use most Player based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP CAMERA")]
+        [WorkshopCode("STOP CAMERA")]
         public static void StopCamera() { }
 
         /// <summary>
@@ -1301,7 +1301,7 @@ namespace Workshop
         /// 
         /// Variable - Specifies which global variable to stop modifying. Specified by a single alphabetic letter (A through Z).
         /// </summary>
-        [WorkshopCodeName("STOP CHASING GLOBAL VARIABLE")]
+        [WorkshopCode("STOP CHASING GLOBAL VARIABLE")]
         public static void StopChasingGlobalVariable() { }
 
         /// <summary>
@@ -1312,7 +1312,7 @@ namespace Workshop
         /// Player - The player whose variable will stop changing. If multiple players are provided, each of their variables will stop changing. Can use most Player based Value Syntax.
         /// Variable - Specifies which player variable to stop modifying. Specified by a single alphabetic letter (A through Z).
         /// </summary>
-        [WorkshopCodeName("STOP CHASING PLAYER VARIABLE")]
+        [WorkshopCode("STOP CHASING PLAYER VARIABLE")]
         public static void StopChasingPlayerVariable() { }
 
         /// <summary>
@@ -1322,7 +1322,7 @@ namespace Workshop
         /// 
         /// Damage modification ID - Specifies which damage modification instance to stop, this ID may be the last damage modification ID or a variable into which last damage modification ID was earlier stored. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP DAMAGE MODIFICATION")]
+        [WorkshopCode("STOP DAMAGE MODIFICATION")]
         public static void StopDamageModification() { }
 
         /// <summary>
@@ -1332,7 +1332,7 @@ namespace Workshop
         /// 
         /// Damage Over Time ID - Specifies which damage over time instance to stop, this ID may be the last damage over time ID or a variable into which last damage over time ID was earlier stored. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP DAMAGE OVER TIME")]
+        [WorkshopCode("STOP DAMAGE OVER TIME")]
         public static void StopDamageOverTime() { }
 
         /// <summary>
@@ -1342,7 +1342,7 @@ namespace Workshop
         /// 
         /// Player - The player or players who will stop turning. Can use most Player based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP FACING")]
+        [WorkshopCode("STOP FACING")]
         public static void StopFacing() { }
 
         /// <summary>
@@ -1352,7 +1352,7 @@ namespace Workshop
         /// 
         /// Player - The player or players who will no longer be forced to be a specific hero. Can use most Player based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP FORCING PLAYER TO BE HERO")]
+        [WorkshopCode("STOP FORCING PLAYER TO BE HERO")]
         public static void StopForcingPlayerToBeHero() { }
 
         /// <summary>
@@ -1362,7 +1362,7 @@ namespace Workshop
         /// 
         /// Team - The team that will resume using their normal spawn room. Can use most Team based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP FORCING SPAWN ROOM")]
+        [WorkshopCode("STOP FORCING SPAWN ROOM")]
         public static void StopForcingSpawnRoom() { }
 
         /// <summary>
@@ -1372,7 +1372,7 @@ namespace Workshop
         /// 
         /// Player - The player or players whose movement inout will be restored. Can use most Player based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP FORCING THROTTLE")]
+        [WorkshopCode("STOP FORCING THROTTLE")]
         public static void StopForcingThrottle() { }
 
         /// <summary>
@@ -1382,7 +1382,7 @@ namespace Workshop
         /// 
         /// Heal Over Time ID - Specifies which heal over time instance to stop, this ID may be the last heal over time ID or a variable into which last heal over time ID was earlier stored. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP HEAL OVER TIME")]
+        [WorkshopCode("STOP HEAL OVER TIME")]
         public static void StopHealOverTime() { }
 
         /// <summary>
@@ -1392,7 +1392,7 @@ namespace Workshop
         /// 
         /// Player - The player or players who are no longer holding a button virtually. Can use most Player based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("STOP HOLDING BUTTON")]
+        [WorkshopCode("STOP HOLDING BUTTON")]
         public static void StopHoldingButton() { }
 
         /// <summary>
@@ -1403,7 +1403,7 @@ namespace Workshop
         /// Player - The player or players to teleport. Can use most Player based Value Syntax.
         /// Position - The position to which the player or players will teleport. If a player is providedm the position of the player is used. Can use most Vector based Value Syntax.
         /// </summary>
-        [WorkshopCodeName("TELEPORT")]
+        [WorkshopCode("TELEPORT")]
         public static void Teleport() { }
 
         /// <summary>
@@ -1411,7 +1411,7 @@ namespace Workshop
         /// Unpauses the match time.
         /// There are no definitions to this action.
         /// </summary>
-        [WorkshopCodeName("UNPAUSE MATCH TIME")]
+        [WorkshopCode("UNPAUSE MATCH TIME")]
         public static void UnpauseMatchTime() { }
 
         /// WAIT
@@ -1420,7 +1420,7 @@ namespace Workshop
         /// 
         /// Time - The duration of the pause. A minimum value of 0.250 seconds is required. Can use most Number based Value Syntax.
         /// Wait Behavior - Specifies if and how the wait can be interrupted. If the condition list is ignored, the wait will not be interrupted, otherwise, the condition list will determine if and when the action list will abort or restart.
-        // [WorkshopCodeName("WAIT")]
+        // [WorkshopCode("WAIT")]
         // public static void Wait() { }
     }
 }
