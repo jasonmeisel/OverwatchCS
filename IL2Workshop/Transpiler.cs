@@ -17,34 +17,12 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
+using Variables = Workshop.Globals;
+
 class MethodInfo
 {
     public MethodDefinition Definition;
     public List<Instruction> Instructions;
-}
-
-public static class Variables
-{
-    public static char TaskQueue => 'E';
-
-    public static char CallStack => 'F';
-    public static char CallStackIndex => 'G';
-
-    public static char JumpOffsetStack => 'J';
-    public static char JumpOffsetStackIndex => 'K';
-
-    public static char LocalsStack => 'L';
-    public static char LocalsStackIndex => 'M';
-
-    public static char ParameterStack => 'P';
-    public static char ParameterStackIndex => 'Q';
-
-    public static char StaticFields => 'S';
-
-    public static char Temporary => 'T';
-
-    public static char VariableStack => 'V';
-    public static char VariableStackIndex => 'W';
 }
 
 partial class Transpiler

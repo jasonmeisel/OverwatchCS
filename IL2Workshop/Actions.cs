@@ -2,6 +2,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 using LazyString = System.Func<string>;
+using Variables = Workshop.Globals;
 
 public static class Actions
 {
