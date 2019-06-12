@@ -16,7 +16,7 @@ return b;
 
 - [x] Workshop actions and values mapped to functions
 ```cs
-var player = AllPlayers(Team.All).ValueInArray(0);
+var player = AllPlayers(Team.All).GetElement(0);
 BigMessage(AllPlayers(Team.All), String("{0} {1}", player, HeroOf(player)));
 ```
 
