@@ -967,11 +967,10 @@ class Transpiler
     IEnumerable<LazyString> TaskRunnerActions(MethodDefinition updateMethod)
     {
         yield return () => $"Abort If (Not({FunctionCondition(0)()}));";
+        yield return () => "Wait(0, Ignore Condition);";
 
         foreach (var action in TaskQueue.PopTaskTo(Variables.Temporary))
             yield return action;
-        
-        yield return () => "Wait(0, Ignore Condition);";
 
         var functionId = ArraySubscript(GetGlobal(Variables.Temporary), 0);
 
