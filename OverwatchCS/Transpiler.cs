@@ -214,12 +214,12 @@ partial class Transpiler
 
         dict[OpCodes.Brfalse_S] = (method, instruction) => Impl_Jump_If(instruction, 1, Equal(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), () => "0"));
         dict[OpCodes.Brtrue_S] = (method, instruction) => Impl_Jump_If(instruction, 1, NotEqual(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), () => "0"));
-        
-        dict[OpCodes.Beq_S] = Impl_UnimplementedOp;
-        dict[OpCodes.Bge_S] = Impl_UnimplementedOp;
-        dict[OpCodes.Bgt_S] = Impl_UnimplementedOp;
-        dict[OpCodes.Ble_S] = Impl_UnimplementedOp;
-        dict[OpCodes.Blt_S] = Impl_UnimplementedOp;
+
+        dict[OpCodes.Beq_S] = (method, instruction) => Impl_Jump_If_Compare(instruction, "==");
+        dict[OpCodes.Bge_S] = (method, instruction) => Impl_Jump_If_Compare(instruction, ">=");
+        dict[OpCodes.Bgt_S] = (method, instruction) => Impl_Jump_If_Compare(instruction, ">");
+        dict[OpCodes.Ble_S] = (method, instruction) => Impl_Jump_If_Compare(instruction, "<=");
+        dict[OpCodes.Blt_S] = (method, instruction) => Impl_Jump_If_Compare(instruction, "<");
 
         dict[OpCodes.Bne_Un_S] = (method, instruction) => Impl_Jump_If(instruction, NotEqual);
         dict[OpCodes.Bge_Un_S] = Impl_UnimplementedOp;
@@ -260,7 +260,7 @@ partial class Transpiler
         dict[OpCodes.Ldc_I4_2] = (method, Instruction) => VariableStack.Push(() => "2");
         dict[OpCodes.Stloc_3] = Impl_UnimplementedOp;
         dict[OpCodes.Conv_U4] = Impl_UnimplementedOp;
-        dict[OpCodes.Ble_Un_S] = (method, instruction) => Impl_Jump_If(instruction, (a, b) => () => $"Compare({a()}, <=, {b()})");
+        dict[OpCodes.Ble_Un_S] = (method, instruction) => Impl_Jump_If_Compare(instruction, "<=");
         dict[OpCodes.Br] = Impl_UnimplementedOp;
         dict[OpCodes.Stind_I8] = Impl_UnimplementedOp;
         dict[OpCodes.Stind_R4] = Impl_UnimplementedOp;
@@ -301,7 +301,7 @@ partial class Transpiler
         dict[OpCodes.Bge_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Bgt_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Ble_Un] = Impl_UnimplementedOp;
-        dict[OpCodes.Blt_Un_S] = (method, instruction) => Impl_Jump_If(instruction, (a, b) => () => $"Compare({a()}, <, {b()})");
+        dict[OpCodes.Blt_Un_S] = (method, instruction) => Impl_Jump_If_Compare(instruction, "<");
         dict[OpCodes.Blt_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Ldind_I1] = Impl_UnimplementedOp;
         dict[OpCodes.Ldind_U1] = Impl_UnimplementedOp;
@@ -318,6 +318,11 @@ partial class Transpiler
         dict[OpCodes.Readonly] = Impl_UnimplementedOp;
 
         return dict;
+    }
+
+    private static IEnumerable<LazyString> Impl_Jump_If_Compare(Instruction instruction, string comparison)
+    {
+        return Impl_Jump_If(instruction, (a, b) => () => $"Compare({a()}, {comparison}, {b()})");
     }
 
     static IEnumerable<LazyString> Impl_Jump_If(Instruction instruction, int valuesToPop, LazyString condition)
