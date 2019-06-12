@@ -273,20 +273,7 @@ class Transpiler
             return (LazyString)(() => $"{skip()}         // {target.ToString()}");
         });
 
-        var headerActions = firstActions.Concat(JumpOffsetStack.Pop(1)).Concat(targetJumps).ToArray();
-        if (!IsMethodMain(method.Definition))
-            return headerActions;
-
-        var mainActions = new[]
-        {
-            SetGlobal(JumpOffsetStack.stackVar, CreateArray(1)),
-            SetGlobal(LocalsStack.stackVar, CreateArray(1)),
-            SetGlobal(ParameterStack.stackVar, CreateArray(1)),
-            SetGlobal(VariableStack.stackVar, CreateArray(1)),
-        }.Concat(CreateLocals(method.Definition)).ToArray();
-        var mainActionsCount = mainActions.Count();
-        var skipMainActions = SkipIf(NotEqual(GetGlobal(JumpOffsetStack.stackVar), () => "0"), () => mainActionsCount.ToString());
-        return new[] { skipMainActions }.Concat(mainActions).Concat(headerActions);
+        return firstActions.Concat(JumpOffsetStack.Pop(1)).Concat(targetJumps).ToArray();
     }
 
     Dictionary<OpCode, ToWorkshopActionFunc> s_toWorkshopActionsDict;
@@ -425,9 +412,8 @@ class Transpiler
         dict[OpCodes.Ret] = (method, instruction) => CallStack.Pop(1).
             Concat(LocalsStack.Pop(GetNumLocalVariables(method.Definition))).
             Concat(ParameterStack.Pop(method.Definition.Parameters.Count)).
-            // only loop when returning for non-main methods
-            // (this is so you can call functions recursively)
-            Concat(IsMethodMain(method.Definition) ? new LazyString[0] : new LazyString[] { () => "Loop;" });
+            // (loop instead of abort so you can call functions recursively)
+            Concat(new LazyString[] { () => "Loop;" });
 
         dict[OpCodes.Br_S] = (method, instruction) =>
             JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand)).
@@ -623,19 +609,25 @@ class Transpiler
         foreach (var action in VariableStack.Pop(targetMethod.Parameters.Count))
             yield return action;
 
-        var functionId = GetFunctionId(targetMethod);
-        foreach (var action in CallStack.Push(() => functionId.ToString()))
-            yield return action;
-
         foreach (var action in JumpOffsetStack.Push(GetJumpId(instruction.Next)))
             yield return action;
         foreach (var action in JumpOffsetStack.Push(() => "0"))
             yield return action;
-
-        foreach (var action in CreateLocals(targetMethod))
+            
+        foreach (var action in Impl_Call_CustomMethod_Direct(targetMethod))
             yield return action;
 
         yield return () => "Loop;";
+    }
+
+    IEnumerable<LazyString> Impl_Call_CustomMethod_Direct(MethodDefinition targetMethod)
+    {
+        foreach (var action in CreateLocals(targetMethod))
+            yield return action;
+
+        var functionId = GetFunctionId(targetMethod);
+        foreach (var action in CallStack.Push(() => functionId.ToString()))
+            yield return action;
     }
 
     static IEnumerable<LazyString> CreateLocals(MethodDefinition targetMethod)
@@ -783,8 +775,6 @@ class Transpiler
     Dictionary<MethodDefinition, int> m_functionIds;
     int GetFunctionId(MethodDefinition method)
     {
-        if (IsMethodMain(method))
-            return 0;
         return m_functionIds[method];
     }
 
@@ -830,7 +820,7 @@ class Transpiler
         GenerateFunctionIds(methods);
 
         var ruleWriter = new StringWriter();
-        GenerateEntryPointRule(ruleWriter);
+        GenerateEntryPointRule(ruleWriter, methods.Single(m => m.Name == "Main"));
 
         foreach (var method in methods)
         {
@@ -852,19 +842,25 @@ class Transpiler
         return ruleWriter.ToString();
     }
 
-    static IEnumerable<LazyString> EntryPointActions()
+    IEnumerable<LazyString> EntryPointActions(MethodDefinition mainMethod)
     {
-        yield return () => "Abort;";
+        yield return SetGlobal(JumpOffsetStack.stackVar, CreateArray(1));
+        yield return SetGlobal(LocalsStack.stackVar, CreateArray(1));
+        yield return SetGlobal(ParameterStack.stackVar, CreateArray(1));
+        yield return SetGlobal(VariableStack.stackVar, CreateArray(1));
+
+        foreach (var action in Impl_Call_CustomMethod_Direct(mainMethod))
+            yield return action;
     }
 
-    private static void GenerateEntryPointRule(StringWriter ruleWriter)
+    void GenerateEntryPointRule(StringWriter ruleWriter, MethodDefinition mainMethod)
     {
         var actions = new LazyString[0];
         ruleWriter.WriteLine(GenerateRule(
             "EntryPoint",
             "Ongoing - Global;",
             "",
-            EntryPointActions().Select(a => $"        {a()}").ListToString("\n")));
+            EntryPointActions(mainMethod).Select(a => $"        {a()}").ListToString("\n")));
     }
 
     class MethodSubstituter : CSharpSyntaxRewriter
@@ -1125,10 +1121,5 @@ rule(""{0}"")
     private LazyString FunctionCondition(MethodInfo method)
     {
         return Equal(ArrayLast(GetGlobal(CallStack.stackVar)), () => GetFunctionId(method.Definition).ToString());
-    }
-
-    private static bool IsMethodMain(MethodDefinition method)
-    {
-        return method.Name == "Main";
     }
 }
