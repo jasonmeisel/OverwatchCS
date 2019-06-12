@@ -1695,8 +1695,8 @@ namespace Workshop
         /// The total time in seconds that have elapsed since the game instance was created (including setup time and transitions).
         /// There are no definitions to this value.
         /// </summary>
-        [WorkshopCode("TOTAL TIME PLAYED")]
-        public static object TotalTimePlayed() => throw new NotImplementedException();
+        [WorkshopCode("TOTAL TIME ELAPSED")]
+        public static float TotalTimeElapsed() => throw new NotImplementedException();
 
         /// <summary>
         /// TRUE

@@ -47,9 +47,16 @@ public static class MainClass
         // BigMessage(AllPlayers(Team.All), String("HELLO"));
     }
 
+    static float s_lastHelloTime = -1;
+    static int s_count = 0;
+
     public static void Update()
     {
-        BigMessage(AllPlayers(Team.All), String("Hello"));
+        if (Values.TotalTimeElapsed() - s_lastHelloTime >= 1)
+        {
+            BigMessage(AllPlayers(Team.All), String("({0})", s_count++));
+            s_lastHelloTime += 1;
+        }
     }
 
     public static void Main()

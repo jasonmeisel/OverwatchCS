@@ -65,6 +65,8 @@ public static class Variables
     public static char ParameterStack => 'P';
     public static char ParameterStackIndex => 'Q';
 
+    public static char StaticFields => 'S';
+
     public static char Temporary => 'T';
 
     public static char VariableStack => 'V';
@@ -152,6 +154,16 @@ public static class Actions
     public static LazyString SetGlobal(char variable, LazyString value)
     {
         return () => $"Set Global Variable({variable}, {value()});";
+    }
+
+    public static LazyString SetGlobalAtIndex(char variable, LazyString index, LazyString value)
+    {
+        return () => $"Set Global Variable At Index({variable}, {index()}, {value()});";
+    }
+
+    public static LazyString SetGlobalAtIndex(char variable, int index, LazyString value)
+    {
+        return SetGlobalAtIndex(variable, () => index.ToString(), value);
     }
 
     public static LazyString ArrayIndexOf(LazyString array, LazyString value)
@@ -264,6 +276,11 @@ public static class Actions
         return () => $"Compare({a()}, !=, {b()})";
     }
 
+    public static LazyString Not(LazyString value)
+    {
+        return () => $"Not({value()})";
+    }
+
     public static LazyString Equal(LazyString a, LazyString b)
     {
         return () => $"Compare({a()}, ==, {b()})";
@@ -318,6 +335,8 @@ class Transpiler
     Dictionary<OpCode, ToWorkshopActionFunc> s_toWorkshopActionsDict;
     Dictionary<OpCode, ToWorkshopActionFunc> ToWorkshopActionsDict => s_toWorkshopActionsDict = s_toWorkshopActionsDict ?? CreateToWorkshopActionsDict();
 
+    Dictionary<FieldDefinition, int> m_staticFieldToIndex = new Dictionary<FieldDefinition, int>();
+
     static LazyString GetJumpId(Instruction instruction) => () => instruction.Offset.ToString();
 
     Dictionary<OpCode, ToWorkshopActionFunc> CreateToWorkshopActionsDict()
@@ -366,7 +385,11 @@ class Transpiler
         dict[OpCodes.Unbox_Any] = Impl_UnimplementedOp;
         dict[OpCodes.Stfld] = Impl_UnimplementedOp;
         dict[OpCodes.Ldsflda] = Impl_UnimplementedOp;
-        dict[OpCodes.Stsfld] = Impl_UnimplementedOp;
+        dict[OpCodes.Stsfld] = (method, instruction) => new[]
+        {
+            SetGlobalAtIndex(Variables.StaticFields, GetStaticFieldIndex(instruction.Operand), VariableStack.GetLastElement(0))
+        }.Concat(VariableStack.Pop(1));
+
         dict[OpCodes.Stobj] = Impl_UnimplementedOp;
         dict[OpCodes.Conv_Ovf_I1_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Conv_Ovf_I2_Un] = Impl_UnimplementedOp;
@@ -376,7 +399,13 @@ class Transpiler
         dict[OpCodes.Conv_Ovf_U2_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Conv_Ovf_U4_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Conv_Ovf_U8_Un] = Impl_UnimplementedOp;
-        dict[OpCodes.Ldsfld] = Impl_UnimplementedOp;
+
+        dict[OpCodes.Ldsfld] = (method, instruction) =>
+        {
+            var index = GetStaticFieldIndex(instruction.Operand);
+            return VariableStack.Push(ArraySubscript(GetGlobal(Variables.StaticFields), () => index.ToString()));
+        };
+
         dict[OpCodes.Callvirt] = Impl_UnimplementedOp;
         dict[OpCodes.Conv_Ovf_I1] = Impl_UnimplementedOp;
         dict[OpCodes.Conv_Ovf_I2] = Impl_UnimplementedOp;
@@ -480,25 +509,8 @@ class Transpiler
         dict[OpCodes.Bgt_S] = Impl_UnimplementedOp;
         dict[OpCodes.Ble_S] = Impl_UnimplementedOp;
         dict[OpCodes.Blt_S] = Impl_UnimplementedOp;
-        dict[OpCodes.Bne_Un_S] = Impl_UnimplementedOp;
 
-        // jump if not equal
-        dict[OpCodes.Bne_Un_S] = (method, instruction) =>
-            new[] {
-                SetGlobal(Variables.Temporary, ArraySlice(
-                    GetGlobal(Variables.VariableStack),
-                    Subtract(GetGlobal(Variables.VariableStackIndex), () => "1"),
-                    () => "2"))
-                }.
-                Concat(VariableStack.Pop(2)).
-                Concat(new[]
-                {
-                    SkipIf(Equal(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), ArraySubscript(GetGlobal(Variables.Temporary), () => "1")), () => "3"),
-                }).
-                Concat(JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand))).
-                Concat(new LazyString[] {
-                    () => "Loop;",
-                });
+        dict[OpCodes.Bne_Un_S] = (method, instruction) => Impl_Jump_If(instruction, NotEqual);
         dict[OpCodes.Bge_Un_S] = Impl_UnimplementedOp;
 
         dict[OpCodes.Ldc_I4_6] = Impl_UnimplementedOp;
@@ -537,7 +549,7 @@ class Transpiler
         dict[OpCodes.Ldc_I4_2] = (method, Instruction) => VariableStack.Push(() => "2");
         dict[OpCodes.Stloc_3] = Impl_UnimplementedOp;
         dict[OpCodes.Conv_U4] = Impl_UnimplementedOp;
-        dict[OpCodes.Ble_Un_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Ble_Un_S] = (method, instruction) => Impl_Jump_If(instruction, (a, b) => () => $"Compare({a()}, <=, {b()})");
         dict[OpCodes.Br] = Impl_UnimplementedOp;
         dict[OpCodes.Stind_I8] = Impl_UnimplementedOp;
         dict[OpCodes.Stind_R4] = Impl_UnimplementedOp;
@@ -578,7 +590,7 @@ class Transpiler
         dict[OpCodes.Bge_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Bgt_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Ble_Un] = Impl_UnimplementedOp;
-        dict[OpCodes.Blt_Un_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Blt_Un_S] = (method, instruction) => Impl_Jump_If(instruction, (a, b) => () => $"Compare({a()}, <, {b()})");
         dict[OpCodes.Blt_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Ldind_I1] = Impl_UnimplementedOp;
         dict[OpCodes.Ldind_U1] = Impl_UnimplementedOp;
@@ -595,6 +607,33 @@ class Transpiler
         dict[OpCodes.Readonly] = Impl_UnimplementedOp;
 
         return dict;
+    }
+
+    static IEnumerable<LazyString> Impl_Jump_If(Instruction instruction, Func<LazyString, LazyString, LazyString> condition)
+    {
+        return new[] {
+                SetGlobal(Variables.Temporary, ArraySlice(
+                    GetGlobal(Variables.VariableStack),
+                    Subtract(GetGlobal(Variables.VariableStackIndex), () => "1"),
+                    () => "2"))
+                }.
+                        Concat(VariableStack.Pop(2)).
+                        Concat(new[]
+                        {
+                    SkipIf(Not(condition(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), ArraySubscript(GetGlobal(Variables.Temporary), () => "1"))), () => "3"),
+                        }).
+                        Concat(JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand))).
+                        Concat(new LazyString[] {
+                    () => "Loop;",
+                        });
+    }
+
+    private int GetStaticFieldIndex(object operand)
+    {
+        var field = (FieldDefinition)operand;
+        if (!m_staticFieldToIndex.TryGetValue(field, out int index))
+            index = m_staticFieldToIndex[field] = m_staticFieldToIndex.Count;
+        return index;
     }
 
     static readonly LazyString[] EmptyLazyStringArray = new LazyString[0];
@@ -866,17 +905,19 @@ class Transpiler
         }
 
         var module = ModuleDefinition.ReadModule("AsmBuild.dll");
-        var methods = module.GetType("MainClass").Methods;
+        var mainClass = module.GetType("MainClass");
+        var methods = mainClass.Methods;
         GenerateFunctionIds(methods);
         m_maxNumLocalVariables = methods.Max(m => m.Body.Variables.Count);
 
         var ruleWriter = new StringWriter();
 
+        var staticConstructor = methods.SingleOrDefault(m => m.Name == ".cctor");
         var mainMethod = methods.Single(m => m.Name == "Main");
-        var updateMethod = methods.SingleOrDefault(m => m.Name == "Update");
-        var entryPointActionsText = EntryPointActions(mainMethod).Select(a => $"        {a()}").ListToString("\n");
+        var entryPointActionsText = EntryPointActions(staticConstructor, mainMethod).Select(a => $"        {a()}").ListToString("\n");
         ruleWriter.WriteLine(GenerateRule("EntryPoint", "Ongoing - Global;", "", entryPointActionsText));
 
+        var updateMethod = methods.SingleOrDefault(m => m.Name == "Update");
         var taskRunnerActionsText = TaskRunnerActions(updateMethod).Select(a => $"        {a()}").ListToString("\n");
         ruleWriter.WriteLine(GenerateRule("TaskRunner", "Ongoing - Global;", $"{FunctionCondition(0)()} == True;", taskRunnerActionsText));
 
@@ -890,6 +931,7 @@ class Transpiler
 
             // TODO: add analyzer to prevent storing un-storable variables on stack (Array, Player, etc)
 
+            Console.WriteLine(method);
             foreach (var instr in methodInfo.Instructions)
                 Console.WriteLine(instr);
             Console.WriteLine();
@@ -900,7 +942,7 @@ class Transpiler
         return ruleWriter.ToString();
     }
 
-    IEnumerable<LazyString> EntryPointActions(MethodDefinition mainMethod)
+    IEnumerable<LazyString> EntryPointActions(MethodDefinition staticConstructor, MethodDefinition mainMethod)
     {
         yield return SetGlobal(Variables.TaskQueue, EmptyArray());
         yield return SetGlobal(JumpOffsetStack.stackVar, CreateArray(1));
@@ -908,8 +950,18 @@ class Transpiler
         yield return SetGlobal(ParameterStack.stackVar, CreateArray(1));
         yield return SetGlobal(VariableStack.stackVar, CreateArray(1));
 
+        yield return SetGlobal(Variables.StaticFields, CreateArray(m_staticFieldToIndex.Count));
+
         foreach (var action in Impl_Call_CustomMethod_Direct(mainMethod))
             yield return action;
+
+        if (staticConstructor != null)
+        {
+            // call static constructor "after" main, since call just pushes it on the stack and
+            // it'll actually call in reverse order
+            foreach (var action in Impl_Call_CustomMethod_Direct(staticConstructor))
+                yield return action;
+        }
     }
 
     IEnumerable<LazyString> TaskRunnerActions(MethodDefinition updateMethod)
@@ -1094,10 +1146,10 @@ class Transpiler
         }
     }
 
-    void GenerateFunctionIds(Mono.Collections.Generic.Collection<MethodDefinition> methods)
+    void GenerateFunctionIds(IEnumerable<MethodDefinition> methods)
     {
         // start at 1 so that 0 doesn't set any functions off
-        m_functionIds = methods.Zip(Enumerable.Range(1, methods.Count), (m, i) => (m, i)).ToDictionary(pair => pair.m, pair => pair.i);
+        m_functionIds = methods.Zip(Enumerable.Range(1, methods.Count()), (m, i) => (m, i)).ToDictionary(pair => pair.m, pair => pair.i);
     }
 
     static void Main(string[] args)
