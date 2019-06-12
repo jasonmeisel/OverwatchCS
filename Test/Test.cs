@@ -40,19 +40,16 @@ public static class MainClass
     //         Wait(1);
     //     }
     // }
-    
-    static void PrintPlayerAndHero(Player player, Hero hero)
-    {
-        BigMessage(AllPlayers(Team.All), String("{0} -> {1}", player, hero));
-    }
+
 
     public static void Main()
     {
-        for (int index = 0; true; ++index)
+        for (int count = 0; true; ++count)
         {
             var numPlayers = NumberOfPlayers(Team.All);
-            var player = AllPlayers(Team.All).GetElement(index % numPlayers);
-            PrintPlayerAndHero(player, HeroOf(player));
+            var index = count % numPlayers;
+            var player = AllPlayers(Team.All).GetElement(index);
+            BigMessage(AllPlayers(Team.All), String("{0} - {1}", index, player));
             Wait(1);
         }
     }
