@@ -45,10 +45,10 @@ public static class MainClass
 		Player dealt damage;
 		All;
 		All;")]
-    public static void PlayerDealtDamage()
+    public static void PlayerDealtDamage(Player eventPlayer, float eventDamage, bool eventWasCriticalHit)
     {
-        // BigMessage(EventPlayer(), String("{0} {1} {2}", EventDamage(), String("Damage"), String("Well Played")));
-        BigMessage(AllPlayers(Team.All), String("HELLO"));
+        BigMessage(eventPlayer, String("{0} {1} {2}", eventDamage, String("Damage"), String("Well Played")));
+        // BigMessage(AllPlayers(Team.All), String("HELLO"));
     }
 
     public static void Main()

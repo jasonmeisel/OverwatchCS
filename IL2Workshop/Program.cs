@@ -132,21 +132,16 @@ public static class Actions
         static char QueueVar => Variables.TaskQueue;
         static LazyString SentinelValue => (() => "1234.5678");
 
-        static LazyString PushValues(LazyString value)
+        public static LazyString PushTask(LazyString value)
         {
             // push to the end, that way we can pop without knowing the size
             return SetGlobal(QueueVar, ArrayConcat(GetGlobal(QueueVar), value));
         }
 
-        public static LazyString PushTask(int callbackFunctionId)
-        {
-            return PushValues(() => callbackFunctionId.ToString());
-        }
-
         public static IEnumerable<LazyString> PopTaskTo(char variable)
         {
-            yield return SetGlobal(variable, ArraySubscript(GetGlobal(QueueVar), 0));
-            yield return SetGlobal(QueueVar, ArraySlice(GetGlobal(QueueVar), () => "1", () => "9999999"));
+            yield return SetGlobal(variable, ArraySlice(GetGlobal(QueueVar), () => "0", () => "4"));
+            yield return SetGlobal(QueueVar, ArraySlice(GetGlobal(QueueVar), () => "4", () => "9999999"));
         }
     }
 
@@ -195,6 +190,13 @@ public static class Actions
         return () => $"Append To Array({a()}, {b()})";
     }
 
+    public static LazyString CreateArray(params LazyString[] values)
+    {
+        if (values.Length == 0)
+            return EmptyArray();
+        return ArrayConcat(CreateArray(values.Take(values.Length - 1).ToArray()), values.Last());
+    }
+
     public static LazyString ResizeArray(char stackVar, LazyString size)
     {
         return SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", size));
@@ -210,11 +212,6 @@ public static class Actions
         if (count == 0)
             return EmptyArray();
         return ArrayConcat(CreateArray(count - 1), () => "0");
-    }
-
-    public static LazyString ArrayFromValue(LazyString value)
-    {
-        return ArrayConcat(EmptyArray(), value);
     }
 
     public static Stack VariableStack = new Stack { stackVar = Variables.VariableStack, stackIndexVar = Variables.VariableStackIndex };
@@ -453,7 +450,8 @@ class Transpiler
         dict[OpCodes.Calli] = Impl_UnimplementedOp;
 
         dict[OpCodes.Ret] = (method, instruction) => CallStack.Pop(1).
-            Concat(LocalsStack.Pop(GetNumLocalVariables(method.Definition))).
+            // if it's a workshop event, then it needs the max num of local variables (since it's called at runtime)
+            Concat(LocalsStack.Pop(GetCustomAttribute<WorkshopEventAttribute>(method) != null ? m_maxNumLocalVariables : GetNumLocalVariables(method.Definition))).
             Concat(ParameterStack.Pop(method.Definition.Parameters.Count)).
             // (loop instead of abort so you can call functions recursively)
             Concat(new LazyString[] { () => "Loop;" });
@@ -663,26 +661,25 @@ class Transpiler
         yield return () => "Loop;";
     }
 
-    IEnumerable<LazyString> Impl_Call_CustomMethod_Direct_NoLocals(LazyString functionId)
+    IEnumerable<LazyString> Impl_Call_CustomMethod_Direct(LazyString functionId, int numLocals)
     {
+        foreach (var action in CreateLocals(numLocals))
+            yield return action;
+
         foreach (var action in CallStack.Push(functionId))
             yield return action;
     }
 
     IEnumerable<LazyString> Impl_Call_CustomMethod_Direct(MethodDefinition targetMethod)
     {
-        foreach (var action in CreateLocals(targetMethod))
-            yield return action;
-
         var functionId = GetFunctionId(targetMethod);
-        foreach (var action in Impl_Call_CustomMethod_Direct_NoLocals(() => functionId.ToString()))
-            yield return action;
+        return Impl_Call_CustomMethod_Direct(() => functionId.ToString(), GetNumLocalVariables(targetMethod));
     }
 
-    static IEnumerable<LazyString> CreateLocals(MethodDefinition targetMethod)
+    static IEnumerable<LazyString> CreateLocals(int numLocals)
     {
         // TODO: optimize this
-        foreach (var i in Enumerable.Range(0, GetNumLocalVariables(targetMethod)))
+        foreach (var i in Enumerable.Range(0, numLocals))
             foreach (var action in LocalsStack.Push(() => "0"))
                 yield return action;
     }
@@ -690,6 +687,10 @@ class Transpiler
     static IEnumerable<LazyString> Impl_Call_WorkshopAction(MethodInfo method, Instruction instruction, MethodReference targetMethodRef, string codeOverride = null)
     {
         // TODO: assert that the method reference is a workshop action
+
+        // implicit conversions of Array types
+        if (targetMethodRef.Name == "op_Implicit")
+            yield break;
 
         var hasReturnInTemp = false;
 
@@ -828,6 +829,7 @@ class Transpiler
     }
 
     Dictionary<string, string> m_generatedMethodToWorkshopCode = new Dictionary<string, string>();
+    int m_maxNumLocalVariables;
 
     public string TranspileToRules(string source)
     {
@@ -867,6 +869,7 @@ class Transpiler
         var module = ModuleDefinition.ReadModule("AsmBuild.dll");
         var methods = module.GetType("MainClass").Methods;
         GenerateFunctionIds(methods);
+        m_maxNumLocalVariables = methods.Max(m => m.Body.Variables.Count);
 
         var ruleWriter = new StringWriter();
 
@@ -917,9 +920,15 @@ class Transpiler
             yield return action;
         
         yield return () => "Wait(0, Ignore Condition);";
-        yield return LoopIf(Equal(GetGlobal(Variables.Temporary), () => "0"));
 
-        foreach (var action in Impl_Call_CustomMethod_Direct_NoLocals(GetGlobal(Variables.Temporary)))
+        var functionId = ArraySubscript(GetGlobal(Variables.Temporary), 0);
+        yield return LoopIf(Equal(functionId, () => "0"));
+
+        // push event params onto stack before calling
+        yield return ArrayAppend(Variables.ParameterStack, ArraySlice(GetGlobal(Variables.Temporary), () => "1", () => "3"));
+        yield return SetGlobal(Variables.ParameterStackIndex, Add(GetGlobal(Variables.ParameterStackIndex), () => "3"));
+
+        foreach (var action in Impl_Call_CustomMethod_Direct(functionId, m_maxNumLocalVariables))
             yield return action;
 
         yield return () => "Loop;";
@@ -1147,7 +1156,7 @@ rule(""{0}"")
                 $"Event Task for: {method.Definition.Name}",
                 workshopEventAttr.Text,
                 $"",
-                TaskQueue.PushTask(GetFunctionId(method.Definition))()));
+                PushTaskForEventMethod(method)()));
         }
 
         ruleWriter.WriteLine(GenerateRule(
@@ -1156,6 +1165,14 @@ rule(""{0}"")
             $"{FunctionCondition(method)()} == True;",
             writer.ToString()));
     }
+
+    LazyString PushTaskForEventMethod(MethodInfo method)
+    {
+        LazyString functionId = () => GetFunctionId(method.Definition).ToString();
+        var taskValues = CreateArray(functionId, () => "EVENT PLAYER", () => "EVENT DAMAGE", () => "EVENT WAS CRITICAL HIT");
+        return TaskQueue.PushTask(taskValues);
+    }
+
     static AttributeType GetCustomAttribute<AttributeType>(MethodInfo method) where AttributeType : class
     {
         var customAttr = method.Definition.CustomAttributes.FirstOrDefault(attr => attr.AttributeType.Name == typeof(AttributeType).Name);
