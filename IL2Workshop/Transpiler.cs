@@ -474,50 +474,33 @@ partial class Transpiler
         if (targetMethodRef.Name == "op_Implicit")
             yield break;
 
-        var hasReturnInTemp = false;
+        var hasReturn = targetMethodRef.ReturnType.Name != "Void";
+        var targetMethod = GetWorkshopMethod(targetMethodRef);
+        var code = codeOverride ?? GetCodeName(targetMethod);
+        if (code == null)
+            throw new ArgumentException();
 
-        switch (targetMethodRef.Name)
-        {
-            case "Wait":
-                yield return () => $"Wait({VariableStack.GetLastElement(0)()}, Ignore Condition);";
-                break;
-            case "DebugLog":
-                yield return () => $"Big Message(All Players(All Teams), String(\"({{0}})\", {VariableStack.GetLastElement(0)()}, Null, Null));";
-                yield return () => "Wait(0, Ignore Condition);";
-                break;
-            default:
-                var targetMethod = GetWorkshopMethod(targetMethodRef);
-                var code = codeOverride ?? GetCodeName(targetMethod);
-                if (code == null)
-                    throw new ArgumentException();
+        var parameters = targetMethodRef.Parameters;
+        var paramList = parameters.Select((p, i) => VariableStack.GetLastElement(parameters.Count - i - 1)());
+        if (parameters.Any())
+            if (code.Contains("<PARAM>"))
+                code = code.Split("<PARAM>").Interleave(paramList).ListToString("");
+            else
+                code = $"{code}({paramList.ListToString()})";
 
-                var parameters = targetMethodRef.Parameters;
-                var paramList = parameters.Select((p, i) => VariableStack.GetLastElement(parameters.Count - i - 1)());
-                if (parameters.Any())
-                    if (code.Contains("<PARAM>"))
-                        code = code.Split("<PARAM>").Interleave(paramList).ListToString("");
-                    else
-                        code = $"{code}({paramList.ListToString()})";
+        if (hasReturn)
+            yield return SetGlobal(Variables.Temporary, () => code);
+        else
+            yield return () => code + ";";
 
-                if (targetMethodRef.ReturnType.Name != "Void")
-                {
-                    yield return SetGlobal(Variables.Temporary, () => code);
-                    hasReturnInTemp = true;
-                }
-                else
-                    yield return () => code + ";";
-
-                // string variable fix
-                if (code.ToLower().StartsWith("big message"))
-                    yield return () => "Wait(0, Ignore Condition);";
-
-                break;
-        }
+        // string variable fix
+        if (code.ToLower().StartsWith("big message"))
+            yield return () => "Wait(0, Ignore Condition);";
 
         foreach (var action in VariableStack.Pop(targetMethodRef.Parameters.Count))
             yield return action;
 
-        if (hasReturnInTemp)
+        if (hasReturn)
             foreach (var action in VariableStack.Push(GetGlobal(Variables.Temporary)))
                 yield return action;
     }
