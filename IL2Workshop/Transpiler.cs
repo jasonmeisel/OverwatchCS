@@ -17,32 +17,6 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-public static class Extensions
-{
-    public static string ListToString<T>(this IEnumerable<T> list, string separator = ", ")
-    {
-        return string.Join(separator, list);
-    }
-
-    public static IEnumerable<T> Interleave<T>(this IEnumerable<T> list, IEnumerable<T> list2)
-    {
-        var enum1 = list.GetEnumerator();
-        var enum2 = list2.GetEnumerator();
-        while (true)
-        {
-            if (enum1.MoveNext())
-                yield return enum1.Current;
-            else
-                yield break;
-
-            if (enum2.MoveNext())
-                yield return enum2.Current;
-            else
-                yield break;
-        }
-    }
-}
-
 class MethodInfo
 {
     public MethodDefinition Definition;
@@ -73,237 +47,7 @@ public static class Variables
     public static char VariableStackIndex => 'W';
 }
 
-public static class Actions
-{
-    public class Stack
-    {
-        public char stackVar;
-        public char stackIndexVar;
-
-        public LazyString[] Push(LazyString value)
-        {
-            return new[] {
-                ArrayAppend(stackVar, value),
-                SetGlobal(stackIndexVar, () => $"Add(1, {GetGlobal(stackIndexVar)()})"),
-            };
-        }
-
-        public LazyString[] Pop(int count)
-        {
-            var newSize = Add(GetGlobal(stackIndexVar), () => (1 - count).ToString());
-            return new[] {
-                SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", newSize)),
-                SetGlobal(stackIndexVar, Subtract(newSize, () => "1")),
-            };
-        }
-
-        public LazyString GetLastElement(int offset)
-        {
-            return ArraySubscript(GetGlobal(stackVar), Add(GetGlobal(stackIndexVar), () => (-offset).ToString()));
-        }
-
-        public IEnumerable<LazyString> SetLastElement(int offset, LazyString value)
-        {
-            var before = ArraySlice(
-                GetGlobal(stackVar),
-                () => "0",
-                Subtract(GetGlobal(stackIndexVar), () => (offset).ToString()));
-            var after = ArraySlice(
-                GetGlobal(stackVar),
-                Subtract(GetGlobal(stackIndexVar), () => (offset - 1).ToString()),
-                () => (offset).ToString());
-
-            yield return SetGlobal(stackVar, ArrayConcat(ArrayConcat(before, value), after));
-
-            // yield return SetGlobal(Variables.Temporary, after);
-            // yield return SetGlobal(stackVar, ArrayConcat(before, value));
-            // yield return SetGlobal(stackVar, ArrayConcat(GetGlobal(stackVar), GetGlobal(Variables.Temporary)));
-        }
-
-        public LazyString[] Resize(LazyString size)
-        {
-            return new[] {
-                ResizeArray(stackVar, size),
-                SetGlobal(stackIndexVar, Add(size, () => "-1")),
-            };
-        }
-    }
-
-    public static class TaskQueue
-    {
-        static char QueueVar => Variables.TaskQueue;
-
-        public static LazyString PushTask(LazyString value)
-        {
-            // push to the end, that way we can pop without knowing the size
-            return SetGlobal(QueueVar, ArrayConcat(GetGlobal(QueueVar), value));
-        }
-
-        public static IEnumerable<LazyString> PopTaskTo(char variable)
-        {
-            yield return SetGlobal(variable, ArraySlice(GetGlobal(QueueVar), () => "0", () => "4"));
-            yield return SetGlobal(QueueVar, ArraySlice(GetGlobal(QueueVar), () => "4", () => "9999999"));
-        }
-    }
-
-    public static LazyString GetGlobal(char variable)
-    {
-        return () => $"Global Variable({variable})";
-    }
-
-    public static LazyString SetGlobal(char variable, LazyString value)
-    {
-        return () => $"Set Global Variable({variable}, {value()});";
-    }
-
-    public static LazyString SetGlobalAtIndex(char variable, LazyString index, LazyString value)
-    {
-        return () => $"Set Global Variable At Index({variable}, {index()}, {value()});";
-    }
-
-    public static LazyString SetGlobalAtIndex(char variable, int index, LazyString value)
-    {
-        return SetGlobalAtIndex(variable, () => index.ToString(), value);
-    }
-
-    public static LazyString ArrayIndexOf(LazyString array, LazyString value)
-    {
-        return () => $"Index Of Array Value({array()}, {value()})";
-    }
-
-    public static LazyString ArraySubscript(LazyString array, int index)
-    {
-        return ArraySubscript(array, () => index.ToString());
-    }
-
-    public static LazyString ArraySubscript(LazyString array, LazyString index)
-    {
-        return () => $"Value In Array({array()}, {index()})";
-    }
-
-    public static LazyString ArraySlice(LazyString array, LazyString startIndex, LazyString count)
-    {
-        return () => $"Array Slice({array()}, {startIndex()}, {count()})";
-    }
-
-    public static LazyString ArrayAppend(char arrayVar, LazyString value)
-    {
-        return SetGlobal(arrayVar, ArrayConcat(GetGlobal(arrayVar), value));
-    }
-
-    public static LazyString ArrayLast(LazyString array)
-    {
-        return () => $"Last Of({array()})";
-    }
-
-    public static LazyString ArrayConcat(LazyString a, LazyString b)
-    {
-        return () => $"Append To Array({a()}, {b()})";
-    }
-
-    public static LazyString CreateArray(params LazyString[] values)
-    {
-        if (values.Length == 0)
-            return EmptyArray();
-        return ArrayConcat(CreateArray(values.Take(values.Length - 1).ToArray()), values.Last());
-    }
-
-    public static LazyString ResizeArray(char stackVar, LazyString size)
-    {
-        return SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", size));
-    }
-
-    public static LazyString EmptyArray()
-    {
-        return () => "Empty Array";
-    }
-
-    public static LazyString CreateArray(int count)
-    {
-        if (count == 0)
-            return EmptyArray();
-        return ArrayConcat(CreateArray(count - 1), () => "0");
-    }
-
-    public static Stack VariableStack = new Stack { stackVar = Variables.VariableStack, stackIndexVar = Variables.VariableStackIndex };
-    public static Stack ParameterStack = new Stack { stackVar = Variables.ParameterStack, stackIndexVar = Variables.ParameterStackIndex };
-    public static Stack CallStack = new Stack { stackVar = Variables.CallStack, stackIndexVar = Variables.CallStackIndex };
-    public static Stack JumpOffsetStack = new Stack { stackVar = Variables.JumpOffsetStack, stackIndexVar = Variables.JumpOffsetStackIndex };
-    public static Stack LocalsStack = new Stack { stackVar = Variables.LocalsStack, stackIndexVar = Variables.LocalsStackIndex };
-
-    public static LazyString Add(LazyString valueA, LazyString valueB)
-    {
-        return () => $"Add({valueA()}, {valueB()})";
-    }
-
-    public static LazyString Subtract(LazyString valueA, LazyString valueB)
-    {
-        return () => $"Subtract({valueA()}, {valueB()})";
-    }
-    public static LazyString Mul(LazyString valueA, LazyString valueB)
-    {
-        return () => $"Multiply({valueA()}, {valueB()})";
-    }
-
-    public static LazyString Div(LazyString valueA, LazyString valueB)
-    {
-        return () => $"Divide({valueA()}, {valueB()})";
-    }
-
-    public static LazyString Mod(LazyString valueA, LazyString valueB)
-    {
-        return () => $"Modulo({valueA()}, {valueB()})";
-    }
-
-    public static LazyString And(LazyString valueA, LazyString valueB)
-    {
-        return () => $"And({valueA()}, {valueB()})";
-    }
-
-    public static LazyString Or(LazyString valueA, LazyString valueB)
-    {
-        return () => $"Or({valueA()}, {valueB()})";
-    }
-
-
-    public static LazyString Max(LazyString valueA, LazyString valueB)
-    {
-        return () => $"Max({valueA()}, {valueB()})";
-    }
-
-    public static LazyString NotEqual(LazyString a, LazyString b)
-    {
-        return () => $"Compare({a()}, !=, {b()})";
-    }
-
-    public static LazyString Not(LazyString value)
-    {
-        return () => $"Not({value()})";
-    }
-
-    public static LazyString Equal(LazyString a, LazyString b)
-    {
-        return () => $"Compare({a()}, ==, {b()})";
-    }
-
-    public static LazyString Skip(LazyString actionCount)
-    {
-        return () => $"Skip({actionCount()});";
-    }
-
-    public static LazyString SkipIf(LazyString value, LazyString actionCount)
-    {
-        return () => $"Skip If({value()}, {actionCount()});";
-    }
-
-    public static LazyString LoopIf(LazyString value)
-    {
-        return () => $"Loop If({value()});";
-    }
-}
-
-
-class Transpiler
+partial class Transpiler
 {
     IEnumerable<LazyString> MethodHeaderActions(MethodInfo method)
     {
@@ -628,7 +372,7 @@ class Transpiler
                         });
     }
 
-    private int GetStaticFieldIndex(object operand)
+    int GetStaticFieldIndex(object operand)
     {
         var field = (FieldDefinition)operand;
         if (!m_staticFieldToIndex.TryGetValue(field, out int index))
@@ -647,13 +391,13 @@ class Transpiler
         throw new NotImplementedException(instruction.OpCode.ToString());
     }
 
-    private static IEnumerable<LazyString> Impl_Stloc(MethodInfo method, int localVariableIndex)
+    static IEnumerable<LazyString> Impl_Stloc(MethodInfo method, int localVariableIndex)
     {
         return LocalsStack.SetLastElement(GetLocalVariableStackOffset(method, localVariableIndex), VariableStack.GetLastElement(0)).
             Concat(VariableStack.Pop(1));
     }
 
-    private static int GetLocalVariableStackOffset(MethodInfo method, int localVariableIndex)
+    static int GetLocalVariableStackOffset(MethodInfo method, int localVariableIndex)
     {
         return GetNumLocalVariables(method.Definition) - localVariableIndex - 1;
     }
@@ -778,13 +522,13 @@ class Transpiler
                 yield return action;
     }
 
-    private static string GetCodeName(System.Reflection.MemberInfo targetMethod)
+    static string GetCodeName(System.Reflection.MemberInfo targetMethod)
     {
         var attributes = targetMethod?.GetCustomAttributes(typeof(WorkshopCodeAttribute), true);
         return (attributes?.FirstOrDefault() as WorkshopCodeAttribute)?.Name;
     }
 
-    private static string GetCodeName(ISymbol targetMethod)
+    static string GetCodeName(ISymbol targetMethod)
     {
         return targetMethod.GetAttributes().
             FirstOrDefault(attr => attr.AttributeClass.Name == typeof(WorkshopCodeAttribute).Name)?.
@@ -812,7 +556,7 @@ class Transpiler
         throw new Exception($"Unsupported opcode {instruction.OpCode}");
     }
 
-    private static IEnumerable<LazyString> Impl_Starg_S(MethodInfo method, Instruction instruction)
+    static IEnumerable<LazyString> Impl_Starg_S(MethodInfo method, Instruction instruction)
     {
         var parameters = method.Definition.Parameters;
         var paramCount = parameters.Count;
@@ -839,7 +583,7 @@ class Transpiler
             yield return action;
     }
 
-    private static LazyString[] DoBinaryOp(Func<LazyString, LazyString, LazyString> binaryOp)
+    static LazyString[] DoBinaryOp(Func<LazyString, LazyString, LazyString> binaryOp)
     {
         return new[]
         {
@@ -989,160 +733,6 @@ class Transpiler
             yield return action;
 
         yield return () => "Loop;";
-    }
-
-    class MethodSubstituter : CSharpSyntaxRewriter
-    {
-        int m_methodCount = 0;
-        StringWriter m_methodsSource = new StringWriter();
-        SemanticModel m_semanticModel;
-        Dictionary<string, string> m_generatedMethodToWorkshopCode;
-
-        public MethodSubstituter(SemanticModel semanticModel, Dictionary<string, string> generatedMethodToWorkshopCode)
-        {
-            m_semanticModel = semanticModel;
-            m_generatedMethodToWorkshopCode = generatedMethodToWorkshopCode;
-        }
-
-        public SyntaxTree GetGeneratedClass()
-        {
-            return SyntaxFactory.ParseSyntaxTree($"internal static class Generated {{ {m_methodsSource.ToString()} }}");
-        }
-
-        (string code, string[] paramTypes, ArgumentSyntax[] arguments) InvocationToWorkshopCode(InvocationExpressionSyntax invocation)
-        {
-            var argumentList = invocation.ArgumentList;
-
-            var invocationMethodSymbol = GetMethodSemantics(invocation);
-            var targetMethod = invocationMethodSymbol.OriginalDefinition;
-            var targetCode = GetCodeName(targetMethod);
-            if (targetCode != null)
-            {
-                var parameterTypes = targetMethod.Parameters.Select(p => GenericToConcrete(invocationMethodSymbol, p.Type).ToString()).ToList();
-                var arguments = argumentList.Arguments.Select(a => a.Expression).ToList();
-
-                // add support for defaults
-                while (parameterTypes.Count != arguments.Count)
-                {
-                    var parameterSymbol = targetMethod.Parameters[arguments.Count];
-                    Debug.Assert(parameterSymbol.HasExplicitDefaultValue);
-                    var paramType = parameterSymbol.Type;
-                    if (paramType.TypeKind == TypeKind.Enum)
-                    {
-                        var paramEnumType = GetWorkshopType(paramType.ToString());
-                        var enumName = paramEnumType.GetEnumName(parameterSymbol.ExplicitDefaultValue);
-                        arguments.Add(SyntaxFactory.ParseExpression($"{paramEnumType.FullName}.{enumName}"));
-                    }
-                    else
-                        arguments.Add(SyntaxFactory.ParseExpression(parameterSymbol.ExplicitDefaultValue?.ToString() ?? "null"));
-                }
-
-                // test for extension method
-                // TODO: support struct methods?
-                var isStatic = targetMethod.IsStatic;
-                if (!isStatic && invocation.Expression is MemberAccessExpressionSyntax memberAccess)
-                {
-                    arguments.Insert(0, memberAccess.Expression);
-                    parameterTypes.Insert(0, targetMethod.ReceiverType.ToString());
-                }
-
-                if (arguments.Count() != 0)
-                {
-                    var argCodes = arguments.Zip(parameterTypes, (a, p) =>
-                    {
-                        switch (a)
-                        {
-                            case InvocationExpressionSyntax i:
-                                return InvocationToWorkshopCode(i);
-                            case LiteralExpressionSyntax literal:
-                                return (
-                                    code: literal.ToString(),
-                                    paramTypes: new string[0],
-                                    arguments: new ArgumentSyntax[0]
-                                );
-                            case MemberAccessExpressionSyntax enumAccess:
-                                var code = a.SyntaxTree == m_semanticModel.SyntaxTree ?
-                                    GetCodeName(m_semanticModel.GetSymbolInfo(a).Symbol) :
-                                    GetCodeName(GetWorkshopType(enumAccess.Expression.ToString()).GetMember(enumAccess.Name.ToString()).FirstOrDefault());
-                                if (code != null)
-                                {
-                                    return (code, paramTypes: new string[0], arguments: new ArgumentSyntax[0]);
-                                }
-                                break;
-                        }
-
-                        return (
-                            code: "<PARAM>",
-                            paramTypes: new[] { p },
-                            arguments: new[] { SyntaxFactory.Argument(a) }
-                        );
-                    }).ToArray();
-
-                    return (
-                        $"{targetCode}({argCodes.Select(a => a.code).ListToString()})",
-                        argCodes.SelectMany(a => a.paramTypes).ToArray(),
-                        argCodes.SelectMany(a => a.arguments).ToArray()
-                    );
-                }
-                return (targetCode, new string[0], new ArgumentSyntax[0]);
-            }
-            throw null;
-        }
-
-        // if paramType is one of the generic types, swap it with the concrete type that's being used
-        static ITypeSymbol GenericToConcrete(IMethodSymbol targetMethod, ITypeSymbol paramType)
-        {
-            return targetMethod.TypeParameters.Zip(targetMethod.TypeArguments).
-                FirstOrDefault(paramArg => paramArg.First.Name == paramType.Name).Second ?? paramType;
-        }
-
-        public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocation)
-        {
-            var argumentList = invocation.ArgumentList;
-
-            var targetMethod = GetMethodSemantics(invocation);
-            var targetCode = GetCodeName(targetMethod);
-            if (targetCode != null)
-            {
-                var baseMethodName = string.Join("", targetMethod.Name.Where(ch => char.IsLetterOrDigit(ch)));
-                var generatedMethodName = $"Impl_{baseMethodName}_{m_methodCount++}";
-                var workshopCode = InvocationToWorkshopCode(invocation);
-                m_generatedMethodToWorkshopCode[generatedMethodName] = workshopCode.code;
-
-                var methodSemantics = (Microsoft.CodeAnalysis.IMethodSymbol)m_semanticModel.GetSymbolInfo(invocation).Symbol;
-                var returnType = methodSemantics.ReturnType;
-                var paramListSource = workshopCode.paramTypes.Select((type, i) => $"{type} arg{i}").ListToString();
-                var methodSource = $"internal static {returnType} {generatedMethodName} ({paramListSource}) => throw null;";
-                m_methodsSource.WriteLine(methodSource);
-                m_methodsSource.WriteLine();
-
-                Console.WriteLine(methodSource);
-
-                var arguments = SyntaxFactory.SeparatedList(workshopCode.arguments.Select(a => base.Visit(a)));
-                return SyntaxFactory.InvocationExpression(
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName("Generated"),
-                        SyntaxFactory.IdentifierName(generatedMethodName)),
-                    SyntaxFactory.ArgumentList(arguments));
-            }
-
-            return base.VisitInvocationExpression(invocation);
-        }
-
-        IMethodSymbol GetMethodSemantics(InvocationExpressionSyntax invocation)
-        {
-            switch (invocation.Expression)
-            {
-                case MemberAccessExpressionSyntax memberAccess:
-                    return (IMethodSymbol)m_semanticModel.GetSymbolInfo(memberAccess.Name).Symbol;
-                default:
-                    Console.WriteLine(invocation);
-                    Console.WriteLine(invocation.Expression);
-                    var symbolInfo = m_semanticModel.GetSymbolInfo(invocation.Expression);
-                    return symbolInfo.Symbol as IMethodSymbol;
-            }
-        }
     }
 
     void GenerateFunctionIds(IEnumerable<MethodDefinition> methods)
