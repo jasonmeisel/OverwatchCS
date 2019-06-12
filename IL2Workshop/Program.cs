@@ -249,9 +249,11 @@ class Transpiler
 {
     IEnumerable<LazyString> MethodHeaderActions(MethodInfo method)
     {
+        var isEvent = GetCustomAttribute<WorkshopEventAttribute>(method) != null;
         var firstActions = new LazyString[]
         {
-            () => $"Abort If (Not({FunctionCondition(method)()}));",
+            // TODO: don't break jumps when using events
+            () => $"Abort If ({( isEvent ? "False" : $"Not({FunctionCondition(method)()})" )});",
             () => "Wait(0, Abort When False);",
             SetGlobal(Variables.Temporary, JumpOffsetStack.GetLastElement(0)),
         };
@@ -1033,13 +1035,13 @@ rule(""{0}"")
     static string EventFormat => @"
     event
     {{
-        {0};
+        {0}
     }}";
 
     static string ConditionsFormat => @"
     conditions
     {{
-        {0};
+        {0}
     }}";
 
     static string ActionsFormat => @"
@@ -1066,12 +1068,42 @@ rule(""{0}"")
                 writeLine(line());
         }
 
-        ruleWriter.WriteLine(string.Format(
+        var workshopEventAttr = GetCustomAttribute<WorkshopEventAttribute>(method);
+        if (workshopEventAttr != null)
+        {
+            ruleWriter.WriteLine(GenerateRule(
+                method.Definition.Name,
+                workshopEventAttr.Text,
+                $"",
+                writer.ToString()));
+        }
+        else
+        {
+            ruleWriter.WriteLine(GenerateRule(
+                method.Definition.Name,
+                "Ongoing - Global;",
+                $"{FunctionCondition(method)()} == True;",
+                writer.ToString()));
+        }
+    }
+    static AttributeType GetCustomAttribute<AttributeType>(MethodInfo method) where AttributeType : class
+    {
+        var customAttr = method.Definition.CustomAttributes.FirstOrDefault(attr => attr.AttributeType.Name == typeof(AttributeType).Name);
+        if (customAttr == null)
+            return null;
+
+        var args = customAttr.ConstructorArguments.Select(arg => arg.Value).ToArray();
+        return Activator.CreateInstance(typeof(AttributeType), args) as AttributeType;
+    }
+
+    static string GenerateRule(string name, string eventText, string conditionsText, string actionsText)
+    {
+        return string.Format(
             RuleFormat,
-            method.Definition.Name,
-            string.Format(EventFormat, "Ongoing - Global"),
-            string.Format(ConditionsFormat, $"{FunctionCondition(method)()} == True"),
-            string.Format(ActionsFormat, writer.ToString())));
+            name,
+            string.Format(EventFormat, eventText),
+            string.Format(ConditionsFormat, conditionsText),
+            string.Format(ActionsFormat, actionsText));
     }
 
     private LazyString FunctionCondition(MethodInfo method)

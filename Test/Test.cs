@@ -41,17 +41,26 @@ public static class MainClass
     //     }
     // }
 
+    [WorkshopEvent(@"
+		Player dealt damage;
+		All;
+		All;")]
+    public static void PlayerDealtDamage()
+    {
+        BigMessage(EventPlayer(), String("{0} {1} {2}", EventDamage(), String("Damage"), String("Well Played")));
+    }
 
     public static void Main()
     {
-        for (int count = 0; true; ++count)
-        {
-            var numPlayers = NumberOfPlayers(Team.All);
-            var index = count % numPlayers;
-            var player = AllPlayers(Team.All).GetElement(index);
-            BigMessage(AllPlayers(Team.All), String("{0} - {1}", index, player));
-            Wait(1);
-        }
+        // for (int count = 0; true; ++count)
+        // {
+        //     var numPlayers = NumberOfPlayers(Team.All);
+        //     var index = count % numPlayers;
+        //     var player = AllPlayers(Team.All).GetElement(index);
+        //     BigMessage(AllPlayers(Team.All), String("{0} - {1}", index, player));
+        //     Wait(1);
+        // }
+        Abort();
     }
 
     // public static float RecursiveFibonacci(int n, float a = 0, float b = 1)

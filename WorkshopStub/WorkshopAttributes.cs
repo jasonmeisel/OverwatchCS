@@ -19,5 +19,10 @@ public class WorkshopCodeAttribute : Attribute
 
 public class WorkshopEventAttribute : Attribute
 {
-    
+    public string Text;
+
+    public WorkshopEventAttribute(string text)
+    {
+        Text = text;
+    }
 }

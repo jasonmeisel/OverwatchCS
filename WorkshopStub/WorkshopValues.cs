@@ -422,7 +422,13 @@ namespace Workshop
         /// There are no definitions to this value.
         /// </summary>
         [WorkshopCode("EVENT PLAYER")]
-        public static object EventPlayer() => throw new NotImplementedException();
+        public static Player EventPlayer() => throw new NotImplementedException();
+
+        /// <summary>
+        /// EVENT DAMAGE
+        /// </summary>
+        [WorkshopCode("EVENT DAMAGE")]
+        public static float EventDamage() => throw new NotImplementedException();
 
         /// <summary>
         /// FACING DIRECTION OF
