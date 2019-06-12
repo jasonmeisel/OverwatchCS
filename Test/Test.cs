@@ -40,11 +40,7 @@ public static class MainClass
     //         Wait(1);
     //     }
     // }
-
-    [WorkshopEvent(@"
-		Player dealt damage;
-		All;
-		All;")]
+    [WorkshopEvent(Event.PlayerDealtDamage)]
     public static void PlayerDealtDamage(Player eventPlayer, float eventDamage, bool eventWasCriticalHit)
     {
         BigMessage(eventPlayer, String("{0} {1} {2}", eventDamage, String("Damage"), String("Well Played")));

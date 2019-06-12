@@ -19,10 +19,10 @@ public class WorkshopCodeAttribute : Attribute
 
 public class WorkshopEventAttribute : Attribute
 {
-    public string Text;
+    public Workshop.Event m_event;
 
-    public WorkshopEventAttribute(string text)
+    public WorkshopEventAttribute(Workshop.Event evt)
     {
-        Text = text;
+        m_event = evt;
     }
 }

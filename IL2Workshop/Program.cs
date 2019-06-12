@@ -450,7 +450,7 @@ class Transpiler
 
         dict[OpCodes.Ret] = (method, instruction) => CallStack.Pop(1).
             // if it's a workshop event, then it needs the max num of local variables (since it's called at runtime)
-            Concat(LocalsStack.Pop(GetCustomAttribute<WorkshopEventAttribute>(method) != null ? m_maxNumLocalVariables : GetNumLocalVariables(method.Definition))).
+            Concat(LocalsStack.Pop(GetCustomAttributeData<WorkshopEventAttribute>(method) != null ? m_maxNumLocalVariables : GetNumLocalVariables(method.Definition))).
             Concat(ParameterStack.Pop(method.Definition.Parameters.Count)).
             // (loop instead of abort so you can call functions recursively)
             Concat(new LazyString[] { () => "Loop;" });
@@ -1151,9 +1151,10 @@ rule(""{0}"")
         var workshopEventAttr = GetCustomAttribute<WorkshopEventAttribute>(method);
         if (workshopEventAttr != null)
         {
+            Debug.Assert(method.Definition.Parameters.Count == 3, $"Event function {method.Definition.Name} must have the following parameter list: (Player eventPlayer, float eventDamage, bool eventWasCriticalHit)");
             ruleWriter.WriteLine(GenerateRule(
                 $"Event Task for: {method.Definition.Name}",
-                workshopEventAttr.Text,
+                GetCodeName(typeof(Workshop.Event).GetMember(workshopEventAttr.m_event.ToString()).First()),
                 $"",
                 PushTaskForEventMethod(method)()));
         }
@@ -1174,12 +1175,19 @@ rule(""{0}"")
 
     static AttributeType GetCustomAttribute<AttributeType>(MethodInfo method) where AttributeType : class
     {
-        var customAttr = method.Definition.CustomAttributes.FirstOrDefault(attr => attr.AttributeType.Name == typeof(AttributeType).Name);
+        var customAttr = GetCustomAttributeData<AttributeType>(method);
         if (customAttr == null)
             return null;
 
         var args = customAttr.ConstructorArguments.Select(arg => arg.Value).ToArray();
+        if (typeof(AttributeType) == typeof(WorkshopEventAttribute))
+            args[0] = (Workshop.Event)args[0];
         return Activator.CreateInstance(typeof(AttributeType), args) as AttributeType;
+    }
+
+    static CustomAttribute GetCustomAttributeData<AttributeType>(MethodInfo method) where AttributeType : class
+    {
+        return method.Definition.CustomAttributes.FirstOrDefault(attr => attr.AttributeType.Name == typeof(AttributeType).Name);
     }
 
     static string GenerateRule(string name, string eventText, string conditionsText, string actionsText)
