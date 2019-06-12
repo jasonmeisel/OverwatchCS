@@ -43,8 +43,13 @@ public static class MainClass
     [WorkshopEvent(Event.PlayerDealtDamage)]
     public static void PlayerDealtDamage(Player eventPlayer, float eventDamage, bool eventWasCriticalHit)
     {
-        BigMessage(eventPlayer, String("{0} {1} {2}", eventDamage, String("Damage"), String("Well Played")));
-        // BigMessage(AllPlayers(Team.All), String("HELLO"));
+        BigMessage(eventPlayer, String("{0} {1}", eventDamage, String("Damage")));
+    }
+
+    [WorkshopEvent(Event.OngoingGlobal)]
+    public static void Update(Player eventPlayer, float eventDamage, bool eventWasCriticalHit)
+    {
+        BigMessage(AllPlayers(Team.All), String("Hello"));
     }
 
     public static void Main()

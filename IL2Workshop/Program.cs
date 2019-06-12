@@ -1147,16 +1147,25 @@ rule(""{0}"")
             foreach (var line in ToWorkshopActions(method, instr))
                 writeLine(line());
         }
+        writeLine("");
 
         var workshopEventAttr = GetCustomAttribute<WorkshopEventAttribute>(method);
         if (workshopEventAttr != null)
         {
             Debug.Assert(method.Definition.Parameters.Count == 3, $"Event function {method.Definition.Name} must have the following parameter list: (Player eventPlayer, float eventDamage, bool eventWasCriticalHit)");
+
+            var actionsText = new[]
+            {
+                PushTaskForEventMethod(method)(),
+                "Wait(0, Ignore Condition);",
+                "Loop If Condition Is True;",
+            }.ListToString("\n");
+
             ruleWriter.WriteLine(GenerateRule(
                 $"Event Task for: {method.Definition.Name}",
                 GetCodeName(typeof(Workshop.Event).GetMember(workshopEventAttr.m_event.ToString()).First()),
                 $"",
-                PushTaskForEventMethod(method)()));
+                actionsText));
         }
 
         ruleWriter.WriteLine(GenerateRule(
@@ -1170,6 +1179,13 @@ rule(""{0}"")
     {
         LazyString functionId = () => GetFunctionId(method.Definition).ToString();
         var taskValues = CreateArray(functionId, () => "EVENT PLAYER", () => "EVENT DAMAGE", () => "EVENT WAS CRITICAL HIT");
+
+        // "Ongoing - Global" doesn't support the event values
+        if (GetCustomAttribute<WorkshopEventAttribute>(method).m_event == Workshop.Event.OngoingGlobal)
+        {
+            taskValues = CreateArray(functionId, () => "0", () => "0", () => "0");
+        }
+        
         return TaskQueue.PushTask(taskValues);
     }
 

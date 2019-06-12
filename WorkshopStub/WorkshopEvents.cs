@@ -10,8 +10,8 @@ namespace Workshop
         /// Tutorials:
         /// 
         // /// Tutorial Video by WyomingMyst 308
-        // [WorkshopCode("ONGOING - GLOBAL")]
-        // OngoingGlobal,
+        [WorkshopCode("ONGOING - GLOBAL;")]
+        OngoingGlobal,
 
         /// ONGOING - EACH PLAYER
         /// The ONGOING - EACH PLAYER event attribute will affect the specified players in the game environment.
@@ -31,8 +31,8 @@ namespace Workshop
         /// ALL - This event will affect all players regardless of team, slot position, or hero selected.
         /// SLOT # (0-11) -  This event affect the slot assignment of that specific player in the order of the Lobby (see diagram below)
         /// {HERO NAME} - This event affects any players using the specified hero.
-        // [WorkshopCode("ONGOING - EACH PLAYER")]
-        // OngoingEachPlayer,
+        [WorkshopCode("ONGOING - EACH PLAYER; All; All;")]
+        OngoingEachPlayer,
 
         /// PLAYER EARNED ELIMINATION
         /// The PLAYER EARNED ELIMINATION event attribute will affect the specified players who successfully score an elimination in the game environment.
