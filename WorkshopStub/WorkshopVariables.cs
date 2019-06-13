@@ -32,8 +32,7 @@ namespace Workshop
         public static char StaticFields => 'S';
 
         public static char Temporary => 'T';
-        
-        public static char U => 'U';
+        public static char Temporary2 => 'U';
 
         public static char VariableStack => 'V';
 

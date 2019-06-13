@@ -174,6 +174,10 @@ public static class Actions
         return () => $"Or({valueA()}, {valueB()})";
     }
 
+    public static LazyString Min(LazyString valueA, LazyString valueB)
+    {
+        return () => $"Min({valueA()}, {valueB()})";
+    }
 
     public static LazyString Max(LazyString valueA, LazyString valueB)
     {

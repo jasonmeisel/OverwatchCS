@@ -31,12 +31,22 @@ partial class Transpiler
             SetGlobal(Variables.Temporary, JumpOffsetStack.GetLastElement(0)),
         };
 
-        var targetJumps = new[]
+        LazyString actionCountStr = () =>
         {
-            SkipIf(NotEqual(GetGlobal(Variables.Temporary), () => "0"), GetGlobal(Variables.Temporary))
+            var instruction = method.Instructions.First();
+            var nextInChain = FindNextSkipChain(method, instruction);
+            var actionCount = nextInChain == null ? 0 : CalcNumActionsToSkip(method, nextInChain) - CalcNumActionsToSkip(method, instruction);
+            return actionCount.ToString();
         };
 
-        return firstActions.Concat(JumpOffsetStack.Pop(1)).Concat(targetJumps);
+        var jumpToTarget = new[]
+        {
+            SetGlobal(Variables.Temporary2, GetGlobal(Variables.Temporary)),
+            SetGlobal(Variables.Temporary, Subtract(GetGlobal(Variables.Temporary), Add(actionCountStr, () => "4"))),
+            Skip(Min(GetGlobal(Variables.Temporary2), Add(actionCountStr, () => "1"))),
+        };
+
+        return firstActions.Concat(JumpOffsetStack.Pop(1)).Concat(jumpToTarget);
     }
 
     Dictionary<OpCode, ToWorkshopActionFunc> s_toWorkshopActionsDict;
@@ -50,6 +60,8 @@ partial class Transpiler
     {
         var dict = new Dictionary<OpCode, ToWorkshopActionFunc>();
 
+        // default opcode is for the skip chain (see InsertSkipChainInstructions)
+        dict[OpCodes.No] = Impl_SkipChainActions;
         dict[OpCodes.Nop] = Impl_Nop;
         dict[OpCodes.Ldlen] = Impl_UnimplementedOp;
         dict[OpCodes.Ldelema] = Impl_UnimplementedOp;
@@ -136,7 +148,6 @@ partial class Transpiler
         dict[OpCodes.Constrained] = Impl_UnimplementedOp;
         dict[OpCodes.Cpblk] = Impl_UnimplementedOp;
         dict[OpCodes.Initblk] = Impl_UnimplementedOp;
-        dict[OpCodes.No] = Impl_UnimplementedOp;
         dict[OpCodes.Rethrow] = Impl_UnimplementedOp;
         dict[OpCodes.Sizeof] = Impl_UnimplementedOp;
         dict[OpCodes.Cgt] = Impl_UnimplementedOp;
@@ -231,9 +242,9 @@ partial class Transpiler
         dict[OpCodes.Ldarg_S] = Impl_UnimplementedOp;
         dict[OpCodes.Ldarga_S] = Impl_UnimplementedOp;
         dict[OpCodes.Starg_S] = Impl_Starg_S;
-        dict[OpCodes.Ldloc_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Ldloc_S] = (method, instruction) => VariableStack.Push(LocalsStack.GetLastElement(GetLocalVariableStackOffset(method, ((VariableDefinition)instruction.Operand).Index)));
         dict[OpCodes.Ldloca_S] = Impl_UnimplementedOp;
-        dict[OpCodes.Stloc_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Stloc_S] = (method, instruction) => Impl_Stloc(method, ((VariableDefinition)instruction.Operand).Index);
         dict[OpCodes.Ldnull] = Impl_UnimplementedOp;
         dict[OpCodes.Ldc_I4_M1] = Impl_UnimplementedOp;
         dict[OpCodes.Ldc_I4_0] = (method, instruction) => VariableStack.Push(() => "0");
@@ -498,6 +509,31 @@ partial class Transpiler
         throw new Exception($"Unsupported opcode {instruction.OpCode}");
     }
 
+    IEnumerable<LazyString> Impl_SkipChainActions(MethodInfo method, Instruction instruction)
+    {
+        Func<int> thisLength = () => Impl_SkipChainActions(method, instruction).Count();
+        yield return Skip(() => (thisLength() - 1).ToString());
+
+        LazyString actionCountStr = () =>
+        {
+            var nextInChain = FindNextSkipChain(method, instruction);
+            var actionCount = nextInChain == null ? 0 : CalcNumActionsToSkip(method, nextInChain) - CalcNumActionsToSkip(method, instruction);
+            return actionCount.ToString();
+        };
+
+        yield return SetGlobal(Variables.Temporary2, GetGlobal(Variables.Temporary));
+        yield return SetGlobal(Variables.Temporary, Subtract(GetGlobal(Variables.Temporary), actionCountStr));
+
+        // skip to the actual action or skip to the next chain
+        // add 1 to ignore the initial Skip, but subtract the length of this whole thing
+        yield return Skip(Min(GetGlobal(Variables.Temporary2), Subtract(actionCountStr, () => (thisLength() - 1).ToString())));
+    }
+
+    Instruction FindNextSkipChain(MethodInfo method, Instruction instruction)
+    {
+        return method.Instructions.SkipWhile(i => i != instruction).Skip(1).FirstOrDefault(i => i.OpCode.Code == Code.No);
+    }
+
     static IEnumerable<LazyString> Impl_Starg_S(MethodInfo method, Instruction instruction)
     {
         var parameters = method.Definition.Parameters;
@@ -617,6 +653,8 @@ partial class Transpiler
                 Instructions = method.Body.Instructions.ToList(),
             };
 
+            InsertSkipChainInstructions(methodInfo);
+
             // TODO: add analyzer to prevent storing un-storable variables on stack (Array, Player, etc)
 
             Console.WriteLine(method);
@@ -628,6 +666,27 @@ partial class Transpiler
         }
 
         return ruleWriter.ToString();
+    }
+
+    // the Skip action maxes out at 99, WTF.
+    // to get around this, make sure there's always a place to skip to
+    // in order to get to the end of the method
+    void InsertSkipChainInstructions(MethodInfo methodInfo)
+    {
+        var lastSkipChainActionIndex = 0;
+        for (var i = 0; i != methodInfo.Instructions.Count; ++i)
+        {
+            var actionIndex = CalcNumActionsToSkip(methodInfo, methodInfo.Instructions[i]);
+            if (actionIndex - lastSkipChainActionIndex > 75)
+            {
+                var instruction = Instruction.Create(OpCodes.Ret);
+                instruction.OpCode = OpCodes.No;
+                instruction.Previous = methodInfo.Instructions[i - 1];
+                instruction.Next = methodInfo.Instructions[i];
+                methodInfo.Instructions.Insert(i, instruction);
+                lastSkipChainActionIndex = actionIndex;
+            }
+        }
     }
 
     IEnumerable<LazyString> EntryPointActions(MethodDefinition staticConstructor, MethodDefinition mainMethod)
