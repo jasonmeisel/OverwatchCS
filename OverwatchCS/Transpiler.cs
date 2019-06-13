@@ -258,7 +258,7 @@ partial class Transpiler
         dict[OpCodes.Ldc_I4_0] = (method, instruction) => VariableStack.Push(() => "0");
         dict[OpCodes.Ldc_I4_1] = (method, instruction) => VariableStack.Push(() => "1");
         dict[OpCodes.Ldc_I4_2] = (method, Instruction) => VariableStack.Push(() => "2");
-        dict[OpCodes.Stloc_3] = Impl_UnimplementedOp;
+        dict[OpCodes.Stloc_3] = (method, instruction) => Impl_Stloc(method, 3);
         dict[OpCodes.Conv_U4] = Impl_UnimplementedOp;
         dict[OpCodes.Ble_Un_S] = (method, instruction) => Impl_Jump_If_Compare(instruction, "<=");
         dict[OpCodes.Br] = Impl_UnimplementedOp;

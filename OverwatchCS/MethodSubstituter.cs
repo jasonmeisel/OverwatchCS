@@ -120,7 +120,7 @@ partial class Transpiler
 
         private static string LiteralToCode(LiteralExpressionSyntax literal)
         {
-            return literal.IsKind(SyntaxKind.NumericLiteralExpression) ? literal.Token.ValueText : literal.ToString();
+            return literal.IsKind(SyntaxKind.StringLiteralExpression) ? literal.ToString() : literal.Token.ValueText;
         }
 
         // if paramType is one of the generic types, swap it with the concrete type that's being used

@@ -42,7 +42,21 @@ namespace Workshop
         public static implicit operator Array<TElement>(TElement val) => default(Array<TElement>);
     }
 
-    public struct Vector {}
+    public struct Vector
+    {
+        [WorkshopCode("Add")] public static Vector operator+(Vector a, Vector b) => throw null;
+        [WorkshopCode("Subtract")] public static Vector operator-(Vector a, Vector b) => throw null;
+        [WorkshopCode("Multiply")] public static Vector operator*(Vector a, Vector b) => throw null;
+        [WorkshopCode("Divide")] public static Vector operator/(Vector a, Vector b) => throw null;
+        [WorkshopCode("Add")] public static Vector operator+(float a, Vector b) => throw null;
+        [WorkshopCode("Subtract")] public static Vector operator-(float a, Vector b) => throw null;
+        [WorkshopCode("Multiply")] public static Vector operator*(float a, Vector b) => throw null;
+        [WorkshopCode("Divide")] public static Vector operator/(float a, Vector b) => throw null;
+        [WorkshopCode("Add")] public static Vector operator+(Vector a, float b) => throw null;
+        [WorkshopCode("Subtract")] public static Vector operator-(Vector a, float b) => throw null;
+        [WorkshopCode("Multiply")] public static Vector operator*(Vector a, float b) => throw null;
+        [WorkshopCode("Divide")] public static Vector operator/(Vector a, float b) => throw null;
+    }
 
     public enum Team
     {
@@ -294,7 +308,7 @@ namespace Workshop
         /// Angle - You can specify any Angle Syntax to define this value.
         /// </summary>
         [WorkshopCode("Cosine FROM DEGREES")]
-        public static object CosineFromDegrees() => throw new NotImplementedException();
+        public static float CosineFromDegrees(float angle) => throw new NotImplementedException();
 
         /// <summary>
         /// Cosine FROM RADIANS
@@ -516,7 +530,7 @@ namespace Workshop
         /// Entity - The player, icon entity, or effect entity whose presence in world to check.
         /// </summary>
         [WorkshopCode("HAS SPAWNED")]
-        public static object HasSpawned() => throw new NotImplementedException();
+        public static bool HasSpawned<T>(T entity) => throw new NotImplementedException();
 
         /// <summary>
         /// HAS STATUS
@@ -1350,7 +1364,7 @@ namespace Workshop
         /// Variable - Variable specified by a single alphabetic letter (A through Z).
         /// </summary>
         [WorkshopCode("PLAYER VARIABLE")]
-        public static object PlayerVariable() => throw new NotImplementedException();
+        public static T GetPlayerVariable<T>(Player player, char variable) => throw new NotImplementedException();
 
         /// <summary>
         /// PLAYERS IN SLOT
@@ -1560,7 +1574,7 @@ namespace Workshop
         /// Angle - Angle in degrees. Can use most Player based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCode("SINE FROM DEGREES")]
-        public static object SineFromDegrees() => throw new NotImplementedException();
+        public static float SineFromDegrees(float angle) => throw new NotImplementedException();
 
         /// <summary>
         /// SINE FROM RADIANS

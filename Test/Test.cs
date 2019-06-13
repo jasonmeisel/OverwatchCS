@@ -29,7 +29,8 @@ public static class MainClass
     //     return b;
     // }
 
-    static Vector CenterOfLighthouse => Vector(290.22f, -25.47f, -88.76f);
+    static readonly Vector CenterOfLighthouse = Vector(290.22f, -25.47f, -88.76f);
+    static readonly float PlayRadius = 10;
 
     static int s_count = 0;
     public static void Update()
@@ -39,7 +40,16 @@ public static class MainClass
         for (var i = 0; i < NumberOfPlayers(Team.All); ++i)
         {
             var player = AllPlayers(Team.All).ValueInArray(i);
-            Teleport(player, CenterOfLighthouse);
+
+            // when first spawned
+            if (HasSpawned(player) && !GetPlayerVariable<bool>(player, 'A'))
+            {
+                SetPlayerVariable(player, 'A', true);
+                
+                var offset = PlayRadius * Vector(SineFromDegrees(i * 360), 0, CosineFromDegrees(i * 360));
+                Teleport(player, CenterOfLighthouse + offset);
+            }
+
             var position = PositionOf(player);
             BigMessage(player, String("({0})", position));
         }

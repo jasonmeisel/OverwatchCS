@@ -952,7 +952,7 @@ namespace Workshop
         /// Value - The value that will be stored. Nearly any Value syntax can be used, however it is most common with Number based syntax.
         /// </summary>
         [WorkshopCode("SET PLAYER VARIABLE")]
-        public static void SetPlayerVariable() { }
+        public static void SetPlayerVariable<T>(Player player, char variable, T value) { }
 
         /// <summary>
         /// SET PLAYER VARIABLE AT INDEX
