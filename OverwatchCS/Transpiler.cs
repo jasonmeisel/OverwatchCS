@@ -346,7 +346,7 @@ partial class Transpiler
 
     static IEnumerable<LazyString> Impl_Jump_If(Instruction instruction, Func<LazyString, LazyString, LazyString> binaryCondition)
     {
-        return Impl_Jump_If(instruction, 2, binaryCondition(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), ArraySubscript(GetGlobal(Variables.Temporary), () => "1")));
+        return Impl_Jump_If(instruction, 2, binaryCondition(ArraySubscript(GetGlobal(Variables.Temporary), () => "1"), ArraySubscript(GetGlobal(Variables.Temporary), () => "0")));
     }
 
     int GetStaticFieldIndex(object operand)
@@ -554,7 +554,7 @@ partial class Transpiler
             yield return action;
 
         // push the addition of them onto the stack
-        foreach (var action in VariableStack.Push(binaryOp(ArraySubscript(GetGlobal(Variables.Temporary), 0), ArraySubscript(GetGlobal(Variables.Temporary), 1))))
+        foreach (var action in VariableStack.Push(binaryOp(ArraySubscript(GetGlobal(Variables.Temporary), 1), ArraySubscript(GetGlobal(Variables.Temporary), 0))))
             yield return action;
     }
 
