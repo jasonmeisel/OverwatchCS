@@ -35,7 +35,7 @@ partial class Transpiler
         {
             var instruction = method.Instructions.First();
             var nextInChain = FindNextSkipChain(method, instruction);
-            var actionCount = nextInChain == null ? 0 : CalcNumActionsToSkip(method, nextInChain) - CalcNumActionsToSkip(method, instruction);
+            var actionCount = nextInChain == null ? 99999999 : CalcNumActionsToSkip(method, nextInChain) - CalcNumActionsToSkip(method, instruction);
             return actionCount.ToString();
         };
 
@@ -43,7 +43,9 @@ partial class Transpiler
         {
             SetGlobal(Variables.Temporary2, GetGlobal(Variables.Temporary)),
             SetGlobal(Variables.Temporary, Subtract(GetGlobal(Variables.Temporary), Add(actionCountStr, () => "4"))),
-            Skip(Min(GetGlobal(Variables.Temporary2), Add(actionCountStr, () => "1"))),
+            SkipIf(
+                NotEqual(GetGlobal(Variables.Temporary2), () => "0"),
+                Min(GetGlobal(Variables.Temporary2), Add(actionCountStr, () => "1"))),
         };
 
         return firstActions.Concat(JumpOffsetStack.Pop(1)).Concat(jumpToTarget);
@@ -517,7 +519,7 @@ partial class Transpiler
         LazyString actionCountStr = () =>
         {
             var nextInChain = FindNextSkipChain(method, instruction);
-            var actionCount = nextInChain == null ? 0 : CalcNumActionsToSkip(method, nextInChain) - CalcNumActionsToSkip(method, instruction);
+            var actionCount = nextInChain == null ? 99999999 : CalcNumActionsToSkip(method, nextInChain) - CalcNumActionsToSkip(method, instruction);
             return actionCount.ToString();
         };
 

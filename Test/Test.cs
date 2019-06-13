@@ -51,7 +51,7 @@ public static class MainClass
                     var offset = PlayRadius * Vector(SineFromDegrees(i * 360), 0, CosineFromDegrees(i * 360));
                     Teleport(player, PlayCenter + offset);
 
-                    // CreateEffect(player, EffectType.LightShaft, Color.Red, PlayCenter, PlayRadius);
+                    CreateEffect(player, EffectType.LightShaft, Color.Red, PlayCenter, PlayRadius);
                 }
 
                 var position = PositionOf(player);
@@ -68,6 +68,18 @@ public static class MainClass
             }
         }
     }
+
+    // public static void Update()
+    // {
+    //     SetPlayerAllowedHeroes(AllPlayers(Team.All), Hero.WreckingBall);
+
+    //     for (var i = 0; i < NumberOfPlayers(Team.All); ++i)
+    //     {
+    //         var player = AllPlayers(Team.All).ValueInArray(i);
+    //         var position = PositionOf(player);
+    //         BigMessage(player, String("({0})", position));
+    //     }
+    // }
 
     // public static void LongTest()
     // {
