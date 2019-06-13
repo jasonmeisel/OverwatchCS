@@ -466,7 +466,7 @@ partial class Transpiler
             yield return () => code + ";";
 
         // string variable fix
-        if (code.ToLower().StartsWith("big message"))
+        if (code.ToLower().StartsWith("big message") || code.ToLower().StartsWith("create effect"))
             yield return () => "Wait(0, Ignore Condition);";
 
         foreach (var action in VariableStack.Pop(targetMethodRef.Parameters.Count))
