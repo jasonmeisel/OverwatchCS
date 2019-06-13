@@ -42,14 +42,18 @@ partial class Transpiler
             Where(t => t != null && t.Offset != 0).
             Distinct().
             ToArray();
-        var numTargets = targets.Length;
-        var targetJumps = targets.Select((target, index) =>
+
+        // create an array of every offset and index into it (this does the whole thing in two actions instead of a bunch lol)
+        var allSkipCounts = Enumerable.Range(0, targets.Any() ? targets.Max(i => i.Offset) : 0).
+            Select(i => method.Instructions.SingleOrDefault(instr => instr.Offset == i)).
+            Select(instr => instr != null ? CalcNumActionsToSkip(method, instr) : 0).
+            Select(count => (LazyString)(() => count.ToString())).
+            ToArray();
+        var targetJumps = new[]
         {
-            var skip = SkipIf(
-                Equal(GetGlobal(Variables.Temporary), GetJumpId(target)),
-                () => (numTargets - index + CalcNumActionsToSkip(method, target)).ToString());
-            return (LazyString)(() => $"{skip()}         // {target.ToString()}");
-        });
+            SetGlobal(Variables.Temporary, ArraySubscript(CreateArray(allSkipCounts), GetGlobal(Variables.Temporary))),
+            SkipIf(NotEqual(GetGlobal(Variables.Temporary), () => "0"), GetGlobal(Variables.Temporary)),
+        };
 
         return firstActions.Concat(JumpOffsetStack.Pop(1)).Concat(targetJumps).ToArray();
     }
@@ -206,11 +210,7 @@ partial class Transpiler
             // (loop instead of abort so you can call functions recursively)
             Concat(new LazyString[] { () => "Loop;" });
 
-        dict[OpCodes.Br_S] = (method, instruction) =>
-            JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand)).
-            Concat(new LazyString[] {
-                () => "Loop;",
-            });
+        dict[OpCodes.Br_S] = (method, instruction) => Impl_Jump_If(instruction, 0, () => "True");
 
         dict[OpCodes.Brfalse_S] = (method, instruction) => Impl_Jump_If(instruction, 1, Equal(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), () => "0"));
         dict[OpCodes.Brtrue_S] = (method, instruction) => Impl_Jump_If(instruction, 1, NotEqual(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), () => "0"));
@@ -261,7 +261,7 @@ partial class Transpiler
         dict[OpCodes.Stloc_3] = (method, instruction) => Impl_Stloc(method, 3);
         dict[OpCodes.Conv_U4] = Impl_UnimplementedOp;
         dict[OpCodes.Ble_Un_S] = (method, instruction) => Impl_Jump_If_Compare(instruction, "<=");
-        dict[OpCodes.Br] = Impl_UnimplementedOp;
+        dict[OpCodes.Br] = (method, instruction) => Impl_Jump_If(instruction, 0, () => "True");
         dict[OpCodes.Stind_I8] = Impl_UnimplementedOp;
         dict[OpCodes.Stind_R4] = Impl_UnimplementedOp;
         dict[OpCodes.Stind_R8] = Impl_UnimplementedOp;
@@ -319,7 +319,6 @@ partial class Transpiler
 
         return dict;
     }
-
 
     private static IEnumerable<LazyString> Impl_Jump_If_Compare(Instruction instruction, string comparison)
     {
@@ -560,7 +559,7 @@ partial class Transpiler
 
     int CalcNumActionsToSkip(MethodInfo method, Instruction target)
     {
-        return method.Instructions.TakeWhile(i => i != target).Sum(i => ToWorkshopActions(method, i).Count()) - 1;
+        return method.Instructions.TakeWhile(i => i != target).Sum(i => ToWorkshopActions(method, i).Count());
     }
 
     Dictionary<MethodDefinition, int> m_functionIds;

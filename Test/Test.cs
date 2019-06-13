@@ -53,12 +53,15 @@ public static class MainClass
                 }
 
                 var position = PositionOf(player);
-                BigMessage(player, String("({0})", position));
-
-                var distToCenter = DistanceBetween(PositionOf(player), PlayCenter);
+                var distToCenter = DistanceBetween(position, PlayCenter);
                 if (distToCenter > PlayRadius)
                 {
+                    BigMessage(player, String("DAMAGE"));
                     // Damage(player, null, 1);
+                }
+                else
+                {
+                    BigMessage(player, String("({0})", position));
                 }
             }
         }
