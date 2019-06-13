@@ -327,16 +327,16 @@ partial class Transpiler
 
     static IEnumerable<LazyString> Impl_Jump_If(Instruction instruction, int valuesToPop, LazyString condition)
     {
-        yield return SetGlobal(Workshop.Globals.Temporary, ArraySlice(
-            GetGlobal(Workshop.Globals.VariableStack),
-            Subtract(GetGlobal(Workshop.Globals.VariableStackIndex), () => (valuesToPop - 1).ToString()),
+        yield return SetGlobal(Variables.Temporary, ArraySlice(
+            GetGlobal(Variables.VariableStack),
+            () => "0",
             () => valuesToPop.ToString()));
 
         foreach (var action in VariableStack.Pop(valuesToPop))
             yield return action;
 
         yield return SkipIf(Not(condition), () => "3");
-        
+
         foreach (var action in JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand)))
             yield return action;
 
@@ -345,7 +345,7 @@ partial class Transpiler
 
     static IEnumerable<LazyString> Impl_Jump_If(Instruction instruction, Func<LazyString, LazyString, LazyString> binaryCondition)
     {
-        return Impl_Jump_If(instruction, 2, binaryCondition(ArraySubscript(GetGlobal(Workshop.Globals.Temporary), () => "0"), ArraySubscript(GetGlobal(Workshop.Globals.Temporary), () => "1")));
+        return Impl_Jump_If(instruction, 2, binaryCondition(ArraySubscript(GetGlobal(Variables.Temporary), () => "0"), ArraySubscript(GetGlobal(Variables.Temporary), () => "1")));
     }
 
     int GetStaticFieldIndex(object operand)
@@ -399,12 +399,12 @@ partial class Transpiler
     IEnumerable<LazyString> Impl_Call_CustomMethod(MethodInfo method, Instruction instruction, MethodDefinition targetMethod)
     {
         // pop the parameters off the variable stack and onto the parameter stack
-        yield return ArrayAppend(Variables.ParameterStack, ArraySlice(
+        var paramsVal = ArraySlice(
             GetGlobal(Variables.VariableStack),
-            Subtract(GetGlobal(Variables.VariableStackIndex), () => (targetMethod.Parameters.Count - 1).ToString()),
-            () => targetMethod.Parameters.Count.ToString()));
-        yield return SetGlobal(Variables.ParameterStackIndex,
-            Add(GetGlobal(Variables.ParameterStackIndex), () => targetMethod.Parameters.Count.ToString()));
+            () => "0",
+            () => targetMethod.Parameters.Count.ToString());
+        foreach (var action in ParameterStack.Push(paramsVal))
+            yield return paramsVal;
         foreach (var action in VariableStack.Pop(targetMethod.Parameters.Count))
             yield return action;
 
@@ -412,7 +412,7 @@ partial class Transpiler
             yield return action;
         foreach (var action in JumpOffsetStack.Push(() => "0"))
             yield return action;
-            
+
         foreach (var action in Impl_Call_CustomMethod_Direct(targetMethod))
             yield return action;
 
@@ -522,7 +522,7 @@ partial class Transpiler
 
         yield return SetGlobal(Variables.Temporary, ArraySlice(
             GetGlobal(Variables.ParameterStack),
-            Subtract(GetGlobal(Variables.ParameterStackIndex), () => (paramCount - 1).ToString()),
+            () => "0",
             () => paramCount.ToString()));
 
         foreach (var action in ParameterStack.Pop(paramCount))
@@ -542,20 +542,19 @@ partial class Transpiler
             yield return action;
     }
 
-    static LazyString[] DoBinaryOp(Func<LazyString, LazyString, LazyString> binaryOp)
+    static IEnumerable<LazyString> DoBinaryOp(Func<LazyString, LazyString, LazyString> binaryOp)
     {
-        return new[]
-        {
-                // store the last two variables in temp
-                SetGlobal(Variables.Temporary, ArraySubscript(GetGlobal(Variables.VariableStack), Add(GetGlobal(Variables.VariableStackIndex), () => "-1"))),
-                ArrayAppend(Variables.Temporary, ArraySubscript(GetGlobal(Variables.VariableStack), GetGlobal(Variables.VariableStackIndex)))
-            }.Concat(
-            // pop them off the stack
-            VariableStack.Pop(2)
-        ).Concat(
-            // push the addition of them onto the stack
-            VariableStack.Push(binaryOp(ArraySubscript(GetGlobal(Variables.Temporary), 0), ArraySubscript(GetGlobal(Variables.Temporary), 1)))
-        ).ToArray();
+        // store the last two variables in temp
+        yield return SetGlobal(Variables.Temporary, VariableStack.GetLastElement(1));
+        yield return ArrayAppend(Variables.Temporary, VariableStack.GetLastElement(0));
+
+        // pop them off the stack
+        foreach (var action in VariableStack.Pop(2))
+            yield return action;
+
+        // push the addition of them onto the stack
+        foreach (var action in VariableStack.Push(binaryOp(ArraySubscript(GetGlobal(Variables.Temporary), 0), ArraySubscript(GetGlobal(Variables.Temporary), 1))))
+            yield return action;
     }
 
     int CalcNumActionsToSkip(MethodInfo method, Instruction target)
@@ -685,8 +684,8 @@ partial class Transpiler
         yield return () => "Loop;";
 
         // push event params onto stack before calling
-        yield return ArrayAppend(Variables.ParameterStack, ArraySlice(GetGlobal(Variables.Temporary), () => "1", () => "3"));
-        yield return SetGlobal(Variables.ParameterStackIndex, Add(GetGlobal(Variables.ParameterStackIndex), () => "3"));
+        foreach (var action in ParameterStack.Push(ArraySlice(GetGlobal(Variables.Temporary), () => "1", () => "3")))
+            yield return action;
 
         foreach (var action in Impl_Call_CustomMethod_Direct(functionId, m_maxNumLocalVariables))
             yield return action;
@@ -815,6 +814,6 @@ rule(""{0}"")
 
     static LazyString FunctionCondition(int functionId)
     {
-        return Equal(ArrayLast(GetGlobal(CallStack.stackVar)), () => functionId.ToString());
+        return Equal(ArrayFirst(GetGlobal(CallStack.stackVar)), () => functionId.ToString());
     }
 }

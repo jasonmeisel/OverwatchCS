@@ -9,54 +9,27 @@ public static class Actions
     public class Stack
     {
         public char stackVar;
-        public char stackIndexVar;
 
-        public LazyString[] Push(LazyString value)
+        public IEnumerable<LazyString> Push(LazyString value)
         {
-            return new[] {
-                ArrayAppend(stackVar, value),
-                SetGlobal(stackIndexVar, () => $"Add(1, {GetGlobal(stackIndexVar)()})"),
-            };
+            // push to front
+            yield return SetGlobal(stackVar, ArrayConcat(CreateArray(value), GetGlobal(stackVar)));
         }
 
-        public LazyString[] Pop(int count)
+        public IEnumerable<LazyString> Pop(int count)
         {
-            var newSize = Add(GetGlobal(stackIndexVar), () => (1 - count).ToString());
-            return new[] {
-                SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => "0", newSize)),
-                SetGlobal(stackIndexVar, Subtract(newSize, () => "1")),
-            };
+            // pop from front
+            yield return SetGlobal(stackVar, ArraySlice(GetGlobal(stackVar), () => count.ToString(), () => "99999999"));
         }
 
         public LazyString GetLastElement(int offset)
         {
-            return ArraySubscript(GetGlobal(stackVar), Add(GetGlobal(stackIndexVar), () => (-offset).ToString()));
+            return ArraySubscript(GetGlobal(stackVar), () => offset.ToString());
         }
 
         public IEnumerable<LazyString> SetLastElement(int offset, LazyString value)
         {
-            var before = ArraySlice(
-                GetGlobal(stackVar),
-                () => "0",
-                Subtract(GetGlobal(stackIndexVar), () => (offset).ToString()));
-            var after = ArraySlice(
-                GetGlobal(stackVar),
-                Subtract(GetGlobal(stackIndexVar), () => (offset - 1).ToString()),
-                () => (offset).ToString());
-
-            yield return SetGlobal(stackVar, ArrayConcat(ArrayConcat(before, value), after));
-
-            // yield return SetGlobal(Variables.Temporary, after);
-            // yield return SetGlobal(stackVar, ArrayConcat(before, value));
-            // yield return SetGlobal(stackVar, ArrayConcat(GetGlobal(stackVar), GetGlobal(Variables.Temporary)));
-        }
-
-        public LazyString[] Resize(LazyString size)
-        {
-            return new[] {
-                ResizeArray(stackVar, size),
-                SetGlobal(stackIndexVar, Add(size, () => "-1")),
-            };
+            yield return SetGlobalAtIndex(stackVar, () => offset.ToString(), value);
         }
     }
 
@@ -122,6 +95,11 @@ public static class Actions
         return SetGlobal(arrayVar, ArrayConcat(GetGlobal(arrayVar), value));
     }
 
+    public static LazyString ArrayFirst(LazyString array)
+    {
+        return () => $"First Of({array()})";
+    }
+
     public static LazyString ArrayLast(LazyString array)
     {
         return () => $"Last Of({array()})";
@@ -156,11 +134,11 @@ public static class Actions
         return ArrayConcat(CreateArray(count - 1), () => "0");
     }
 
-    public static Stack VariableStack = new Stack { stackVar = Variables.VariableStack, stackIndexVar = Variables.VariableStackIndex };
-    public static Stack ParameterStack = new Stack { stackVar = Variables.ParameterStack, stackIndexVar = Variables.ParameterStackIndex };
-    public static Stack CallStack = new Stack { stackVar = Variables.CallStack, stackIndexVar = Variables.CallStackIndex };
-    public static Stack JumpOffsetStack = new Stack { stackVar = Variables.JumpOffsetStack, stackIndexVar = Variables.JumpOffsetStackIndex };
-    public static Stack LocalsStack = new Stack { stackVar = Variables.LocalsStack, stackIndexVar = Variables.LocalsStackIndex };
+    public static Stack VariableStack = new Stack { stackVar = Variables.VariableStack };
+    public static Stack ParameterStack = new Stack { stackVar = Variables.ParameterStack };
+    public static Stack CallStack = new Stack { stackVar = Variables.CallStack };
+    public static Stack JumpOffsetStack = new Stack { stackVar = Variables.JumpOffsetStack };
+    public static Stack LocalsStack = new Stack { stackVar = Variables.LocalsStack };
 
     public static LazyString Add(LazyString valueA, LazyString valueB)
     {
