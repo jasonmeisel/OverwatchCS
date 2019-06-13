@@ -1398,7 +1398,7 @@ namespace Workshop
         /// Position - The position to which the player or players will teleport. If a player is providedm the position of the player is used. Can use most Vector based Value Syntax.
         /// </summary>
         [WorkshopCode("TELEPORT")]
-        public static void Teleport() { }
+        public static void Teleport(Player player, Vector position) { }
 
         /// <summary>
         /// UNPAUSE MATCH TIME

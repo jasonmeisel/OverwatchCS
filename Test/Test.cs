@@ -29,6 +29,8 @@ public static class MainClass
     //     return b;
     // }
 
+    static Vector CenterOfLighthouse => Vector(290.22f, -25.47f, -88.76f);
+
     static int s_count = 0;
     public static void Update()
     {
@@ -37,6 +39,7 @@ public static class MainClass
         for (var i = 0; i < NumberOfPlayers(Team.All); ++i)
         {
             var player = AllPlayers(Team.All).ValueInArray(i);
+            Teleport(player, CenterOfLighthouse);
             var position = PositionOf(player);
             BigMessage(player, String("({0})", position));
         }

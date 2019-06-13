@@ -74,7 +74,13 @@ partial class Transpiler
                                 return InvocationToWorkshopCode(i);
                             case LiteralExpressionSyntax literal:
                                 return (
-                                    code: literal.ToString(),
+                                    code: LiteralToCode(literal),
+                                    paramTypes: new string[0],
+                                    arguments: new ExpressionSyntax[0]
+                                );
+                            case PrefixUnaryExpressionSyntax prefix when prefix.IsKind(SyntaxKind.UnaryMinusExpression) && prefix.Operand is LiteralExpressionSyntax literal:
+                                return (
+                                    code: $"{prefix.OperatorToken}{LiteralToCode(literal)}",
                                     paramTypes: new string[0],
                                     arguments: new ExpressionSyntax[0]
                                 );
@@ -110,6 +116,11 @@ partial class Transpiler
                 paramTypes: new[] { targetMethod.ReturnType.ToString() },
                 arguments: new[] { invocation }
             );
+        }
+
+        private static string LiteralToCode(LiteralExpressionSyntax literal)
+        {
+            return literal.IsKind(SyntaxKind.NumericLiteralExpression) ? literal.Token.ValueText : literal.ToString();
         }
 
         // if paramType is one of the generic types, swap it with the concrete type that's being used
