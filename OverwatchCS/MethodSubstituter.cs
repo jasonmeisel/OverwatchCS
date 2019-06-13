@@ -24,10 +24,10 @@ partial class Transpiler
 
         public SyntaxTree GetGeneratedClass()
         {
-            return SyntaxFactory.ParseSyntaxTree($"internal static class Generated {{ {m_methodsSource.ToString()} }}");
+            return SyntaxFactory.ParseSyntaxTree($"internal static class Generated {{\n{m_methodsSource.ToString()}\n}}");
         }
 
-        (string code, string[] paramTypes, ArgumentSyntax[] arguments) InvocationToWorkshopCode(InvocationExpressionSyntax invocation)
+        (string code, string[] paramTypes, ExpressionSyntax[] arguments) InvocationToWorkshopCode(InvocationExpressionSyntax invocation)
         {
             var argumentList = invocation.ArgumentList;
 
@@ -76,7 +76,7 @@ partial class Transpiler
                                 return (
                                     code: literal.ToString(),
                                     paramTypes: new string[0],
-                                    arguments: new ArgumentSyntax[0]
+                                    arguments: new ExpressionSyntax[0]
                                 );
                             case MemberAccessExpressionSyntax enumAccess:
                                 var code = a.SyntaxTree == m_semanticModel.SyntaxTree ?
@@ -84,7 +84,7 @@ partial class Transpiler
                                     GetCodeName(GetWorkshopType(enumAccess.Expression.ToString()).GetMember(enumAccess.Name.ToString()).FirstOrDefault());
                                 if (code != null)
                                 {
-                                    return (code, paramTypes: new string[0], arguments: new ArgumentSyntax[0]);
+                                    return (code, paramTypes: new string[0], arguments: new ExpressionSyntax[0]);
                                 }
                                 break;
                         }
@@ -92,7 +92,7 @@ partial class Transpiler
                         return (
                             code: "<PARAM>",
                             paramTypes: new[] { p },
-                            arguments: new[] { SyntaxFactory.Argument(a) }
+                            arguments: new[] { a }
                         );
                     }).ToArray();
 
@@ -102,9 +102,14 @@ partial class Transpiler
                         argCodes.SelectMany(a => a.arguments).ToArray()
                     );
                 }
-                return (targetCode, new string[0], new ArgumentSyntax[0]);
+                return (targetCode, new string[0], new ExpressionSyntax[0]);
             }
-            throw null;
+
+            return (
+                code: "<PARAM>",
+                paramTypes: new[] { targetMethod.ReturnType.ToString() },
+                arguments: new[] { invocation }
+            );
         }
 
         // if paramType is one of the generic types, swap it with the concrete type that's being used
@@ -136,7 +141,7 @@ partial class Transpiler
 
                 Console.WriteLine(methodSource);
 
-                var arguments = SyntaxFactory.SeparatedList(workshopCode.arguments.Select(a => base.Visit(a)));
+                var arguments = SyntaxFactory.SeparatedList(workshopCode.arguments.Select(a => SyntaxFactory.Argument((ExpressionSyntax)base.Visit(a))));
                 return SyntaxFactory.InvocationExpression(
                     SyntaxFactory.MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,

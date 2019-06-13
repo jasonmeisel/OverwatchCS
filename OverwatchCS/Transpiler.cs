@@ -404,7 +404,7 @@ partial class Transpiler
             () => "0",
             () => targetMethod.Parameters.Count.ToString());
         foreach (var action in ParameterStack.Push(paramsVal))
-            yield return paramsVal;
+            yield return action;
         foreach (var action in VariableStack.Pop(targetMethod.Parameters.Count))
             yield return action;
 
@@ -594,9 +594,12 @@ partial class Transpiler
         var substituter = new MethodSubstituter(semanticModel, m_generatedMethodToWorkshopCode);
         var newRoot = substituter.Visit(syntaxTree.GetRoot());
         var newTree = SyntaxFactory.SyntaxTree(newRoot);
+        var generatedClassTree = substituter.GetGeneratedClass();
 
         compilation = compilation.RemoveAllSyntaxTrees();
-        compilation = compilation.AddSyntaxTrees(newTree, substituter.GetGeneratedClass());
+        compilation = compilation.AddSyntaxTrees(newTree, generatedClassTree);
+
+        Console.WriteLine(generatedClassTree.ToString());
 
         var result = compilation.Emit("AsmBuild.dll");
         if (!result.Success)
