@@ -320,6 +320,7 @@ partial class Transpiler
         return dict;
     }
 
+
     private static IEnumerable<LazyString> Impl_Jump_If_Compare(Instruction instruction, string comparison)
     {
         return Impl_Jump_If(instruction, (a, b) => () => $"Compare({a()}, {comparison}, {b()})");
@@ -335,7 +336,7 @@ partial class Transpiler
         foreach (var action in VariableStack.Pop(valuesToPop))
             yield return action;
 
-        yield return SkipIf(Not(condition), () => "3");
+        yield return SkipIf(Not(condition), () => (JumpOffsetStack.Push(() => "").Count() + 1).ToString());
 
         foreach (var action in JumpOffsetStack.Push(GetJumpId((Instruction)instruction.Operand)))
             yield return action;
