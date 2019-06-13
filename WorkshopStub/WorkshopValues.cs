@@ -76,6 +76,38 @@ namespace Workshop
         [WorkshopCode("To Player")] Player,
     }
 
+    public enum EffectType
+    {
+        [WorkshopCode("Sphere")] Sphere,
+        [WorkshopCode("Light Shaft")] LightShaft,
+        [WorkshopCode("Orb")] Orb,
+        [WorkshopCode("Ring")] Ring,
+        [WorkshopCode("Cloud")] Cloud,
+        [WorkshopCode("Sparkles")] Sparkles,
+        [WorkshopCode("Good Aura")] GoodAura,
+        [WorkshopCode("Bad Aura")] BadAura,
+        [WorkshopCode("Energy Sound")] EnergySound,
+        [WorkshopCode("Pick-Up Sound")] PickUpSound,
+        [WorkshopCode("Good Aura Sound")] GoodAuraSound,
+        [WorkshopCode("Bad Aura Sound")] BadAuraSound,
+        [WorkshopCode("Sparkles Sound")] SparklesSound,
+        [WorkshopCode("Smoke Sound")] SmokeSound,
+        [WorkshopCode("Decal Sound")] DecalSound,
+        [WorkshopCode("Beacon Sound")] BeaconSound,
+    }
+
+    public enum Color
+    {
+        [WorkshopCode("White")] White,
+        [WorkshopCode("Yellow")] Yellow,
+        [WorkshopCode("Green")] Green,
+        [WorkshopCode("Purple")] Purple,
+        [WorkshopCode("Red")] Red,
+        [WorkshopCode("Blue")] Blue,
+        [WorkshopCode("Team1")] Team1,
+        [WorkshopCode("Team2")] Team2,
+    }
+
     public static class Values
     {
         /// <summary>

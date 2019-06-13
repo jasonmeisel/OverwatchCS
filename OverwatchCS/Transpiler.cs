@@ -41,21 +41,31 @@ partial class Transpiler
             Select(i => i.Operand as Instruction ?? (i.Operand is MethodDefinition ? i.Next : null)).
             Where(t => t != null && t.Offset != 0).
             Distinct().
+            OrderBy(i => i.Offset).
             ToArray();
 
-        // create an array of every offset and index into it (this does the whole thing in two actions instead of a bunch lol)
-        var allSkipCounts = Enumerable.Range(0, targets.Any() ? targets.Max(i => i.Offset) : 0).
-            Select(i => method.Instructions.SingleOrDefault(instr => instr.Offset == i)).
-            Select(instr => instr != null ? CalcNumActionsToSkip(method, instr) : 0).
-            Select(count => (LazyString)(() => count.ToString())).
-            ToArray();
-        var targetJumps = new[]
+        var numTargets = targets.Length;
+        var targetJumps = targets.Select((target, index) =>
         {
-            SetGlobal(Variables.Temporary, ArraySubscript(CreateArray(allSkipCounts), GetGlobal(Variables.Temporary))),
-            SkipIf(NotEqual(GetGlobal(Variables.Temporary), () => "0"), GetGlobal(Variables.Temporary)),
-        };
+            var skip = SkipIf(
+                Equal(GetGlobal(Variables.Temporary), GetJumpId(target)),
+                () => (numTargets - (index + 1) + CalcNumActionsToSkip(method, target)).ToString());
+            return (LazyString)(() => $"{skip()}         // {target.ToString()}");
+        });
 
-        return firstActions.Concat(JumpOffsetStack.Pop(1)).Concat(targetJumps).ToArray();
+        // // create an array of every offset and index into it (this does the whole thing in two actions instead of a bunch lol)
+        // var allSkipCounts = Enumerable.Range(0, targets.Any() ? targets.Max(i => i.Offset) : 0).
+        //     Select(i => method.Instructions.SingleOrDefault(instr => instr.Offset == i)).
+        //     Select(instr => instr != null ? CalcNumActionsToSkip(method, instr) : 0).
+        //     Select(count => (LazyString)(() => count.ToString())).
+        //     ToArray();
+        // var targetJumps = new[]
+        // {
+        //     SetGlobal(Variables.Temporary, ArraySubscript(CreateArray(allSkipCounts), GetGlobal(Variables.Temporary))),
+        //     SkipIf(NotEqual(GetGlobal(Variables.Temporary), () => "0"), GetGlobal(Variables.Temporary)),
+        // };
+
+        return firstActions.Concat(JumpOffsetStack.Pop(1)).Concat(targetJumps);
     }
 
     Dictionary<OpCode, ToWorkshopActionFunc> s_toWorkshopActionsDict;
@@ -290,8 +300,10 @@ partial class Transpiler
         dict[OpCodes.Stind_I2] = Impl_UnimplementedOp;
         dict[OpCodes.Stind_I1] = Impl_UnimplementedOp;
         dict[OpCodes.Stind_Ref] = Impl_UnimplementedOp;
-        dict[OpCodes.Brfalse] = Impl_UnimplementedOp;
-        dict[OpCodes.Brtrue] = Impl_UnimplementedOp;
+
+        dict[OpCodes.Brfalse] = (method, instruction) => dict[OpCodes.Brfalse_S](method, instruction);
+        dict[OpCodes.Brtrue] = (method, instruction) => dict[OpCodes.Brtrue_S](method, instruction);
+
         dict[OpCodes.Beq] = Impl_UnimplementedOp;
         dict[OpCodes.Bge] = Impl_UnimplementedOp;
         dict[OpCodes.Bgt] = Impl_UnimplementedOp;
@@ -749,10 +761,13 @@ rule(""{0}"")
             writeLine(line());
         writeLine("");
 
+        var actionCount = 0;
         writeLine("// Body");
         foreach (var instr in method.Instructions)
         {
-            writeLine($"    // {instr}");
+            var numActions = ToWorkshopActions(method, instr).Count();
+            writeLine($"    // [{actionCount}] {instr}");
+            actionCount += numActions;
             foreach (var line in ToWorkshopActions(method, instr))
                 writeLine(line());
         }

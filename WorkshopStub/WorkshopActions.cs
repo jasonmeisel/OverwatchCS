@@ -195,7 +195,9 @@ namespace Workshop
         /// None
         /// </summary>
         [WorkshopCode("CREATE EFFECT")]
-        public static void CreateEffect() { }
+        public static void CreateEffect(Array<Player> visibleTo, EffectType type, Color color, Vector position, float radius, NoneValue reevaluation = NoneValue.None) {}
+        [WorkshopCode("CREATE EFFECT")]
+        public static void CreateEffect(Array<Player> visibleTo, EffectType type, Color color, Player playerToAttachTo, float radius, NoneValue reevaluation = NoneValue.None) {}
 
         /// <summary>
         /// CREATE HUD TEXT

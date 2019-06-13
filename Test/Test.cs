@@ -50,6 +50,8 @@ public static class MainClass
 
                     var offset = PlayRadius * Vector(SineFromDegrees(i * 360), 0, CosineFromDegrees(i * 360));
                     Teleport(player, PlayCenter + offset);
+
+                    // CreateEffect(player, EffectType.LightShaft, Color.Red, PlayCenter, PlayRadius);
                 }
 
                 var position = PositionOf(player);
