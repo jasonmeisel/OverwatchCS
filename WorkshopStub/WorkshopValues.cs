@@ -2,7 +2,7 @@ using System;
 
 namespace Workshop
 {
-    public class Player {}
+    public struct Player {}
     public enum Hero
     {
         [WorkshopCode("Hero(Ana)")] Ana,
@@ -380,7 +380,7 @@ namespace Workshop
         /// End Pos - One of the two positions used in the distance measurement. Most positional based Value Syntax can be used here.
         /// </summary>
         [WorkshopCode("DISTANCE BETWEEN")]
-        public static object DistanceBetween() => throw new NotImplementedException();
+        public static float DistanceBetween(Vector startPos, Vector endPos) => throw new NotImplementedException();
 
         /// <summary>
         /// DIVIDE

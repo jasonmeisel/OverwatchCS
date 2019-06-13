@@ -315,7 +315,7 @@ namespace Workshop
         /// Amount - The amount of damage to apply. This amount may be modified by buffs, debuffs, or armor. Can use most Number based Value Syntax.
         /// </summary>
         [WorkshopCode("DAMAGE")]
-        public static void Damage() { }
+        public static void Damage(Player player, Player? damager, float amount) { }
 
         /// <summary>
         /// DECLARE MATCH DRAW

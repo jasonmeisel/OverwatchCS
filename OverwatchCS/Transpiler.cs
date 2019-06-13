@@ -296,7 +296,7 @@ partial class Transpiler
         dict[OpCodes.Bge] = Impl_UnimplementedOp;
         dict[OpCodes.Bgt] = Impl_UnimplementedOp;
         dict[OpCodes.Ble] = Impl_UnimplementedOp;
-        dict[OpCodes.Blt] = Impl_UnimplementedOp;
+        dict[OpCodes.Blt] = (method, instruction) => Impl_Jump_If_Compare(instruction, "<");
         dict[OpCodes.Bne_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Bge_Un] = Impl_UnimplementedOp;
         dict[OpCodes.Bgt_Un] = Impl_UnimplementedOp;
