@@ -37,9 +37,9 @@ public static class MainClass
     {
         SetPlayerAllowedHeroes(AllPlayers(Team.All), Hero.WreckingBall);
 
-        for (var i = 0; i < NumberOfPlayers(Team.All); ++i)
+        for (var playerIndex = 0; playerIndex < NumberOfPlayers(Team.All); ++playerIndex)
         {
-            var player = AllPlayers(Team.All).ValueInArray(i);
+            var player = AllPlayers(Team.All).ValueInArray(playerIndex);
 
             if (HasSpawned(player))
             {
@@ -48,10 +48,16 @@ public static class MainClass
                 {
                     SetPlayerVariable(player, 'A', true);
 
-                    var offset = PlayRadius * Vector(SineFromDegrees(i * 360), 0, CosineFromDegrees(i * 360));
+                    var offset = (PlayRadius * 0.9f) * CircleVectorAtAngle(playerIndex * 360);
                     Teleport(player, PlayCenter + offset);
 
-                    CreateEffect(player, EffectType.LightShaft, Color.Red, PlayCenter, PlayRadius);
+                    for (var angle = 0.0f; angle < 360.0f; angle += 5)
+                    {
+                        CreateEffect(
+                            player, EffectType.LightShaft, Color.Red,
+                            PlayCenter + PlayRadius * CircleVectorAtAngle(angle),
+                            1.0f);
+                    }
                 }
 
                 var position = PositionOf(player);
@@ -67,6 +73,11 @@ public static class MainClass
                 }
             }
         }
+    }
+
+    static Vector CircleVectorAtAngle(float angle)
+    {
+        return Vector(SineFromDegrees(angle), 0, CosineFromDegrees(angle));
     }
 
     // public static void Update()

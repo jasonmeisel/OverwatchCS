@@ -201,7 +201,9 @@ public static class Actions
 
     public static LazyString Skip(LazyString actionCount)
     {
-        return () => $"Skip({actionCount()});";
+        // Skip(0) still skips one, because fml.
+        // do a SkipIf instead to actually Skip(0)
+        return () => $"Skip If({NotEqual(actionCount, () => "0")()}, {actionCount()});";
     }
 
     public static LazyString SkipIf(LazyString value, LazyString actionCount)
