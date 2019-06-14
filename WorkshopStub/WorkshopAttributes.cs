@@ -10,10 +10,12 @@ using System;
 public class WorkshopCodeAttribute : Attribute
 {
     public string Name;
+    public bool NeedsWait;
 
-    public WorkshopCodeAttribute(string name)
+    public WorkshopCodeAttribute(string name, bool needsWait = false)
     {
         Name = name;
+        NeedsWait = needsWait;
     }
 }
 

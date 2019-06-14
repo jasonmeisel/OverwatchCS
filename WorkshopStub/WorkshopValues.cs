@@ -76,7 +76,7 @@ namespace Workshop
         [WorkshopCode("To Player")] Player,
     }
 
-    public enum EffectType
+    public enum CreateEffectType
     {
         [WorkshopCode("Sphere")] Sphere,
         [WorkshopCode("Light Shaft")] LightShaft,
@@ -94,6 +94,20 @@ namespace Workshop
         [WorkshopCode("Smoke Sound")] SmokeSound,
         [WorkshopCode("Decal Sound")] DecalSound,
         [WorkshopCode("Beacon Sound")] BeaconSound,
+    }
+
+    public enum PlayEffectType
+    {
+        [WorkshopCode("Good Explosion")] GoodExplosion,
+        [WorkshopCode("Bad Explosion")] BadExplosion,
+        [WorkshopCode("Ring Explosion")] RingExplosion,
+        [WorkshopCode("Good Pickup Effect")] GoodPickupEffect,
+        [WorkshopCode("Bad Pickup Effect")] BadPickupEffect,
+        [WorkshopCode("Debuff Impact Sound")] DebuffImpactSound,
+        [WorkshopCode("Buff Impact Sound")] BuffImpactSound,
+        [WorkshopCode("Ring Explosion Sound")] RingExplosionSound,
+        [WorkshopCode("Buff Explosion Sound")] BuffExplosionSound,
+        [WorkshopCode("Explosion Sound")] ExplosionSound,
     }
 
     public enum Color
@@ -1200,7 +1214,7 @@ namespace Workshop
         /// Vector - The vector to normalize. Can use any Vector based Value syntax to divide with.
         /// </summary>
         [WorkshopCode("NORMALIZE")]
-        public static object Normalize() => throw new NotImplementedException();
+        public static Vector Normalize(Vector vector) => throw new NotImplementedException();
 
         /// <summary>
         /// NOT

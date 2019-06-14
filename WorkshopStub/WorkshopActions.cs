@@ -79,7 +79,7 @@ namespace Workshop
         /// Visible to - One or more players who will see the message. Can use most Value Syntax to select multiple players to specify.
         /// Header - The message to be displayed. Can use most String based Value Syntax to specify.
         /// </summary>
-        [WorkshopCode("BIG MESSAGE")]
+        [WorkshopCode("BIG MESSAGE", true)]
         public static void BigMessage(Array<Player> playersVisibleTo, StringValue header) {}
 
         /// <summary>
@@ -194,10 +194,10 @@ namespace Workshop
         /// Visible to
         /// None
         /// </summary>
-        [WorkshopCode("CREATE EFFECT")]
-        public static void CreateEffect(Array<Player> visibleTo, EffectType type, Color color, Vector position, float radius, NoneValue reevaluation = NoneValue.None) {}
-        [WorkshopCode("CREATE EFFECT")]
-        public static void CreateEffect(Array<Player> visibleTo, EffectType type, Color color, Player playerToAttachTo, float radius, NoneValue reevaluation = NoneValue.None) {}
+        [WorkshopCode("CREATE EFFECT", true)]
+        public static void CreateEffect(Array<Player> visibleTo, CreateEffectType type, Color color, Vector position, float radius, NoneValue reevaluation = NoneValue.None) {}
+        [WorkshopCode("CREATE EFFECT", true)]
+        public static void CreateEffect(Array<Player> visibleTo, CreateEffectType type, Color color, Player playerToAttachTo, float radius, NoneValue reevaluation = NoneValue.None) {}
 
         /// <summary>
         /// CREATE HUD TEXT
@@ -689,8 +689,8 @@ namespace Workshop
         /// Position - The effect’s position. If this value is a player, then the effect will move along with the player, otherwise, the value is interpreted as a position in the world. Can use most Player or Vector based Value Syntax.
         /// Radius - The effect’s radius in meters. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCode("PLAY EFFECT")]
-        public static void PlayEffect() { }
+        [WorkshopCode("PLAY EFFECT", true)]
+        public static void PlayEffect(Array<Player> visibleTo, PlayEffectType type, Color color, Vector position, float radius) { }
 
         /// <summary>
         /// PRELOAD HERO
@@ -1124,7 +1124,7 @@ namespace Workshop
         /// Relative - Specifies whether direction is relavtive to the world coordinates or the local coordinates of the player or players.
         /// Reevaluation - Specifies which of this actions inputs will be continously reevaluated. This action will keep asking for and using new values from reevaluated inputs. You can choose from “Direction, Rate, and Max Speed” or “None”.
         /// </summary>
-        [WorkshopCode("START ACCELERATING")]
+        [WorkshopCode("START ACCELERATING", true)]
         public static void StartAccelerating(Player player, Vector direction, float rate, float maxSpeed, RelativeTo relativeTo, NoneValue reevaluation = NoneValue.None) { }
 
         /// <summary>
@@ -1250,7 +1250,7 @@ namespace Workshop
         /// Player - The player or players who will stop accelerating. Can use most Player based Value Syntax.
         /// </summary>
         [WorkshopCode("STOP ACCELERATING")]
-        public static void StopAccelerating() { }
+        public static void StopAccelerating(Player player) { }
 
         /// <summary>
         /// STOP ALL DAMAGE MODIFICATIONS

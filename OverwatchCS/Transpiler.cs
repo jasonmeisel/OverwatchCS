@@ -22,6 +22,15 @@ class MethodInfo
 
 partial class Transpiler
 {
+    static Transpiler()
+    {
+        s_workshopCodeAttributesByCodeName = typeof(WorkshopCodeAttribute).Assembly.DefinedTypes.
+            SelectMany(t => t.DeclaredMethods).
+            Select(m => GetWorkshopCodeAttribute(m)).
+            Where(attr => attr != null).
+            ToLookup(attr => attr.Name, attr => attr);
+    }
+    
     IEnumerable<LazyString> MethodHeaderActions(MethodInfo method)
     {
         var firstActions = new LazyString[]
@@ -465,8 +474,10 @@ partial class Transpiler
         else
             yield return () => code + ";";
 
-        // string variable fix
-        if (code.ToLower().StartsWith("big message") || code.ToLower().StartsWith("create effect"))
+        // temp variable fix
+        var codeName = code.Substring(0, code.IndexOf('('));
+        var workshopCodeAttribute = s_workshopCodeAttributesByCodeName[codeName].FirstOrDefault();
+        if (workshopCodeAttribute?.NeedsWait ?? false)
             yield return () => "Wait(0, Ignore Condition);";
 
         foreach (var action in VariableStack.Pop(targetMethodRef.Parameters.Count))
@@ -479,8 +490,14 @@ partial class Transpiler
 
     static string GetCodeName(System.Reflection.MemberInfo targetMethod)
     {
+        return GetWorkshopCodeAttribute(targetMethod)?.Name;
+    }
+
+    static WorkshopCodeAttribute GetWorkshopCodeAttribute(System.Reflection.MemberInfo targetMethod)
+    {
         var attributes = targetMethod?.GetCustomAttributes(typeof(WorkshopCodeAttribute), true);
-        return (attributes?.FirstOrDefault() as WorkshopCodeAttribute)?.Name;
+        var workshopCodeAttribute = (attributes?.FirstOrDefault() as WorkshopCodeAttribute);
+        return workshopCodeAttribute;
     }
 
     static string GetCodeName(ISymbol targetMethod)
@@ -591,6 +608,8 @@ partial class Transpiler
 
     Dictionary<string, string> m_generatedMethodToWorkshopCode = new Dictionary<string, string>();
     int m_maxNumLocalVariables;
+
+    static ILookup<string, WorkshopCodeAttribute> s_workshopCodeAttributesByCodeName;
 
     public string TranspileToRules(string source)
     {

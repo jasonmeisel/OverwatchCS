@@ -32,7 +32,6 @@ public static class MainClass
     static readonly Vector PlayCenter = Vector(290.22f, -25.47f, -88.76f);
     static readonly float PlayRadius = 10;
 
-    static int s_count = 0;
     public static void Update()
     {
         SetPlayerAllowedHeroes(AllPlayers(Team.All), Hero.WreckingBall);
@@ -46,32 +45,43 @@ public static class MainClass
                 // when first spawned
                 if (!GetPlayerVariable<bool>(player, 'A'))
                 {
-                    SetPlayerVariable(player, 'A', true);
-
-                    var offset = (PlayRadius * 0.9f) * CircleVectorAtAngle(playerIndex * 360);
-                    Teleport(player, PlayCenter + offset);
-
-                    for (var angle = 0.0f; angle < 360.0f; angle += 5)
-                    {
-                        CreateEffect(
-                            player, EffectType.LightShaft, Color.Red,
-                            PlayCenter + PlayRadius * CircleVectorAtAngle(angle),
-                            1.0f);
-                    }
+                    OnPlayerSpawned(playerIndex, player);
                 }
 
-                var position = PositionOf(player);
-                var distToCenter = DistanceBetween(position, PlayCenter);
+                var playerPosition = PositionOf(player);
+                var distToCenter = DistanceBetween(playerPosition, PlayCenter);
                 if (distToCenter > PlayRadius)
                 {
-                    BigMessage(player, String("DAMAGE"));
-                    // Damage(player, null, 1);
+                    Damage(player, null, 1);
+
+                    StartAccelerating(player, PlayCenter - playerPosition, 1000, 5, RelativeTo.World);
+
+                    var explosionPosition = Normalize(playerPosition - PlayCenter) * PlayRadius + PlayCenter;
+                    PlayEffect(AllPlayers(Team.All), PlayEffectType.BadExplosion, Color.Red, explosionPosition, 1);
+                    PlayEffect(AllPlayers(Team.All), PlayEffectType.RingExplosionSound, Color.Red, explosionPosition, 1);
                 }
                 else
                 {
-                    BigMessage(player, String("({0})", position));
+                    StopAccelerating(player);
                 }
+                BigMessage(player, String("({0})", playerPosition));
             }
+        }
+    }
+
+    static void OnPlayerSpawned(int playerIndex, Player player)
+    {
+        SetPlayerVariable(player, 'A', true);
+
+        var offset = (PlayRadius * 0.9f) * CircleVectorAtAngle(playerIndex * 360);
+        Teleport(player, PlayCenter + offset);
+
+        for (var angle = 0.0f; angle < 360.0f; angle += 5)
+        {
+            CreateEffect(
+                player, CreateEffectType.Cloud, Color.Red,
+                PlayCenter + PlayRadius * CircleVectorAtAngle(angle),
+                0.5f);
         }
     }
 
