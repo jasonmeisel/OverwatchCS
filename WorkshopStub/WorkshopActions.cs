@@ -807,7 +807,7 @@ namespace Workshop
         /// *Relative - Specifies direction is relative to world coordinates or the local coordinates of the player or players.
         /// </summary>
         [WorkshopCode("SET FACING")]
-        public static void SetFacing() { }
+        public static void SetFacing(Player player, Vector direction, RelativeTo relative) { }
 
         /// <summary>
         /// SET GLOBAL VARIABLE

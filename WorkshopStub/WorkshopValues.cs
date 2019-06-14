@@ -804,7 +804,7 @@ namespace Workshop
         /// Player - The player whose death to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
         [WorkshopCode("IS DEAD")]
-        public static object IsDead() => throw new NotImplementedException();
+        public static bool IsDead(Player player) => throw new NotImplementedException();
 
         /// <summary>
         /// IS FIRING PRIMARY
@@ -1903,7 +1903,7 @@ namespace Workshop
         /// Value - The vector from which to acquire the X component. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCode("X COMPONENT OF")]
-        public static object XComponentOf() => throw new NotImplementedException();
+        public static float X(this Vector vector) => throw new NotImplementedException();
 
         /// <summary>
         /// Y COMPONENT OF
@@ -1913,7 +1913,7 @@ namespace Workshop
         /// Value - The vector from which to acquire the Y component. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCode("Y COMPONENT OF")]
-        public static object YComponentOf() => throw new NotImplementedException();
+        public static float Y(this Vector vector) => throw new NotImplementedException();
 
         /// <summary>
         /// Z COMPONENT OF
@@ -1923,7 +1923,7 @@ namespace Workshop
         /// Value - The vector from which to acquire the Z component. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCode("Z COMPONENT OF")]
-        public static object ZComponentOf() => throw new NotImplementedException();
+        public static float Z(this Vector vector) => throw new NotImplementedException();
 
     }
 }

@@ -43,6 +43,11 @@ public static class MainClass
         {
             var player = AllPlayers(Team.All).ValueInArray(playerIndex);
 
+            if (IsDead(player))
+            {
+                SetPlayerVariable(player, 'A', false);
+            }
+
             if (HasSpawned(player) && !IsInSpawnRoom(player))
             {
                 // when first spawned
@@ -52,14 +57,16 @@ public static class MainClass
                 }
 
                 var playerPosition = PositionOf(player);
-                var distToCenter = DistanceBetween(playerPosition, PlayCenter);
+                var playerFloorPosition = Vector(playerPosition.X(), PlayCenter.Y(), playerPosition.Z());
+
+                var distToCenter = DistanceBetween(playerFloorPosition, PlayCenter);
                 if (distToCenter > PlayRadius)
                 {
                     Damage(player, null, 25);
 
-                    StartAccelerating(player, PlayCenter - playerPosition, 1000, 5, RelativeTo.World, ReevaluationValue.None);
+                    StartAccelerating(player, PlayCenter - playerFloorPosition, 1000, 100, RelativeTo.World, ReevaluationValue.None);
 
-                    var explosionPosition = Normalize(playerPosition - PlayCenter) * PlayRadius + PlayCenter;
+                    var explosionPosition = Normalize(playerFloorPosition - PlayCenter) * PlayRadius + PlayCenter;
                     PlayEffect(AllPlayers(Team.All), PlayEffectType.BadExplosion, Color.Red, explosionPosition, 1);
                     PlayEffect(AllPlayers(Team.All), PlayEffectType.RingExplosionSound, Color.Red, explosionPosition, 1);
                 }
@@ -67,7 +74,8 @@ public static class MainClass
                 {
                     StopAccelerating(player);
                 }
-                BigMessage(player, String("({0})", playerPosition));
+                
+                BigMessage(player, String("({0})", playerFloorPosition));
             }
         }
     }
@@ -78,6 +86,7 @@ public static class MainClass
 
         var offset = (PlayRadius * 0.9f) * CircleVectorAtAngle(playerIndex * 360);
         Teleport(player, PlayCenter + offset);
+        SetFacing(player, Vector(0,0,0) - offset, RelativeTo.World);
     }
 
     static Vector CircleVectorAtAngle(float angle)
