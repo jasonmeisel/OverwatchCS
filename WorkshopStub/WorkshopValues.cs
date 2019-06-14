@@ -715,7 +715,7 @@ namespace Workshop
         /// There are no definitions to this value.
         /// </summary>
         [WorkshopCode("IS BETWEEN ROUNDS")]
-        public static object IsBetweenRounds() => throw new NotImplementedException();
+        public static bool IsBetweenRounds() => throw new NotImplementedException();
 
         /// <summary>
         /// IS BUTTON HELD
@@ -882,7 +882,7 @@ namespace Workshop
         /// There are no definitions to this value.
         /// </summary>
         [WorkshopCode("IS IN SETUP")]
-        public static object IsInSetup() => throw new NotImplementedException();
+        public static bool IsInSetup() => throw new NotImplementedException();
 
         /// <summary>
         /// IS IN SPAWN ROOM
@@ -892,7 +892,7 @@ namespace Workshop
         /// Player - The player whose spawn room status to check. Can use most player based Value Syntax to retrieve this value.
         /// </summary>
         [WorkshopCode("IS IN SPAWN ROOM")]
-        public static object IsInSpawnRoom() => throw new NotImplementedException();
+        public static bool IsInSpawnRoom(Player player) => throw new NotImplementedException();
 
         /// <summary>
         /// IS IN VIEW ANGLE
@@ -1132,7 +1132,7 @@ namespace Workshop
         /// There are no definitions to this value.
         /// </summary>
         [WorkshopCode("MATCH ROUND")]
-        public static object MatchRound() => throw new NotImplementedException();
+        public static int MatchRound() => throw new NotImplementedException();
 
         /// <summary>
         /// MATCH TIME

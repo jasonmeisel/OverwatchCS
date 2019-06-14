@@ -34,13 +34,16 @@ public static class MainClass
 
     public static void Update()
     {
-        SetPlayerAllowedHeroes(AllPlayers(Team.All), Hero.WreckingBall);
+        // SetPlayerAllowedHeroes(AllPlayers(Team.All), Hero.WreckingBall);
+        
+        if (IsBetweenRounds() || IsInSetup())
+            return;
 
         for (var playerIndex = 0; playerIndex < NumberOfPlayers(Team.All); ++playerIndex)
         {
             var player = AllPlayers(Team.All).ValueInArray(playerIndex);
 
-            if (HasSpawned(player))
+            if (HasSpawned(player) && !IsInSpawnRoom(player))
             {
                 // when first spawned
                 if (!GetPlayerVariable<bool>(player, 'A'))

@@ -474,10 +474,7 @@ partial class Transpiler
         else
             yield return () => code + ";";
 
-        // temp variable fix
-        var codeName = code.Substring(0, code.IndexOf('('));
-        var workshopCodeAttribute = s_workshopCodeAttributesByCodeName[codeName].FirstOrDefault();
-        if (workshopCodeAttribute?.NeedsWait ?? false)
+        if (DoesMethodNeedWait(code))
             yield return () => "Wait(0, Ignore Condition);";
 
         foreach (var action in VariableStack.Pop(targetMethodRef.Parameters.Count))
@@ -486,6 +483,17 @@ partial class Transpiler
         if (hasReturn)
             foreach (var action in VariableStack.Push(GetGlobal(Variables.Temporary)))
                 yield return action;
+    }
+
+    static bool DoesMethodNeedWait(string code)
+    {
+        // temp variable fix
+        var parenIndex = code.IndexOf('(');
+        if (parenIndex == -1)
+            return false;
+        var codeName = code.Substring(0, parenIndex);
+        var workshopCodeAttribute = s_workshopCodeAttributesByCodeName[codeName].FirstOrDefault();
+        return workshopCodeAttribute?.NeedsWait ?? false;
     }
 
     static string GetCodeName(System.Reflection.MemberInfo targetMethod)
