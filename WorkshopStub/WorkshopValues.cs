@@ -2,7 +2,15 @@ using System;
 
 namespace Workshop
 {
-    public struct Player {}
+    public struct Player
+    {
+        [WorkshopCode("Compare(<PARAM>, ==, <PARAM>)")]
+        public static bool operator ==(Player a, Player b) => throw null;
+
+        [WorkshopCode("Compare(<PARAM>, !=, <PARAM>)")]
+        public static bool operator !=(Player a, Player b) => throw null;
+    }
+
     public enum Hero
     {
         [WorkshopCode("Hero(Ana)")] Ana,
@@ -76,6 +84,18 @@ namespace Workshop
         [WorkshopCode("To World")] World,
         [WorkshopCode("To Player")] Player,
     }
+
+    public enum ConditionValue
+    {
+        [WorkshopCode("==")] Equal,
+        [WorkshopCode("!=")] NotEqual,
+        [WorkshopCode("<")] LessThan,
+        [WorkshopCode("<=")] LessThanOrEqual,
+        [WorkshopCode(">")] GreaterThan,
+        [WorkshopCode(">=")] GreaterThanOrEqual,
+    }
+
+    public struct Condition {}
 
     public enum CreateEffectType
     {
@@ -327,7 +347,7 @@ namespace Workshop
         /// Value - The right hand side of the comparison. This may be any value type if the operation is == or =!, otherwise real numbers are expected. Can use most Value Syntax for the comparison.
         /// </summary>
         [WorkshopCode("COMPARE")]
-        public static object Compare() => throw new NotImplementedException();
+        public static Condition Compare<TValue0, TValue1>(TValue0 value0, ConditionValue condition, TValue1 value1) => throw new NotImplementedException();
 
         /// <summary>
         /// CONTROL MODE SCORING PERCENTAGE
@@ -394,7 +414,7 @@ namespace Workshop
         /// There are no definitions to this value.
         /// </summary>
         [WorkshopCode("CURRENT ARRAY ELEMENT")]
-        public static object CurrentArrayElement() => throw new NotImplementedException();
+        public static T CurrentArrayElement<T>() => throw new NotImplementedException();
 
         /// <summary>
         /// DIRECTION FROM ANGLES
@@ -529,7 +549,7 @@ namespace Workshop
         /// Condition - The condition that is evaluated for each element of the copied array. If the condition is true, the element is kept in the copied array. Use the current array element value to reference the element of the array currently being considered.
         /// </summary>
         [WorkshopCode("FILTERED ARRAY")]
-        public static object FilteredArray() => throw new NotImplementedException();
+        public static Array<T> FilteredArray<T>(Array array, Condition condition) => throw new NotImplementedException();
 
         /// <summary>
         /// FIRST OF
@@ -700,7 +720,7 @@ namespace Workshop
         /// Player - The player whose life to check. Can use most player based Value Syntax to retrive this value.
         /// </summary>
         [WorkshopCode("IS ALIVE")]
-        public static object IsAlive() => throw new NotImplementedException();
+        public static bool IsAlive(Player player) => throw new NotImplementedException();
 
         /// <summary>
         /// IS ASSEMBLING HEROES
@@ -1304,7 +1324,7 @@ namespace Workshop
         /// Team - The team or teams on which to count players. Can use most Team based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCode("NUMBER OF LIVING PLAYERS")]
-        public static object NumberOfLivingPlayers() => throw new NotImplementedException();
+        public static int NumberOfLivingPlayers(Team team) => throw new NotImplementedException();
 
         /// <summary>
         /// NUMBER OF PLAYERS
@@ -1832,7 +1852,7 @@ namespace Workshop
         /// Player - The player whose velocity to acquire. Can use most Player based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCode("VELOCITY OF")]
-        public static object VelocityOf() => throw new NotImplementedException();
+        public static Vector VelocityOf(Player player) => throw new NotImplementedException();
 
         /// <summary>
         /// VERTICAL ANGLE FROM DIRECTION

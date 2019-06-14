@@ -225,7 +225,7 @@ partial class Transpiler
         dict[OpCodes.Blt_S] = (method, instruction) => Impl_Jump_If_Compare(method, instruction, "<");
 
         dict[OpCodes.Bne_Un_S] = (method, instruction) => Impl_Jump_If(method, instruction, NotEqual);
-        dict[OpCodes.Bge_Un_S] = Impl_UnimplementedOp;
+        dict[OpCodes.Bge_Un_S] = dict[OpCodes.Bge_S];
 
         dict[OpCodes.Ldc_I4_6] = Impl_UnimplementedOp;
         dict[OpCodes.Ldc_I4_5] = (method, Instruction) => VariableStack.Push(() => "5");

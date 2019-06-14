@@ -806,7 +806,7 @@ namespace Workshop
         /// Direction - The unit direction in which the player or players will face. This value is normalized internally. Can use most Vector based Value Syntax.
         /// *Relative - Specifies direction is relative to world coordinates or the local coordinates of the player or players.
         /// </summary>
-        [WorkshopCode("SET FACING")]
+        [WorkshopCode("SET FACING", true)]
         public static void SetFacing(Player player, Vector direction, RelativeTo relative) { }
 
         /// <summary>
@@ -906,7 +906,7 @@ namespace Workshop
         /// Health Percent - The percentage of raw move speed to which the player or players will set their move speed. Can use most Number based Value Syntax for this value.
         /// </summary>
         [WorkshopCode("SET MOVE SPEED")]
-        public static void SetMoveSpeed() { }
+        public static void SetMoveSpeed(Player player, float percent) { }
 
         /// <summary>
         /// SET OBJECTIVE DESCRIPTION
@@ -1397,7 +1397,7 @@ namespace Workshop
         /// Player - The player or players to teleport. Can use most Player based Value Syntax.
         /// Position - The position to which the player or players will teleport. If a player is providedm the position of the player is used. Can use most Vector based Value Syntax.
         /// </summary>
-        [WorkshopCode("TELEPORT")]
+        [WorkshopCode("TELEPORT", true)]
         public static void Teleport(Player player, Vector position) { }
 
         /// <summary>

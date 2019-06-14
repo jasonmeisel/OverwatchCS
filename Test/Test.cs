@@ -46,11 +46,14 @@ public static class MainClass
             if (IsDead(player))
             {
                 SetPlayerVariable(player, 'A', false);
+                SetMoveSpeed(player, 0);
             }
 
-            if (HasSpawned(player) && !IsInSpawnRoom(player))
+            if (TotalTimeElapsed() - GetPlayerVariable<float>(player, 'B') > 0.2f)
+                StopAccelerating(player);
+
+            if (HasSpawned(player) && !IsInSpawnRoom(player) && IsAlive(player))
             {
-                // when first spawned
                 if (!GetPlayerVariable<bool>(player, 'A'))
                 {
                     OnPlayerSpawned(playerIndex, player);
@@ -58,6 +61,8 @@ public static class MainClass
 
                 var playerPosition = PositionOf(player);
                 var playerFloorPosition = Vector(playerPosition.X(), PlayCenter.Y(), playerPosition.Z());
+
+                BumpOtherPlayers(player);
 
                 var distToCenter = DistanceBetween(playerFloorPosition, PlayCenter);
                 if (distToCenter > PlayRadius)
@@ -74,8 +79,25 @@ public static class MainClass
                 {
                     StopAccelerating(player);
                 }
-                
+
                 BigMessage(player, String("({0})", playerFloorPosition));
+            }
+        }
+    }
+
+    static void BumpOtherPlayers(Player player)
+    {
+        for (var i = 0; i < NumberOfLivingPlayers(Team.All); ++i)
+        {
+            var otherPlayer = AllLivingPlayers(Team.All).GetElement(i);
+            if (otherPlayer == player)
+                continue;
+
+            if (DistanceBetween(PositionOf(player), PositionOf(otherPlayer)) < 1)
+            {
+                StopAccelerating(otherPlayer);
+                StartAccelerating(otherPlayer, VelocityOf(player), 10000, 100, RelativeTo.World, ReevaluationValue.None);
+                SetPlayerVariable(otherPlayer, 'B', TotalTimeElapsed());
             }
         }
     }
@@ -83,6 +105,7 @@ public static class MainClass
     static void OnPlayerSpawned(int playerIndex, Player player)
     {
         SetPlayerVariable(player, 'A', true);
+        SetMoveSpeed(player, 100);
 
         var offset = (PlayRadius * 0.9f) * CircleVectorAtAngle(playerIndex * 360);
         Teleport(player, PlayCenter + offset);
