@@ -65,9 +65,10 @@ namespace Workshop
 
     public struct StringValue {}
 
-    public enum NoneValue
+    public enum ReevaluationValue
     {
-        [WorkshopCode("None")] None
+        [WorkshopCode("None")] None,
+        [WorkshopCode("Visible To")] VisibleTo,
     }
 
     public enum RelativeTo

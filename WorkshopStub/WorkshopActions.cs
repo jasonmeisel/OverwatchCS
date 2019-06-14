@@ -194,10 +194,8 @@ namespace Workshop
         /// Visible to
         /// None
         /// </summary>
-        [WorkshopCode("CREATE EFFECT", true)]
-        public static void CreateEffect(Array<Player> visibleTo, CreateEffectType type, Color color, Vector position, float radius, NoneValue reevaluation = NoneValue.None) {}
-        [WorkshopCode("CREATE EFFECT", true)]
-        public static void CreateEffect(Array<Player> visibleTo, CreateEffectType type, Color color, Player playerToAttachTo, float radius, NoneValue reevaluation = NoneValue.None) {}
+        [WorkshopCode("CREATE EFFECT")]
+        public static void CreateEffect(Array<Player> visibleTo, CreateEffectType type, Color color, Vector position, float radius, ReevaluationValue reevaluation) {}
 
         /// <summary>
         /// CREATE HUD TEXT
@@ -689,7 +687,7 @@ namespace Workshop
         /// Position - The effect’s position. If this value is a player, then the effect will move along with the player, otherwise, the value is interpreted as a position in the world. Can use most Player or Vector based Value Syntax.
         /// Radius - The effect’s radius in meters. Can use most Number based Value Syntax.
         /// </summary>
-        [WorkshopCode("PLAY EFFECT", true)]
+        [WorkshopCode("PLAY EFFECT")]
         public static void PlayEffect(Array<Player> visibleTo, PlayEffectType type, Color color, Vector position, float radius) { }
 
         /// <summary>
@@ -1125,7 +1123,7 @@ namespace Workshop
         /// Reevaluation - Specifies which of this actions inputs will be continously reevaluated. This action will keep asking for and using new values from reevaluated inputs. You can choose from “Direction, Rate, and Max Speed” or “None”.
         /// </summary>
         [WorkshopCode("START ACCELERATING", true)]
-        public static void StartAccelerating(Player player, Vector direction, float rate, float maxSpeed, RelativeTo relativeTo, NoneValue reevaluation = NoneValue.None) { }
+        public static void StartAccelerating(Player player, Vector direction, float rate, float maxSpeed, RelativeTo relativeTo, ReevaluationValue reevaluation) { }
 
         /// <summary>
         /// START CAMERA

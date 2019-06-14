@@ -34,8 +34,8 @@ public static class MainClass
 
     public static void Update()
     {
-        // SetPlayerAllowedHeroes(AllPlayers(Team.All), Hero.WreckingBall);
-        
+        SetPlayerAllowedHeroes(AllPlayers(Team.All), Hero.WreckingBall);
+
         if (IsBetweenRounds() || IsInSetup())
             return;
 
@@ -55,9 +55,9 @@ public static class MainClass
                 var distToCenter = DistanceBetween(playerPosition, PlayCenter);
                 if (distToCenter > PlayRadius)
                 {
-                    Damage(player, null, 1);
+                    Damage(player, null, 25);
 
-                    StartAccelerating(player, PlayCenter - playerPosition, 1000, 5, RelativeTo.World);
+                    StartAccelerating(player, PlayCenter - playerPosition, 1000, 5, RelativeTo.World, ReevaluationValue.None);
 
                     var explosionPosition = Normalize(playerPosition - PlayCenter) * PlayRadius + PlayCenter;
                     PlayEffect(AllPlayers(Team.All), PlayEffectType.BadExplosion, Color.Red, explosionPosition, 1);
@@ -78,19 +78,23 @@ public static class MainClass
 
         var offset = (PlayRadius * 0.9f) * CircleVectorAtAngle(playerIndex * 360);
         Teleport(player, PlayCenter + offset);
-
-        for (var angle = 0.0f; angle < 360.0f; angle += 5)
-        {
-            CreateEffect(
-                player, CreateEffectType.Cloud, Color.Red,
-                PlayCenter + PlayRadius * CircleVectorAtAngle(angle),
-                0.5f);
-        }
     }
 
     static Vector CircleVectorAtAngle(float angle)
     {
         return Vector(SineFromDegrees(angle), 0, CosineFromDegrees(angle));
+    }
+
+    public static void Main()
+    {
+        // create ring of fire
+        for (var angle = 0.0f; angle < 360.0f; angle += 5)
+        {
+            CreateEffect(
+                AllPlayers(Team.All), CreateEffectType.Cloud, Color.Red,
+                PlayCenter + PlayRadius * CircleVectorAtAngle(angle),
+                0.5f, ReevaluationValue.VisibleTo);
+        }
     }
 
     // public static void Update()
@@ -278,8 +282,4 @@ public static class MainClass
     //         Actions.StartCamera();
     //     }
     // }
-
-    public static void Main()
-    {
-    }
 }
