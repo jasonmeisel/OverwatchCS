@@ -56,14 +56,43 @@ namespace Workshop
         [WorkshopCode("Subtract")] public static Vector operator-(Vector a, Vector b) => throw null;
         [WorkshopCode("Multiply")] public static Vector operator*(Vector a, Vector b) => throw null;
         [WorkshopCode("Divide")] public static Vector operator/(Vector a, Vector b) => throw null;
-        [WorkshopCode("Add")] public static Vector operator+(float a, Vector b) => throw null;
-        [WorkshopCode("Subtract")] public static Vector operator-(float a, Vector b) => throw null;
-        [WorkshopCode("Multiply")] public static Vector operator*(float a, Vector b) => throw null;
-        [WorkshopCode("Divide")] public static Vector operator/(float a, Vector b) => throw null;
-        [WorkshopCode("Add")] public static Vector operator+(Vector a, float b) => throw null;
-        [WorkshopCode("Subtract")] public static Vector operator-(Vector a, float b) => throw null;
-        [WorkshopCode("Multiply")] public static Vector operator*(Vector a, float b) => throw null;
-        [WorkshopCode("Divide")] public static Vector operator/(Vector a, float b) => throw null;
+        [WorkshopCode("Add")] public static Vector operator+(Number a, Vector b) => throw null;
+        [WorkshopCode("Subtract")] public static Vector operator-(Number a, Vector b) => throw null;
+        [WorkshopCode("Multiply")] public static Vector operator*(Number a, Vector b) => throw null;
+        [WorkshopCode("Divide")] public static Vector operator/(Number a, Vector b) => throw null;
+        [WorkshopCode("Add")] public static Vector operator+(Vector a, Number b) => throw null;
+        [WorkshopCode("Subtract")] public static Vector operator-(Vector a, Number b) => throw null;
+        [WorkshopCode("Multiply")] public static Vector operator*(Vector a, Number b) => throw null;
+        [WorkshopCode("Divide")] public static Vector operator/(Vector a, Number b) => throw null;
+    }
+
+    public struct Boolean
+    {
+        public static implicit operator Boolean(bool val) => throw null;
+        public static implicit operator bool(Boolean val) => throw null;
+    }
+
+    public struct Number
+    {
+        [WorkshopCode("Add")] public static Number operator+(Number a, Number b) => throw null;
+        [WorkshopCode("Subtract")] public static Number operator-(Number a, Number b) => throw null;
+        [WorkshopCode("Multiply")] public static Number operator*(Number a, Number b) => throw null;
+        [WorkshopCode("Divide")] public static Number operator/(Number a, Number b) => throw null;
+
+        [WorkshopCode("Compare(<PARAM>, ==, <PARAM>)")]
+        public static Boolean operator==(Number a, Number b) => throw null;
+        [WorkshopCode("Compare(<PARAM>, !=, <PARAM>)")]
+        public static Boolean operator!=(Number a, Number b) => throw null;
+        [WorkshopCode("Compare(<PARAM>, <, <PARAM>)")]
+        public static Boolean operator<(Number a, Number b) => throw null;
+        [WorkshopCode("Compare(<PARAM>, <=, <PARAM>)")]
+        public static Boolean operator<=(Number a, Number b) => throw null;
+        [WorkshopCode("Compare(<PARAM>, >, <PARAM>)")]
+        public static Boolean operator>(Number a, Number b) => throw null;
+        [WorkshopCode("Compare(<PARAM>, >=, <PARAM>)")]
+        public static Boolean operator>=(Number a, Number b) => throw null;
+
+        public static implicit operator Number(float val) => throw null;
     }
 
     public enum Team
@@ -95,8 +124,6 @@ namespace Workshop
         [WorkshopCode(">")] GreaterThan,
         [WorkshopCode(">=")] GreaterThanOrEqual,
     }
-
-    public struct Condition {}
 
     public enum CreateEffectType
     {
@@ -242,7 +269,7 @@ namespace Workshop
         /// Player - You can specify any Player Syntax to define the array.
         /// </summary>
         [WorkshopCode("ALTITUDE OF")]
-        public static float AltitudeOf(Player player) => throw new NotImplementedException();
+        public static Number AltitudeOf(Player player) => throw new NotImplementedException();
 
         /// <summary>
         /// AND
@@ -348,7 +375,7 @@ namespace Workshop
         /// Value - The right hand side of the comparison. This may be any value type if the operation is == or =!, otherwise real numbers are expected. Can use most Value Syntax for the comparison.
         /// </summary>
         [WorkshopCode("COMPARE")]
-        public static Condition Compare<TValue0, TValue1>(TValue0 value0, ConditionValue condition, TValue1 value1) => throw new NotImplementedException();
+        public static Boolean Compare<TValue0, TValue1>(TValue0 value0, ConditionValue condition, TValue1 value1) => throw new NotImplementedException();
 
         /// <summary>
         /// CONTROL MODE SCORING PERCENTAGE
@@ -376,7 +403,7 @@ namespace Workshop
         /// Angle - You can specify any Angle Syntax to define this value.
         /// </summary>
         [WorkshopCode("Cosine FROM DEGREES")]
-        public static float CosineFromDegrees(float angle) => throw new NotImplementedException();
+        public static Number CosineFromDegrees(Number angle) => throw new NotImplementedException();
 
         /// <summary>
         /// Cosine FROM RADIANS
@@ -386,7 +413,7 @@ namespace Workshop
         /// Angle - You can specify any Angle Syntax to define this value.
         /// </summary>
         [WorkshopCode("Cosine FROM RADIANS")]
-        public static float CosineFromRadians(float angle) => throw new NotImplementedException();
+        public static Number CosineFromRadians(Number angle) => throw new NotImplementedException();
 
         /// <summary>
         /// COUNT OF
@@ -448,7 +475,7 @@ namespace Workshop
         /// End Pos - One of the two positions used in the distance measurement. Most positional based Value Syntax can be used here.
         /// </summary>
         [WorkshopCode("DISTANCE BETWEEN")]
-        public static float DistanceBetween(Vector startPos, Vector endPos) => throw new NotImplementedException();
+        public static Number DistanceBetween(Vector startPos, Vector endPos) => throw new NotImplementedException();
 
         /// <summary>
         /// DIVIDE
@@ -510,7 +537,7 @@ namespace Workshop
         /// EVENT DAMAGE
         /// </summary>
         [WorkshopCode("EVENT DAMAGE")]
-        public static float EventDamage() => throw new NotImplementedException();
+        public static Number EventDamage() => throw new NotImplementedException();
 
         /// <summary>
         /// FACING DIRECTION OF
@@ -550,7 +577,7 @@ namespace Workshop
         /// Condition - The condition that is evaluated for each element of the copied array. If the condition is true, the element is kept in the copied array. Use the current array element value to reference the element of the array currently being considered.
         /// </summary>
         [WorkshopCode("FILTERED ARRAY")]
-        public static Array<T> FilteredArray<T>(Array array, Condition condition) => throw new NotImplementedException();
+        public static Array<T> FilteredArray<T>(Array array, Boolean condition) => throw new NotImplementedException();
 
         /// <summary>
         /// FIRST OF
@@ -1642,7 +1669,7 @@ namespace Workshop
         /// Angle - Angle in degrees. Can use most Player based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCode("SINE FROM DEGREES")]
-        public static float SineFromDegrees(float angle) => throw new NotImplementedException();
+        public static Number SineFromDegrees(Number angle) => throw new NotImplementedException();
 
         /// <summary>
         /// SINE FROM RADIANS
@@ -1778,7 +1805,7 @@ namespace Workshop
         /// There are no definitions to this value.
         /// </summary>
         [WorkshopCode("TOTAL TIME ELAPSED")]
-        public static float TotalTimeElapsed() => throw new NotImplementedException();
+        public static Number TotalTimeElapsed() => throw new NotImplementedException();
 
         /// <summary>
         /// TRUE
@@ -1832,7 +1859,7 @@ namespace Workshop
         /// If you are using this value to populate for another value in a condition or action, you can click the live capture button to collect the current position your hero or spectator ghost in the game environment.
         /// </summary>
         [WorkshopCode("VECTOR")]
-        public static Vector Vector(float x, float y, float z) => throw new NotImplementedException();
+        public static Vector Vector(Number x, Number y, Number z) => throw new NotImplementedException();
 
         /// <summary>
         /// VECTOR TOWARDS
@@ -1924,7 +1951,7 @@ namespace Workshop
         /// Value - The vector from which to acquire the X component. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCode("X COMPONENT OF")]
-        public static float X(this Vector vector) => throw new NotImplementedException();
+        public static Number X(this Vector vector) => throw new NotImplementedException();
 
         /// <summary>
         /// Y COMPONENT OF
@@ -1934,7 +1961,7 @@ namespace Workshop
         /// Value - The vector from which to acquire the Y component. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCode("Y COMPONENT OF")]
-        public static float Y(this Vector vector) => throw new NotImplementedException();
+        public static Number Y(this Vector vector) => throw new NotImplementedException();
 
         /// <summary>
         /// Z COMPONENT OF
@@ -1944,7 +1971,7 @@ namespace Workshop
         /// Value - The vector from which to acquire the Z component. Can use most Vector based Value Syntax to provide this value.
         /// </summary>
         [WorkshopCode("Z COMPONENT OF")]
-        public static float Z(this Vector vector) => throw new NotImplementedException();
+        public static Number Z(this Vector vector) => throw new NotImplementedException();
 
     }
 }

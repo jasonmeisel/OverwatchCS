@@ -6,17 +6,17 @@ using static Workshop.Actions;
 public static class MainClass
 {
     // [WorkshopEvent(Event.PlayerDealtDamage)]
-    // public static void PlayerDealtDamage(Player eventPlayer, float eventDamage, bool eventWasCriticalHit)
+    // public static void PlayerDealtDamage(Player eventPlayer, Number eventDamage, bool eventWasCriticalHit)
     // {
     //     BigMessage(eventPlayer, String("{0} {1}", eventDamage, String("Damage")));
     // }
 
-    // public static float Fibonacci(int n, float a = 0, float b = 1)
+    // public static Number Fibonacci(Number n, Number a = 0, Number b = 1)
     // {
     //     return n == 1 ? b : Fibonacci(n - 1, b, a + b);
     // }
 
-    // public static float Fibonacci(int n)
+    // public static Number Fibonacci(Number n)
     // {
     //     var a = 0.0f;
     //     var b = 1.0f;
@@ -30,7 +30,7 @@ public static class MainClass
     // }
 
     static readonly Vector PlayCenter = Vector(290.22f, -25.47f, -88.76f);
-    static readonly float PlayRadius = 10;
+    static readonly Number PlayRadius = 10;
 
     public static void Update()
     {
@@ -49,7 +49,7 @@ public static class MainClass
                 SetMoveSpeed(player, 0);
             }
 
-            if (TotalTimeElapsed() - GetPlayerVariable<float>(player, 'B') > 0.2f)
+            if (TotalTimeElapsed() - GetPlayerVariable<Number>(player, 'B') > 0.2f)
                 StopAccelerating(player);
 
             if (HasSpawned(player) && !IsInSpawnRoom(player) && IsAlive(player))
@@ -103,7 +103,7 @@ public static class MainClass
         }
     }
 
-    static void OnPlayerSpawned(int playerIndex, Player player)
+    static void OnPlayerSpawned(Number playerIndex, Player player)
     {
         SetPlayerVariable(player, 'A', true);
         SetMoveSpeed(player, 100);
@@ -113,7 +113,7 @@ public static class MainClass
         SetFacing(player, Vector(0,0,0) - offset, RelativeTo.World);
     }
 
-    static Vector CircleVectorAtAngle(float angle)
+    static Vector CircleVectorAtAngle(Number angle)
     {
         return Vector(SineFromDegrees(angle), 0, CosineFromDegrees(angle));
     }
