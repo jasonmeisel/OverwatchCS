@@ -62,7 +62,7 @@ public static class MainClass
                 var playerPosition = PositionOf(player);
                 var playerFloorPosition = Vector(playerPosition.X(), PlayCenter.Y(), playerPosition.Z());
 
-                BumpOtherPlayers(player);
+                // BumpOtherPlayers(player);
 
                 var distToCenter = DistanceBetween(playerFloorPosition, PlayCenter);
                 if (distToCenter > PlayRadius)
@@ -96,6 +96,7 @@ public static class MainClass
             if (DistanceBetween(PositionOf(player), PositionOf(otherPlayer)) < 1)
             {
                 StopAccelerating(otherPlayer);
+                
                 StartAccelerating(otherPlayer, VelocityOf(player), 10000, 100, RelativeTo.World, ReevaluationValue.None);
                 SetPlayerVariable(otherPlayer, 'B', TotalTimeElapsed());
             }

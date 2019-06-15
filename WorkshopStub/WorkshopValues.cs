@@ -77,6 +77,7 @@ namespace Workshop
     {
         [WorkshopCode("None")] None,
         [WorkshopCode("Visible To")] VisibleTo,
+        [WorkshopCode("Direction Rate and Max Speed")] DirectionRateAndMaxSpeed,
     }
 
     public enum RelativeTo
